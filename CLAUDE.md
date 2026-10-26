@@ -20,7 +20,7 @@
 - نشر تلقائي: `publishGH` / `autoPub` (بعد تعديل المنتجات بـ 30 ثانية).
 - عروض مجدولة: `it.offer={d,from,to}` + `applyOffers()` تُحسب عند التحميل وكل دقيقة (يعمل عند الزبون بدون نشر).
 - تتبع الطلبات: تبويب `trk` في الداشبورد؛ لصق رسالة واتساب `parseOrderMsg` أو استلام تلقائي من Firestore (`incoming`) عبر `importIncoming`.
-- مزامنة Firebase اختيارية: `connectDb` / `fbDb` / `pushAll`، وتعتمد على `fbconfig.json` في الجذر (غير موجود بعد). بدونه كل شيء محلي.
+- مزامنة Firebase اختيارية: `connectDb` / `fbDb` / `pushAll`، وتعتمد على `fbconfig.json` في الجذر (موجود، مشروع Firebase: supermarket-d4956). بدونه كل شيء محلي.
 - نسخ احتياطي: `bkDo` / `bkLoad`.
 
 ## قواعد عمل
