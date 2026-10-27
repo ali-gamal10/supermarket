@@ -3,9 +3,9 @@
 موقع متجر بقالة بالعربي (RTL)، صفحتان: `index.html` (الزبائن فقط) و`staff.html` (المدير والموظفين، مقفلة بالرقم السري، noindex، لها `staff.webmanifest`). الاثنان يُولَّدان من مصدر واحد (HTML/CSS/JS صافي) ولا يوجد build على Netlify. المالك: علي جمال (ali-gamal10). يتحدث بالعامية المصرية، والمطلوب الرد بالعربي المبسط وبخطوات قصيرة مع صور شاشة عند الحاجة.
 
 ## الاستضافة والنشر
-- GitHub: `ali-gamal10/supermarket` (فرع `main`) ← Netlify مشروع `supermarket-eg` ينشر تلقائياً عند كل push خلال ثواني.
-- الرابط العام: https://supermarket-eg.netlify.app (مطبوع في بوستر وQR: لا تغيّر الاسم).
-- لا يوجد build: Netlify ينشر جذر المستودع كما هو.
+- GitHub: `ali-gamal10/supermarket` (فرع `main`) ← GitHub Pages ينشر تلقائياً عند كل push خلال دقيقة أو دقيقتين.
+- الرابط العام: https://ali-gamal10.github.io/supermarket/ (GitHub Pages، مجاني بلا حدود نشر؛ المطبوع في البوستر وQR). الرابط القديم https://supermarket-eg.netlify.app توقف عن التحديث لنفاد رصيد Netlify.
+- لا يوجد build: Pages ينشر جذر المستودع كما هو (مسار فرعي /supermarket/: استخدم روابط نسبية فقط).
 
 ## الملفات
 - `index.html`: واجهة الزبون فقط (بدون أي دخول موظفين؛ `#staff` و`#cashier` يحوّلان إلى staff.html).
