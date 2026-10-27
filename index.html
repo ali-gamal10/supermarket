@@ -384,7 +384,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 </div>
 <div class="bulk" style="display:block;background:#eef4ff;border-color:#b6ccf5">
 <b>🔗 النشر التلقائي للزبائن (GitHub)</b> <span id="ghState" style="font-size:13px;color:#2d5a3f"></span>
-<div style="font-size:12.5px;color:#456;margin:6px 0">بعد التفعيل، أي تعديل على المنتجات والأسعار والخصومات يظهر للزبائن لوحده بعد دقيقة تقريباً.</div>
+<div style="font-size:12.5px;color:#456;margin:6px 0">بعد التفعيل، أي تعديل على المنتجات والأسعار والخصومات يظهر للزبائن لوحده خلال 5 دقائق تقريباً تقريباً.</div>
 <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
 <input id="ghRepo" placeholder="المستودع: اسمك/اسم-المشروع" style="width:230px;direction:ltr">
 <input id="ghTok" type="password" placeholder="مفتاح GitHub" style="width:200px;direction:ltr">
@@ -1396,7 +1396,7 @@ async function publishGH(auto){
       const r=await fetch(api,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},h),body:JSON.stringify({message:'تحديث المنتجات',content,branch:cfg.branch,sha})});
       ok=r.ok;code=r.status;
     }
-    if(ok)toast(auto?'✅ اتنشرت التعديلات للزبائن (تظهر خلال دقيقة)':'تم النشر ✅ الزبائن بيشوفوا التعديل خلال دقيقة تقريباً',5000);
+    if(ok)toast(auto?'✅ اتنشرت التعديلات للزبائن (تظهر خلال 5 دقائق تقريباً)':'تم النشر ✅ الزبائن بيشوفوا التعديل خلال 5 دقائق تقريباً',5000);
     else toast(code===401||code===403?'مفتاح GitHub غير صحيح أو ما عنده صلاحية':code===404?'المستودع غير موجود أو المفتاح ما يشمله':code===422?'تعذر الحفظ، جرّب مرة ثانية':'تعذر النشر ('+code+')',6000);
   }catch(e){toast('تعذر الاتصال بالإنترنت',4000)}
   _ghBusy=false;if(btn){btn.disabled=false;btn.textContent='🌐 نشر للزبائن الآن'}
@@ -1845,7 +1845,9 @@ if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.se
 ghState();
 if(STAFF)FB_READY.then(()=>{if(fbCfg())connectDb()});
 if(!STAFF&&/^https?:/.test(location.protocol)){
-  fetch('catalog.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(c=>{
+  /* الكتالوج يُقرأ من GitHub مباشرة (بدون نشر على Netlify)، وإن تعذّر نقرأ نسخة الموقع */
+  const _gj=u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(c=>Array.isArray(c)&&c.length?c:null).catch(()=>null);
+  _gj('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/catalog.json?t='+Math.floor(Date.now()/6e4)).then(c=>c||_gj('catalog.json?t='+Date.now())).then(c=>{
     if(!Array.isArray(c)||!c.length)return;
     const old=items,keep={};Object.keys(cart).forEach(i=>{if(old[i])keep[old[i].code||old[i].name]=cart[i]});
     items=c;norm();cart={};items.forEach((it,i)=>{const q=keep[it.code]||keep[it.name];if(q)cart[i]=Math.min(q,Math.max(it.stock||0,0))});

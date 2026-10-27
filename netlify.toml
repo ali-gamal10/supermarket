@@ -1,0 +1,5 @@
+# توفير رصيد Netlify: لا يتم النشر عند تغيير catalog.json فقط
+# (الزبائن يقرؤون المنتجات من GitHub مباشرة). أي تعديل آخر في الموقع يُنشر عادياً.
+[build]
+  publish = "."
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)catalog.json'"

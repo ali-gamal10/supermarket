@@ -24,6 +24,8 @@
 - مزامنة Firebase اختيارية: `connectDb` / `fbDb` / `pushAll`، وتعتمد على `fbconfig.json` في الجذر (موجود، مشروع Firebase: supermarket-d4956). بدونه كل شيء محلي.
 - نسخ احتياطي: `bkDo` / `bkLoad`.
 
+- توفير رصيد Netlify: الزبائن يقرؤون `catalog.json` مباشرة من `raw.githubusercontent.com` (احتياطي: نسخة الموقع)، و`netlify.toml` يتجاهل النشر عندما يتغيّر `catalog.json` فقط. لا تحذف `netlify.toml`. كل نشر Netlify يخصم رصيداً من الخطة المجانية.
+
 ## قواعد عمل
 - بعد أي تعديل: تحقق من صحة JS (`new Function` على السكربت) وجرّب بـ Playwright قبل الرفع.
 - لا تضع أي مفتاح أو كلمة سر في المستودع (عام). الـ firebase apiKey ليس سراً لكنه يُرفع فقط كـ `fbconfig.json` بطلب المالك.
