@@ -247,15 +247,37 @@ header{padding:9px 20px;gap:14px}
 .card.out{opacity:.55}.badge.out{background:#6b7280}
 .hotb{position:absolute;top:6px;left:6px;font-size:16px;line-height:1}
 @media(max-width:600px){.hotb{font-size:10px;top:2px;left:2px}}
+
+/* ===== شريط الموظفين العمودي (يمين) ===== */
+#sec{position:fixed;inset:0;background:#fff;z-index:41;overflow:auto;display:none;padding:15px}
+#sec.open{display:block}
+.sec-in{max-width:640px;margin:0 auto}
+.topbar.on{position:fixed;top:0;right:0;bottom:0;width:84px;flex-direction:column;flex-wrap:nowrap;align-items:stretch;justify-content:flex-start;gap:6px;padding:10px 6px;z-index:53;overflow-y:auto;box-shadow:-2px 0 12px rgba(0,0,0,.25)}
+.topbar.on .tb-label{display:block;text-align:center;font-size:11px;color:#9ca3af;font-weight:700;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.15)}
+.topbar.on .adm-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;padding:9px 2px;margin:0;font-size:11px;line-height:1.25;text-align:center;border-radius:12px;border:0;color:#fff;cursor:pointer;background:rgba(255,255,255,.12);font-family:inherit;font-weight:700;position:relative}
+.topbar.on .adm-btn i{font-style:normal;font-size:21px;line-height:1}
+.topbar.on .adm-btn:hover,.topbar.on .adm-btn:active{background:rgba(255,255,255,.28)}
+.topbar.on .tb-out{margin-top:auto !important;background:rgba(239,68,68,.35)}
+.topbar.on .lowbadge{top:3px;left:3px}
+body.sb{padding-right:84px}
+body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:84px}
+@media(max-width:600px){
+.topbar.on{width:58px;padding:8px 3px}
+.topbar.on .tb-label{display:none}
+.topbar.on .adm-btn{font-size:9.5px;padding:7px 1px;border-radius:10px}
+.topbar.on .adm-btn i{font-size:18px}
+body.sb{padding-right:58px}
+body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 </style>
 </head>
 <body>
 <div class="topbar">
-<span class="tb-label">لوحة المتجر:</span>
-<button class="adm-btn" title="شاشة الكاشير" onclick="togglePos()">💵 كاشير</button>
-<button class="adm-btn" title="المخزون والمبيعات" onclick="toggleDash()" style="position:relative">📊 المخزون والمبيعات<span id="lowBadge" class="lowbadge" style="display:none"></span></button>
-<button class="adm-btn" title="إدارة المنتجات" onclick="toggleAdmin()">⚙️ المنتجات</button>
-<button class="adm-btn" style="margin-right:auto" onclick="staffOff()">🚪 إخفاء لوحة المتجر</button>
+<span class="tb-label">لوحة المتجر</span>
+<button class="adm-btn" title="شاشة الكاشير" onclick="togglePos()"><i>💵</i><span>كاشير</span></button>
+<button class="adm-btn" title="المخزون والمبيعات" onclick="toggleDash()" style="position:relative"><i>📊</i><span>المخزون</span><span id="lowBadge" class="lowbadge" style="display:none"></span></button>
+<button class="adm-btn" title="إدارة المنتجات" onclick="toggleAdmin()"><i>⚙️</i><span>المنتجات</span></button>
+<button class="adm-btn" title="الرقم السري والأمان" onclick="toggleSec()"><i>🔐</i><span>الرقم السري</span></button>
+<button class="adm-btn tb-out" title="إخفاء لوحة المتجر" onclick="staffOff()"><i>🚪</i><span>إخفاء</span></button>
 </div>
 <header>
 <div class="logo"><svg class="logo-ico" viewBox="0 0 64 64" aria-hidden="true">
@@ -315,6 +337,25 @@ header{padding:9px 20px;gap:14px}
 <a class="wa" id="waLink" href="#" target="_blank" rel="noopener" onclick="return waClick(this)">اذهب إلى سوبر ماركت 🛒</a>
 </div>
 
+<div id="sec">
+<div class="adm-top"><h2>🔐 الرقم السري والأمان</h2><button class="pbtn red" onclick="toggleSec()">✖ إغلاق</button></div>
+<div class="sec-in"><div class="bulk"><b>🔑 رقم سر المدير</b> <span style="font-size:12px;color:#6b7280">(يُستخدم لدخول لوحة المدير، استرجاع الفواتير، تعديل المخزون والحذف)</span><br>
+<input id="pinOld" type="password" placeholder="الحالي" style="width:110px">
+<input id="pinNew" type="password" placeholder="الجديد" style="width:110px">
+<button class="pbtn" onclick="changePin()">تغيير</button></div>
+<div class="bulk" style="display:block"><b>👥 الكاشيرية (كل كاشير له رقم سري ومبيعاته)</b>
+<div id="cashList" style="margin:8px 0"></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<input id="newCName" placeholder="اسم الكاشير" style="width:150px">
+<input id="newCPin" type="password" placeholder="رقم سري (4+)" style="width:120px">
+<button class="pbtn" onclick="addCashier()">➕ إضافة كاشير</button></div></div>
+<div class="bulk" style="display:block"><b>📌 ملاحظات</b>
+<ul style="margin:6px 18px;font-size:13px;color:#4b5563;line-height:1.9">
+<li>الرقم الافتراضي 1234 — غيّره قبل الإعلان.</li>
+<li>كل كاشير له رقم خاص يدخل به الكاشير، ومبيعاته تتسجل باسمه.</li>
+<li>رقم المدير يُحفظ على هذا الجهاز ويتزامن مع باقي الأجهزة إذا كانت المزامنة مفعّلة.</li>
+<li>لا تشارك الأرقام السرية مع أحد.</li></ul></div>
+</div></div>
 <div id="admin">
 <div class="adm-top">
 <h2>⚙️ إدارة المنتجات والخصومات</h2>
@@ -382,16 +423,7 @@ header{padding:9px 20px;gap:14px}
 <input id="bulkPhotos" type="file" accept="image/*" multiple hidden onchange="bulkPhotos(this)">
 <button class="pbtn red" onclick="resetItems()">استرجاع المنتجات الأصلية</button>
 </div>
-<div class="bulk"><b>🔐 الرقم السري لاسترجاع الفواتير:</b>
-<input id="pinOld" type="password" placeholder="الحالي" style="width:110px">
-<input id="pinNew" type="password" placeholder="الجديد" style="width:110px">
-<button class="pbtn" onclick="changePin()">تغيير</button></div>
-<div class="bulk" style="display:block"><b>👥 الكاشيرية (كل كاشير له رقم سري ومبيعاته)</b>
-<div id="cashList" style="margin:8px 0"></div>
-<div style="display:flex;gap:6px;flex-wrap:wrap">
-<input id="newCName" placeholder="اسم الكاشير" style="width:150px">
-<input id="newCPin" type="password" placeholder="رقم سري (4+)" style="width:120px">
-<button class="pbtn" onclick="addCashier()">➕ إضافة كاشير</button></div></div>
+
 <div id="adminList"></div>
 <p style="color:#888;font-size:12px;margin-top:10px">التعديلات بتتحفظ تلقائياً في المتصفح ده فقط.</p>
 </div>
@@ -1205,6 +1237,11 @@ function saveRow(i,btn){
 function addItem(){items.unshift({name:"منتج جديد",price:10,cat:"بقالة",img:"📦",stock:20,min:5});norm();cart={};afterEdit()}
 function delItem(i){askPin(()=>{items.splice(i,1);cart={};afterEdit();toast('تم حذف المنتج')},'🔐 حذف المنتج — اكتب الرقم السري')}
 function resetItems(){askPin(()=>{items=JSON.parse(JSON.stringify(DEFAULT_ITEMS));norm();cart={};afterEdit();toast('تم استرجاع المنتجات')},'🔐 استرجاع المنتجات الأصلية — اكتب الرقم السري')}
+function toggleSec(){
+  const a=document.getElementById('sec');
+  if(a.classList.contains('open')){a.classList.remove('open');return}
+  askPin(()=>{a.classList.add('open');renderCashiers()},'🔐 الرقم السري والأمان — اكتب رقم المدير');
+}
 function toggleAdmin(){
   const a=document.getElementById('admin');
   if(a.classList.contains('open')){a.classList.remove('open');return}
@@ -1680,7 +1717,7 @@ function staffOff(){try{localStorage.removeItem('staff_v1')}catch(e){}location.r
 (function(){
   const h=location.hash;
   const on=()=>{try{localStorage.setItem('staff_v1','1')}catch(e){}location.reload()};
-  if(STAFF)document.querySelector('.topbar').classList.add('on');
+  if(STAFF){document.querySelector('.topbar').classList.add('on');document.body.classList.add('sb')}
   else if(h==='#staff'||h==='#cashier')setTimeout(()=>askPin(on,'🔐 دخول الموظفين — الرقم السري للمدير'),300);
   let _n=0,_t=0;
   document.querySelector('.logo-txt b span').addEventListener('click',()=>{
@@ -1691,7 +1728,7 @@ function staffOff(){try{localStorage.removeItem('staff_v1')}catch(e){}location.r
 })();
 try{document.getElementById('custName').value=localStorage.getItem('cust_name')||'';document.getElementById('custAddr').value=localStorage.getItem('cust_addr')||'';document.getElementById('custNote').value=localStorage.getItem('cust_note')||'';document.getElementById('custPhone').value=localStorage.getItem('cust_phone')||''}catch(e){}
 (function(){const tb=document.querySelector('.topbar'),hd=document.querySelector('header');
-function fit(){hd.style.top=tb.classList.contains('on')?tb.offsetHeight+'px':'0'}
+function fit(){hd.style.top='0'}
 fit();addEventListener('resize',fit);setTimeout(fit,400)})();
 
 /* ===== تثبيت كتطبيق (PWA) ===== */
