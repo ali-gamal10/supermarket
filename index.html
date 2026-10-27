@@ -461,10 +461,17 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <button class="pbtn" onclick="addItem()">➕ إضافة منتج</button>
 <button class="pbtn" style="background:#7c3aed" onclick="var b=document.getElementById('bulkAddBox');b.style.display=b.style.display==='block'?'none':'block'">📋 إضافة دفعة واحدة</button>
 <button class="pbtn" style="background:#0d9488" onclick="var b=document.getElementById('mvBox');b.style.display=b.style.display==='block'?'none':'block';mvRender()">🔀 نقل منتجات لقسم</button>
+<button class="pbtn" style="background:#c2410c" onclick="document.getElementById('phBox').style.display='block'">🖼️ رفع صور المنتجات دفعة واحدة</button>
 <button class="pbtn" style="background:#0a6cff" onclick="document.getElementById('bulkPhotos').click()">📷 رفع صور بالجملة</button>
 <input id="bulkPhotos" type="file" accept="image/*" multiple hidden onchange="bulkPhotos(this)">
 <button class="pbtn red" onclick="resetItems()">استرجاع المنتجات الأصلية</button>
 </div>
+<div id="phBox" class="bulk" style="display:none;background:#fff1e8;border-color:#f3b894">
+<b>🖼️ رفع صور المنتجات دفعة واحدة</b>
+<div style="font-size:12.5px;color:#456;margin:6px 0;line-height:1.9">1) سمّ كل صورة <b>باسم المنتج</b> بالضبط (مثال: <span dir="ltr">بيبسي زجاجة 1 لتر.jpg</span>) أو <b>برقم المنتج</b> (مثال: <span dir="ltr">25.jpg</span>).<br>2) اختر كل الصور مرة واحدة.<br>3) الصور تنضغط وتتحفظ وتنشر للزبائن لوحدها (يلزم تفعيل النشر بمفتاح GitHub من 🛠️ الإعدادات).</div>
+<button class="pbtn" style="background:#c2410c" onclick="document.getElementById('phFiles').click()">📁 اختيار الصور</button>
+<input id="phFiles" type="file" accept="image/*" multiple hidden onchange="phRun(this)">
+<div id="phRes" style="font-size:13px;line-height:1.9;margin-top:8px"></div></div>
 <div id="mvBox" class="bulk" style="display:none;background:#e8faf7;border-color:#8fd8cd">
 <b>🔀 نقل منتجات من قسم لقسم</b>
 <div style="font-size:12.5px;color:#456;margin:6px 0">1) اختر القسم الحالي  2) علّم المنتجات  3) اختر القسم الجديد واضغط نقل</div>
@@ -2535,6 +2542,32 @@ try{if(autoPrOn()){document.addEventListener('DOMContentLoaded',()=>{const c=doc
 
 /* ===== إضافة منتجات دفعة واحدة ===== */
 const BULK_IMG={شيبسي:'🍟',سناكس:'🍫',البان:'🥛',مشروبات:'🧃',بقالة:'🛒',لانشون:'🥪',خضار:'🥬'};
+/* رفع صور المنتجات دفعة واحدة إلى المستودع (img/) */
+function phNorm(x){return String(x).replace(/\.[a-z0-9]+$/i,'').replace(/[\s_\-]+/g,' ').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').trim().toLowerCase()}
+function phResize(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const m=320,k=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.78).split(',')[1])};im.onerror=()=>rej(new Error('img'));im.src=u})}
+async function phPut(cfg,path,b64){
+  const api='https://api.github.com/repos/'+cfg.repo+'/contents/'+path,h={'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json'};
+  for(let t=0;t<3;t++){
+    let sha;const g=await fetch(api+'?ref='+cfg.branch+'&t='+Date.now(),{headers:h});
+    if(g.ok)sha=(await g.json()).sha;else if(g.status!==404)return g.status;
+    const r=await fetch(api,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},h),body:JSON.stringify({message:'صورة منتج',content:b64,branch:cfg.branch,sha})});
+    if(r.ok)return 200;if(r.status!==409&&r.status!==422)return r.status}
+  return 409}
+async function phRun(inp){
+  const files=[...inp.files];inp.value='';const out=document.getElementById('phRes');
+  const cfg=ghCfg();if(!cfg){out.innerHTML='⚠️ فعّل النشر بمفتاح GitHub أولاً من 🛠️ الإعدادات.';return}
+  if(!files.length)return;
+  const byName={},byCode={};items.forEach(it=>{byName[phNorm(it.name)]=it;byCode[String(it.code)]=it});
+  const ok=[],miss=[],fail=[];
+  for(let n=0;n<files.length;n++){
+    const f=files[n],base=f.name.replace(/\.[a-z0-9]+$/i,'').trim(),it=byName[phNorm(f.name)]||byCode[base];
+    out.textContent='جاري الرفع '+(n+1)+' / '+files.length+' …';
+    if(!it){miss.push(f.name);continue}
+    try{const b64=await phResize(f),path='img/p'+it.code+'.jpg',st=await phPut(cfg,path,b64);
+      if(st===200){it.photo=path+'?v='+Date.now().toString(36);ok.push(it.name)}else fail.push(f.name+' ('+st+')')}catch(e){fail.push(f.name)}
+  }
+  if(ok.length){norm();afterEdit()}
+  out.innerHTML='✅ تم رفع <b>'+ok.length+'</b> صورة'+(miss.length?'<br>⚠️ ما لقيت منتج بنفس الاسم لـ '+miss.length+' صورة: '+miss.slice(0,12).join('، ')+(miss.length>12?' …':''):'')+(fail.length?'<br>❌ فشل رفع: '+fail.slice(0,8).join('، '):'')+(ok.length?'<br>تظهر للزبائن خلال دقائق.':'')}
 function mvRender(){const f=document.getElementById('mvFrom').value;
 document.getElementById('mvList').innerHTML=items.map((it,i)=>(!f||it.cat===f)?`<label style="display:block"><input type="checkbox" class="mvc" value="${i}"> ${it.img||''} ${it.name.replace(/</g,'&lt;')} <small style="color:#888">(${it.cat})</small></label>`:'').join('')||'لا توجد منتجات'}
 function mvAll(v){document.querySelectorAll('.mvc').forEach(c=>c.checked=v)}
