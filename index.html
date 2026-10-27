@@ -441,10 +441,18 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 </div>
 <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap">
 <button class="pbtn" onclick="addItem()">➕ إضافة منتج</button>
+<button class="pbtn" style="background:#7c3aed" onclick="var b=document.getElementById('bulkAddBox');b.style.display=b.style.display==='block'?'none':'block'">📋 إضافة دفعة واحدة</button>
 <button class="pbtn" style="background:#0a6cff" onclick="document.getElementById('bulkPhotos').click()">📷 رفع صور بالجملة</button>
 <input id="bulkPhotos" type="file" accept="image/*" multiple hidden onchange="bulkPhotos(this)">
 <button class="pbtn red" onclick="resetItems()">استرجاع المنتجات الأصلية</button>
 </div>
+<div id="bulkAddBox" class="bulk" style="display:none;background:#f5f0ff;border-color:#c9bdf0">
+<b>📋 إضافة منتجات دفعة واحدة</b>
+<div style="font-size:12.5px;color:#456;margin:6px 0;line-height:1.8">اكتب منتج في كل سطر بهذا الشكل (أو الصقه من Excel):<br><b>الاسم، السعر، التكلفة، المخزون</b> — التكلفة والمخزون اختياريين (المخزون الافتراضي 20).<br>مثال: <span style="direction:ltr;display:inline-block">شيبسي ملح 50 جم، 5، 4، 100</span></div>
+<select id="bulkCat" style="padding:7px;border:1px solid #ccc;border-radius:8px;margin-bottom:6px"><option value="سناكس">🍟 سناكس وحلويات</option><option value="بقالة">🛒 بقالة</option><option value="البان">🥛 ألبان وجبن</option><option value="مشروبات">🧃 مشروبات وعصائر</option><option value="لانشون">🥪 لانشون ومصنعات</option><option value="خضار">🥬 خضار وفاكهة</option></select>
+<textarea id="bulkTxt" rows="6" placeholder="شيبسي ملح 50 جم، 5، 4، 100&#10;كراتيه جبنة، 5، 3.5، 80" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;font-family:inherit"></textarea>
+<button class="pbtn" style="margin-top:6px" onclick="bulkAdd()">✅ إضافة المنتجات</button>
+<div id="bulkRes" style="font-size:13px;margin-top:6px"></div></div>
 
 <div id="adminList"></div>
 <p style="color:#888;font-size:12px;margin-top:10px">التعديلات بتتحفظ تلقائياً في المتصفح ده فقط.</p>
@@ -1810,9 +1818,8 @@ function secGo(t){document.getElementById('sec').classList.remove('open');docume
 /* استيراد التكلفة */
 const _ad=v=>String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/٫/g,'.').replace(/[٬\s]/g,'');
 function costRows(txt){
-  txt=String(txt).replace(/^﻿/,'');const L=txt.split(/\r?\n/).filter(l=>l.trim());if(!L.length)return[];
-  const dl=L[0].includes('\t')?'\t':(L[0].split(';').length>L[0].split(',').length?';':',');
-  return L.map(l=>{const c=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===dl&&!q){c.push(cur);cur=''}else cur+=ch}c.push(cur);return c.map(x=>x.trim())})}
+  txt=String(txt).replace(/،/g,',').replace(/^﻿/,'');const L=txt.split(/\r?\n/).filter(l=>l.trim());if(!L.length)return[];
+  return L.map(l=>{const dl=l.includes('\t')?'\t':(l.split(';').length>l.split(',').length?';':',');const c=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===dl&&!q){c.push(cur);cur=''}else cur+=ch}c.push(cur);return c.map(x=>x.trim())})}
 function costApply(txt){
   const res=document.getElementById('costRes');const R=costRows(txt);if(!R.length){toast('ما فيه بيانات');return}
   let ci=-1,ki=0,ni=-1;const h=R[0].map(x=>x.toLowerCase());
@@ -1899,6 +1906,29 @@ function cbRestore(){
 }
 if(STAFF){setTimeout(()=>autoBackup(),6000);setInterval(()=>autoBackup(),10*60*1000)}
 try{if(autoPrOn()){document.addEventListener('DOMContentLoaded',()=>{const c=document.getElementById('autoPr');if(c)c.checked=true});const c=document.getElementById('autoPr');if(c)c.checked=true}}catch(e){}
+
+
+/* ===== إضافة منتجات دفعة واحدة ===== */
+const BULK_IMG={سناكس:'🍟',البان:'🥛',مشروبات:'🧃',بقالة:'🛒',لانشون:'🥪',خضار:'🥬'};
+function bulkAdd(){
+  const R=costRows(document.getElementById('bulkTxt').value),cat=document.getElementById('bulkCat').value,res=document.getElementById('bulkRes');
+  if(!R.length){toast('اكتب المنتجات أولاً');return}
+  const have=new Set(items.map(i=>i.name.trim()));let ok=0;const skip=[],bad=[];
+  R.forEach((r,idx)=>{
+    const name=(r[0]||'').trim();if(!name)return;
+    const price=parseFloat(_ad(r[1]||''));
+    if(isNaN(price)||price<=0){if(idx>0)bad.push(name);return}
+    if(have.has(name)){skip.push(name);return}
+    const it={name,price,cat,img:BULK_IMG[cat]||'📦',stock:20,min:5};
+    const c=parseFloat(_ad(r[2]||''));if(!isNaN(c)&&c>=0)it.cost=c;
+    const st=parseInt(_ad(r[3]||''),10);if(!isNaN(st)&&st>=0)it.stock=st;
+    items.push(it);have.add(name);ok++;
+  });
+  if(ok){norm();cart={};afterEdit()}
+  res.innerHTML=(ok?'<span style="color:#0a8a43;font-weight:700">✅ تمت إضافة '+ok+' منتج</span>':'<span style="color:#e30613">لم تتم إضافة شيء</span>')
+    +(skip.length?'<br>⏭️ موجود مسبقاً (تخطيته): '+skip.join('، '):'')+(bad.length?'<br><span style="color:#e30613">⚠️ سعر غير صالح: '+bad.join('، ')+'</span>':'');
+  if(ok){document.getElementById('bulkTxt').value='';toast('تمت إضافة '+ok+' منتج ✅',2500)}
+}
 
 /* ===== تثبيت كتطبيق (PWA) ===== */
 let _ip=null;
