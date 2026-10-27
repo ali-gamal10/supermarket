@@ -502,6 +502,7 @@ header{padding:9px 20px;gap:14px}
 <div class="tab" data-t="inv" onclick="setTab('inv')">📦 المخزون</div>
 <div class="tab" data-t="trk" onclick="setTab('trk')">🚚 تتبع الطلبات</div>
 <div class="tab" data-t="ord" onclick="setTab('ord')">🧾 الطلبات</div>
+<div class="tab" data-t="prf" onclick="setTab('prf')">📈 تقرير الأرباح</div>
 <div class="tab" data-t="sal" onclick="setTab('sal')">💰 المبيعات</div>
 <div class="tab" data-t="cr" onclick="setTab('cr')">📒 الآجل</div>
 </div>
@@ -742,6 +743,7 @@ function renderDash(){
   const b=document.getElementById('dashBody');
   {const tk=document.querySelector('.tab[data-t="trk"]');if(tk){const n=orders.filter(o=>o.status&&o.status!=='done'&&!o.refunded).length;tk.textContent='🚚 تتبع الطلبات'+(n?' ('+n+')':'')}}
   if(tab==='trk'){b.innerHTML=trkHTML();return}
+  if(tab==='prf'){b.innerHTML=prfHTML();return}
   if(tab==='inv'){
     const low=items.filter(it=>it.stock<=it.min);
     const SV=stockValue();
@@ -1460,6 +1462,76 @@ function stockValue(){
   let c=0,v=0,n=0;
   items.forEach(it=>{if(it.cost==null){n++;return}const q=Math.max(+it.stock||0,0);c+=q*it.cost;v+=q*it.price});
   return {c:Math.round(c),v:Math.round(v),pf:Math.round(v-c),n};
+}
+
+/* ===== تقرير الأرباح (للمدير فقط) ===== */
+let prfP='week',prfFrom='',prfTo='';
+const PRF_L={today:'اليوم',week:'آخر 7 أيام',month:'آخر 30 يوم',all:'الكل',range:'فترة محددة'};
+function r2(x){return Math.round(x*100)/100}
+function prfRange(){
+  const n=new Date(),d0=new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime();
+  if(prfP==='today')return [d0,Infinity];
+  if(prfP==='week')return [d0-6*864e5,Infinity];
+  if(prfP==='month')return [d0-29*864e5,Infinity];
+  if(prfP==='range')return [prfFrom?new Date(prfFrom+'T00:00:00').getTime():0,prfTo?new Date(prfTo+'T23:59:59').getTime():Infinity];
+  return [0,Infinity];
+}
+function dayKey(t){const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function prfData(){
+  const [a,b]=prfRange();
+  const ol=orders.filter(o=>{if(o.refunded)return false;const t=new Date(o.time).getTime();return t>=a&&t<=b});
+  const prod={},day={};let rev=0,cost=0,pf=0,unk=0,revK=0;
+  ol.forEach(o=>{
+    const dd=day[dayKey(o.time)]=day[dayKey(o.time)]||{n:0,rev:0,pf:0};dd.n++;
+    o.lines.forEach(l=>{
+      const r=l.price*l.qty,c=lineCost(l);rev+=r;dd.rev+=r;
+      const pr=prod[l.name]=prod[l.name]||{q:0,rev:0,cost:0,pf:0,unk:0};pr.q+=l.qty;pr.rev+=r;
+      if(c==null){pr.unk+=r;unk+=r}
+      else{const cc=c*l.qty;pr.cost+=cc;pr.pf+=r-cc;cost+=cc;pf+=r-cc;revK+=r;dd.pf+=r-cc}
+    });
+  });
+  const rows=Object.entries(prod).map(([n,v])=>({n,...v,pct:v.rev-v.unk>0?r2(v.pf/(v.rev-v.unk)*100):null})).sort((x,y)=>y.pf-x.pf||y.rev-x.rev);
+  const days=Object.entries(day).sort((x,y)=>y[0].localeCompare(x[0]));
+  return {ol,rows,days,rev,cost,pf,unk,pct:revK>0?r2(pf/revK*100):0};
+}
+function setPrfP(k){prfP=k;renderDash()}
+function setPrfR(){prfFrom=document.getElementById('prfFrom').value;prfTo=document.getElementById('prfTo').value;prfP='range';renderDash()}
+function prfHTML(){
+  const D=prfData();
+  const f=k=>`<div class="tab ${prfP===k?'active':''}" onclick="setPrfP('${k}')">${PRF_L[k]}</div>`;
+  const st=(l,v,c)=>`<div class="stat"${c?` style="background:${c}"`:''}>${l}<b>${v}</b></div>`;
+  const th='style="padding:6px;border-bottom:2px solid #ddd;text-align:right;white-space:nowrap"',td='style="padding:6px;border-bottom:1px solid #eee;white-space:nowrap"';
+  const pc=v=>v==null?'—':v+'%',col=v=>v<0?'color:#e30613;font-weight:700':'';
+  const prodT=D.rows.length?`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13.5px"><tr><th ${th}>المنتج</th><th ${th}>الكمية</th><th ${th}>المبيعات</th><th ${th}>التكلفة</th><th ${th}>الربح</th><th ${th}>الهامش</th></tr>`+
+    D.rows.map(r=>`<tr><td ${td} style="padding:6px;border-bottom:1px solid #eee">${r.n}${r.unk>0?' <small style="color:#e68a00">(بدون تكلفة)</small>':''}</td><td ${td}>${r.q}</td><td ${td}>${r2(r.rev)}</td><td ${td}>${r.unk>0&&!r.cost?'—':r2(r.cost)}</td><td ${td} style="padding:6px;border-bottom:1px solid #eee;${col(r.pf)}">${r.unk>0&&!r.cost?'—':r2(r.pf)}</td><td ${td}>${pc(r.pct)}</td></tr>`).join('')+'</table></div>':'<p class="empty">لا توجد مبيعات في هذه الفترة</p>';
+  const dayT=D.days.length?`<table style="width:100%;border-collapse:collapse;font-size:13.5px"><tr><th ${th}>اليوم</th><th ${th}>الفواتير</th><th ${th}>المبيعات</th><th ${th}>الربح</th></tr>`+
+    D.days.map(([k,v])=>`<tr><td ${td}>${k}</td><td ${td}>${v.n}</td><td ${td}>${r2(v.rev)}</td><td ${td} style="padding:6px;border-bottom:1px solid #eee;${col(v.pf)}">${r2(v.pf)}</td></tr>`).join('')+'</table>':'';
+  return `<div class="tabs">${f('today')}${f('week')}${f('month')}${f('all')}</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0;font-size:13px"><span>أو فترة محددة: من</span><input id="prfFrom" type="date" value="${prfFrom}"><span>إلى</span><input id="prfTo" type="date" value="${prfTo}"><button class="pbtn" onclick="setPrfR()">عرض</button></div>
+  <div class="stats">${st('عدد الفواتير',D.ol.length)}${st('إجمالي المبيعات',r2(D.rev)+' ج.م')}${st('🏷️ إجمالي التكلفة',r2(D.cost)+' ج.م')}${st('💹 صافي الربح',r2(D.pf)+' ج.م','#e8f7ee')}${st('📈 هامش الربح',D.pct+'%','#e8f7ee')}${st('متوسط الفاتورة',D.ol.length?r2(D.rev/D.ol.length)+' ج.م':'—')}</div>
+  ${D.unk>0?`<div class="alert" style="margin-top:8px">ℹ️ مبيعات ${r2(D.unk)} ج.م بدون سعر تكلفة، ولم تدخل في حساب الربح. أدخل التكلفة من ⚙️ المنتجات.</div>`:''}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button class="pbtn" onclick="prfCsv()">⬇️ تنزيل Excel (CSV)</button><button class="pbtn gray" onclick="prfPrint()">🖨️ طباعة التقرير</button></div>
+  <h3 style="margin:10px 0 6px">📦 الأرباح حسب المنتج — ${PRF_L[prfP]}</h3>${prodT}
+  <h3 style="margin:14px 0 6px">📅 حسب اليوم</h3>${dayT}`;
+}
+function prfCsvText(){
+  const D=prfData(),q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const L=[['تقرير الأرباح — '+PRF_L[prfP]+(prfP==='range'?' ('+prfFrom+' → '+prfTo+')':'')],[],['المنتج','الكمية','المبيعات','التكلفة','الربح','الهامش %']];
+  D.rows.forEach(r=>L.push([r.n,r.q,r2(r.rev),r.unk>0&&!r.cost?'':r2(r.cost),r.unk>0&&!r.cost?'':r2(r.pf),r.pct==null?'':r.pct]));
+  L.push([],['الإجمالي','',r2(D.rev),r2(D.cost),r2(D.pf),D.pct],[],['اليوم','الفواتير','المبيعات','الربح']);
+  D.days.forEach(([k,v])=>L.push([k,v.n,r2(v.rev),r2(v.pf)]));
+  return '﻿'+L.map(r=>r.map(q).join(',')).join('\r\n');
+}
+function prfCsv(){
+  const b=new Blob([prfCsvText()],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='تقرير-الأرباح-'+dayKey(Date.now())+'.csv';
+  document.body.appendChild(a);a.click();a.remove();toast('تم تنزيل التقرير ✅',2500);
+}
+function prfPrint(){
+  const w=window.open('','_blank');if(!w){toast('اسمح بالنوافذ المنبثقة للطباعة',3500);return}
+  const D=prfData();
+  w.document.write('<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>تقرير الأرباح</title><style>body{font-family:Tahoma,Arial;padding:20px}table{border-collapse:collapse;width:100%;margin:10px 0}th,td{border:1px solid #ccc;padding:6px;text-align:right}h2,h3{margin:8px 0}</style></head><body><h2>سوبر ماركت — تقرير الأرباح ('+PRF_L[prfP]+')</h2><p>الفواتير: <b>'+D.ol.length+'</b> — المبيعات: <b>'+r2(D.rev)+'</b> ج.م — التكلفة: <b>'+r2(D.cost)+'</b> — الربح: <b>'+r2(D.pf)+'</b> ج.م — الهامش: <b>'+D.pct+'%</b></p><table><tr><th>المنتج</th><th>الكمية</th><th>المبيعات</th><th>التكلفة</th><th>الربح</th><th>الهامش</th></tr>'+D.rows.map(r=>'<tr><td>'+r.n+'</td><td>'+r.q+'</td><td>'+r2(r.rev)+'</td><td>'+(r.unk>0&&!r.cost?'—':r2(r.cost))+'</td><td>'+(r.unk>0&&!r.cost?'—':r2(r.pf))+'</td><td>'+(r.pct==null?'—':r.pct+'%')+'</td></tr>').join('')+'</table><h3>حسب اليوم</h3><table><tr><th>اليوم</th><th>الفواتير</th><th>المبيعات</th><th>الربح</th></tr>'+D.days.map(([k,v])=>'<tr><td>'+k+'</td><td>'+v.n+'</td><td>'+r2(v.rev)+'</td><td>'+r2(v.pf)+'</td></tr>').join('')+'</table></body></html>');
+  w.document.close();w.focus();setTimeout(()=>w.print(),400);
 }
 /* ===== نسخ احتياطي ===== */
 function bkDo(){
