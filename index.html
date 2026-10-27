@@ -1217,6 +1217,7 @@ function fixFruit(a){const O=['طماطم 1 كيلو','بطاطس 1 كيلو','�
 return a.filter(i=>!(i.cat==='خضار'&&O.includes(i.name))).map(i=>{if(i.cat==='خضار')i.cat=/عصير|مشروب|مياه|شراب|بيبسي|كولا|سفن|ميرندا|سبرايت|فانتا|شاي|ماء|مولت|برايم|بيريل|شويبس|جوز/.test(i.name)?'مشروبات':'بقالة';return i})}
 function norm(){
   fixCats(items);
+  items.forEach(i=>{if(!i.img||i.img==='📦'){const e=guessEmoji(i.name);if(e)i.img=e}});
   if(items.some(i=>i.cat==='خضار'))items=fixFruit(items);
   let mx=items.reduce((m,it)=>Math.max(m,+it.code||0),0);
   items.forEach(it=>{if(it.cat==='سناكس'&&/شيبس|كراتيه|كاراتيه/.test(it.name))it.cat='شيبسي';if(it.stock==null)it.stock=50;if(it.min==null)it.min=5;if(!it.code)it.code=String(++mx);if(it.barcode==null)it.barcode=''});
@@ -1494,27 +1495,23 @@ function packType(it){
   if(/جبنة|شوكولاتة|شاي|بيض|مكرونة/.test(n))return 'box';
   return 'bag';
 }
+function guessEmoji(n){
+  const R=[[/بيبسي|كولا|سفن|ميرندا|سبرايت|فانتا|شويبس|غازية/,'🥤'],[/طاقة|ريد بول|سبارك|فيجور/,'⚡'],[/مياه|ماء/,'💧'],[/عصير|شراب/,'🧃'],[/شاي/,'🍵'],[/قهوة|نسكافيه|كابتشينو/,'☕'],[/شيبس|بطاطس عيدان|بطاطس أصابع/,'🍟'],[/كراتيه|كاراتيه/,'🥨'],[/بوشار|بوب كورن|ذرة/,'🍿'],[/نودلز|اندومي|إندومي/,'🍜'],[/مكرونة|شعرية|فيرمشل|كسكسي/,'🍝'],[/أرز/,'🍚'],[/سكر|مصاصة|حلوى|سكاكر|لبان|علكة|جيلي|ملبن|مارشميلو/,'🍬'],[/عسل/,'🍯'],[/حلاوة|طحينة/,'🍯'],[/شوكولات|نوتيلا|كيت كات|جلكسي|سنيكرز|مارس|تويكس|كادبوري|كندر/,'🍫'],[/بسكويت|بسكوتي|كوكيز|ديجستيف|بيمبو|بقسماط|كعك|كحك|غريبة/,'🍪'],[/ويفر/,'🧇'],[/كرواسون/,'🥐'],[/دونات/,'🍩'],[/كيك|هوهوز|تودو|مولتو|بروونيز|كب كيك|جاتوه|سوفلية/,'🍰'],[/فول سوداني|سوداني|لب |فستق|بندق|كاجو|لوز|مكسرات/,'🥜'],[/زبيب|تمر|قراصيا|مشمش|تين/,'🌴'],[/جوز هند/,'🥥'],[/زيت|سمن|سمنة|زبدة/,'🫒'],[/لبن|حليب|قشطة|كريمة/,'🥛'],[/جبنة|جبن/,'🧀'],[/زبادي/,'🥣'],[/بيض/,'🥚'],[/لانشون|مرتديلا|بسطرمة/,'🥪'],[/عدس|فول|لوبيا|حمص|فاصوليا|بسلة|برغل|فريك|قمح|شوفان/,'🫘'],[/دقيق|نشا|خميرة|بيكنج/,'🌾'],[/ملح/,'🧂'],[/صلصة|كاتشب|طماطم/,'🍅'],[/مايونيز|خل/,'🥫'],[/مربى/,'🍓'],[/فلفل|شطة|كمون|كزبرة|كركم|قرفة|حبهان|قرنفل|بهارات|توابل|مرقة|لورا|زنجبيل|ينسون|حلبة|سمسم|نعناع|كركديه|عرقسوس|شبت|زعتر|ريحان/,'🌿'],[/صابون|شامبو|معجون|فرشاة|مزيل/,'🧼'],[/مسحوق|منظف|مبيض|معطر/,'🧴'],[/مناديل|فوط|حفاضات/,'🧻'],[/شفرات/,'🪒'],[/بيتزا|فطيرة|سندوتش/,'🍕'],[/بسبوسة|قطايف|كنافة|بقلاوة|زلابية|مشبك|لقيمات|مولد/,'🍯']];
+  for(const [r,e] of R)if(r.test(n))return e;return null}
+const PK_TINT={'بقالة':32,'البان':210,'مشروبات':195,'لانشون':350,'سناكس':280,'شيبسي':42};
 function pack(it){
-  const t=packType(it);if(!t)return null;
+  if(it.cat==='خضار')return null;
   const key=it.name+'|'+it.img+'|'+it.cat;if(PK_CACHE[key])return PK_CACHE[key];
-  const base={'بقالة':32,'البان':215,'مشروبات':20,'لانشون':355,'سناكس':275,'شيبسي':45}[it.cat]||150;
+  const base=PK_TINT[it.cat]!=null?PK_TINT[it.cat]:150;
   let hs=0;for(const ch of it.name)hs=(hs*31+ch.charCodeAt(0))%997;
-  const h=(base+(hs%40)-20+360)%360;
-  const c1='hsl('+h+' 72% 46%)',c2='hsl('+h+' 78% 33%)',tint='hsl('+h+' 70% 95%)';
-  const w=it.name.split(' ').filter(x=>!/\d/.test(x));
-  let nm=w.slice(0,3).join(' ');if(nm.length>14)nm=w.slice(0,2).join(' ');if(!nm)nm=it.name;
+  const h=(base+(hs%24)-12+360)%360;
+  const sz=(it.name.match(/(\d+(?:\.\d+)?\s*(?:مل|لتر|جم|كيلو|كيس|قطعة|قطع|بيضة)|صغير|كبير)/)||[])[1]||'';
   const esc=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const fs=nm.length>12?10.5:nm.length>9?11.5:13;
-  const txt=(y,sz,fill,wt,v)=>'<text x="100" y="'+y+'" font-size="'+sz+'" fill="'+fill+'" font-weight="'+wt+'" text-anchor="middle" font-family="Cairo,Tahoma,Arial,sans-serif">'+esc(v)+'</text>';
-  const lab=(x,y,wd,ht,by,ey,ny)=>'<rect x="'+x+'" y="'+y+'" width="'+wd+'" height="'+ht+'" rx="12" fill="#fff"/>'+txt(by,8.5,c2,700,'سوبر ماركت')+txt(ey,28,'#000',400,it.img)+txt(ny,fs,'#222',700,nm);
-  let b='';
-  if(t==='bag')b='<path d="M52 28h96l9 146q0 8-8 8H51q-8 0-8-8z" fill="'+c1+'"/><rect x="52" y="28" width="96" height="14" fill="'+c2+'"/><rect x="58" y="46" width="9" height="126" fill="#fff" opacity=".18"/>'+lab(60,78,80,84,92,122,148);
-  else if(t==='cup')b='<defs><clipPath id="k"><path d="M58 60h84l-12 116q-1 6-8 6H78q-7 0-8-6z"/></clipPath></defs><path d="M58 60h84l-12 116q-1 6-8 6H78q-7 0-8-6z" fill="#fff" stroke="#e5e7eb"/><g clip-path="url(#k)"><rect x="50" y="94" width="100" height="64" fill="'+c1+'"/></g><rect x="52" y="48" width="96" height="15" rx="7" fill="'+c2+'"/>'+txt(84,8.5,c2,700,'سوبر ماركت')+txt(130,26,'#000',400,it.img)+txt(150,fs,'#fff',700,nm);
-  else if(t==='carton')b='<rect x="118" y="14" width="6" height="40" rx="3" fill="#ef4444"/><path d="M62 64 L100 36 L138 64z" fill="'+c2+'"/><rect x="62" y="62" width="76" height="118" rx="5" fill="'+c1+'"/>'+lab(70,88,60,74,102,128,150);
-  else if(t==='bottle')b='<rect x="88" y="16" width="24" height="15" rx="3" fill="'+c2+'"/><rect x="90" y="30" width="20" height="26" fill="'+c1+'"/><path d="M90 56Q60 66 60 96V170q0 12 12 12h56q12 0 12-12V96Q140 66 110 56z" fill="'+c1+'"/>'+lab(64,98,72,64,110,134,152);
-  else if(t==='box')b='<rect x="44" y="50" width="112" height="124" rx="12" fill="'+c1+'"/><rect x="44" y="50" width="112" height="24" rx="12" fill="'+c2+'"/>'+lab(56,84,88,80,98,128,152);
-  else b='<rect x="20" y="96" width="10" height="30" fill="#9ca3af"/><rect x="170" y="96" width="10" height="30" fill="#9ca3af"/><rect x="26" y="74" width="148" height="74" rx="37" fill="'+c1+'"/>'+lab(60,82,80,58,95,120,136);
-  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="26" fill="'+tint+'"/><ellipse cx="100" cy="184" rx="56" ry="7" fill="#000" opacity=".12"/>'+b+'</svg>';
+  const emo=(it.img&&it.img!=='📦'?it.img:guessEmoji(it.name))||'🛒';
+  const emo2=emo==='🍘'?'🥨':emo;
+  const chip=sz?'<rect x="'+(100-sz.length*5.2-14)+'" y="164" width="'+(sz.length*10.4+28)+'" height="28" rx="14" fill="hsl('+h+' 62% 38%)"/><text x="100" y="184" font-size="15" fill="#fff" font-weight="700" text-anchor="middle" font-family="Cairo,Tahoma,Arial,sans-serif">'+esc(sz)+'</text>':'';
+  const cy=sz?84:98;
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl('+h+' 85% 96%)"/><stop offset="1" stop-color="hsl('+h+' 75% 88%)"/></linearGradient></defs><rect width="200" height="200" rx="26" fill="url(#g)"/><circle cx="100" cy="'+cy+'" r="76" fill="#fff" opacity=".72"/><text x="100" y="'+(cy+33)+'" font-size="96" text-anchor="middle" font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif">'+esc(emo2)+'</text>'+chip+'</svg>';
   return PK_CACHE[key]='data:image/svg+xml;utf8,'+encodeURIComponent(svg);
 }
 function ph(it,small){
