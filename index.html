@@ -444,10 +444,20 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap">
 <button class="pbtn" onclick="addItem()">➕ إضافة منتج</button>
 <button class="pbtn" style="background:#7c3aed" onclick="var b=document.getElementById('bulkAddBox');b.style.display=b.style.display==='block'?'none':'block'">📋 إضافة دفعة واحدة</button>
+<button class="pbtn" style="background:#0d9488" onclick="var b=document.getElementById('mvBox');b.style.display=b.style.display==='block'?'none':'block';mvRender()">🔀 نقل منتجات لقسم</button>
 <button class="pbtn" style="background:#0a6cff" onclick="document.getElementById('bulkPhotos').click()">📷 رفع صور بالجملة</button>
 <input id="bulkPhotos" type="file" accept="image/*" multiple hidden onchange="bulkPhotos(this)">
 <button class="pbtn red" onclick="resetItems()">استرجاع المنتجات الأصلية</button>
 </div>
+<div id="mvBox" class="bulk" style="display:none;background:#e8faf7;border-color:#8fd8cd">
+<b>🔀 نقل منتجات من قسم لقسم</b>
+<div style="font-size:12.5px;color:#456;margin:6px 0">1) اختر القسم الحالي  2) علّم المنتجات  3) اختر القسم الجديد واضغط نقل</div>
+<select id="mvFrom" onchange="mvRender()" style="padding:7px;border:1px solid #ccc;border-radius:8px"><option value="">كل الأقسام</option><option value="شيبسي">🍟 شيبسي وكراتيه</option><option value="سناكس">🍫 سناكس وحلويات</option><option value="بقالة">🛒 بقالة</option><option value="البان">🥛 ألبان</option><option value="مشروبات">🧃 مشروبات</option><option value="لانشون">🥪 لانشون</option><option value="خضار">🥬 خضار</option></select>
+<div style="margin:6px 0"><button class="pbtn gray" style="padding:4px 10px;font-size:12px" onclick="mvAll(true)">تحديد الكل</button> <button class="pbtn gray" style="padding:4px 10px;font-size:12px" onclick="mvAll(false)">إلغاء التحديد</button></div>
+<div id="mvList" style="max-height:260px;overflow:auto;background:#fff;border:1px solid #ccc;border-radius:8px;padding:6px;line-height:2"></div>
+<div style="margin-top:6px">انقل إلى: <select id="mvTo" style="padding:7px;border:1px solid #ccc;border-radius:8px"><option value="شيبسي">🍟 شيبسي وكراتيه</option><option value="سناكس">🍫 سناكس وحلويات</option><option value="بقالة">🛒 بقالة</option><option value="البان">🥛 ألبان</option><option value="مشروبات">🧃 مشروبات</option><option value="لانشون">🥪 لانشون</option><option value="خضار">🥬 خضار</option></select>
+<button class="pbtn" style="background:#0d9488" onclick="mvDo()">✅ نقل المحدد</button></div>
+<div id="mvRes" style="font-size:13px;margin-top:6px"></div></div>
 <div id="bulkAddBox" class="bulk" style="display:none;background:#f5f0ff;border-color:#c9bdf0">
 <b>📋 إضافة منتجات دفعة واحدة</b>
 <div style="font-size:12.5px;color:#456;margin:6px 0;line-height:1.8">اكتب منتج في كل سطر بهذا الشكل (أو الصقه من Excel):<br><b>الاسم، السعر، التكلفة، المخزون</b> — التكلفة والمخزون اختياريين (المخزون الافتراضي 20).<br>مثال: <span style="direction:ltr;display:inline-block">شيبسي ملح 50 جم، 5، 4، 100</span></div>
@@ -1978,6 +1988,12 @@ try{if(autoPrOn()){document.addEventListener('DOMContentLoaded',()=>{const c=doc
 
 /* ===== إضافة منتجات دفعة واحدة ===== */
 const BULK_IMG={شيبسي:'🍟',سناكس:'🍫',البان:'🥛',مشروبات:'🧃',بقالة:'🛒',لانشون:'🥪',خضار:'🥬'};
+function mvRender(){const f=document.getElementById('mvFrom').value;
+document.getElementById('mvList').innerHTML=items.map((it,i)=>(!f||it.cat===f)?`<label style="display:block"><input type="checkbox" class="mvc" value="${i}"> ${it.img||''} ${it.name.replace(/</g,'&lt;')} <small style="color:#888">(${it.cat})</small></label>`:'').join('')||'لا توجد منتجات'}
+function mvAll(v){document.querySelectorAll('.mvc').forEach(c=>c.checked=v)}
+function mvDo(){const to=document.getElementById('mvTo').value,ids=[...document.querySelectorAll('.mvc:checked')].map(c=>+c.value);
+if(!ids.length){document.getElementById('mvRes').textContent='علّم منتج واحد على الأقل';return}
+askPin(()=>{ids.forEach(i=>{items[i].cat=to});norm();afterEdit();mvRender();document.getElementById('mvRes').textContent='✅ تم نقل '+ids.length+' منتج'})}
 function bulkAdd(){
   const R=costRows(document.getElementById('bulkTxt').value),cat=document.getElementById('bulkCat').value,res=document.getElementById('bulkRes');
   if(!R.length){toast('اكتب المنتجات أولاً');return}
