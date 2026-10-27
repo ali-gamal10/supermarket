@@ -631,7 +631,7 @@ function commitOrder(src,extra){
     const it=items[i],q=cart[i];total+=it.price*q;
     it.stock=Math.max(0,it.stock-q);
     if(it.stock<=it.min)lowNow.push(it.stock<=0?it.name+' (خلص)':it.name+' (باقي '+it.stock+')');
-    return {name:it.name,qty:q,price:it.price,code:it.code};
+    return {name:it.name,qty:q,price:it.price,code:it.code,cost:it.cost};
   });
   const o={id:Date.now(),no:nextNo(),time:new Date().toISOString(),src,lines,total};
   if(src==='cashier'&&curCashier){o.cashier=curCashier.name;o.cid=curCashier.id}
@@ -687,7 +687,7 @@ function trkAdd(){
   const ta=document.getElementById('trkTxt'),o=parseOrderMsg(ta.value);
   if(!o){toast('ما قدرت أقرأ الرسالة — الصق رسالة الطلب كاملة من واتساب',4000);return}
   if(o.ext&&orders.some(x=>String(x.ext)===o.ext)){toast('هذا الطلب مضاف من قبل',3000);return}
-  const lines=o.lines.map(l=>{const it=items.find(x=>x.name===l.name);if(it)it.stock=Math.max(0,it.stock-l.qty);const r={name:l.name,qty:l.qty,price:l.price};if(it)r.code=it.code;return r});
+  const lines=o.lines.map(l=>{const it=items.find(x=>x.name===l.name);if(it)it.stock=Math.max(0,it.stock-l.qty);const r={name:l.name,qty:l.qty,price:l.price};if(it){r.code=it.code;if(it.cost!=null)r.cost=it.cost}return r});
   orders.push({id:Date.now(),no:nextNo(),time:new Date().toISOString(),src:'online',lines,total:o.total,customer:o.name,addr:o.addr,note:o.note,phone:o.phone,ext:o.ext,status:'new'});
   saveOrders();saveItems();ta.value='';render();updateBadge();renderDash();toast('تمت إضافة الطلب ✅ وخصمنا المخزون',3500);
 }
@@ -744,7 +744,8 @@ function renderDash(){
   if(tab==='trk'){b.innerHTML=trkHTML();return}
   if(tab==='inv'){
     const low=items.filter(it=>it.stock<=it.min);
-    b.innerHTML=(low.length?`<div class="alert">⚠️ ${low.length} منتج وصل لحد التنبيه أو خلص: ${low.map(i=>i.name).join('، ')}</div>`:'')+
+    const SV=stockValue();
+    b.innerHTML=`<div class="stats"><div class="stat">💰 قيمة المخزون (بالتكلفة)<b>${SV.c} ج.م</b></div><div class="stat">🏷️ قيمته بسعر البيع<b>${SV.v} ج.م</b></div><div class="stat" style="background:#e8f7ee">💹 ربح متوقع<b>${SV.pf} ج.م</b></div></div>`+(SV.n?`<div class="alert">ℹ️ ${SV.n} منتج بدون سعر تكلفة (لم يدخل في الحساب). أدخلها من ⚙️ المنتجات.</div>`:'')+(low.length?`<div class="alert">⚠️ ${low.length} منتج وصل لحد التنبيه أو خلص: ${low.map(i=>i.name).join('، ')}</div>`:'')+
     items.map((it,i)=>{
       const st=it.stock<=0?['نفد','#e30613']:it.stock<=it.min?['منخفض','#e68a00']:['متوفر','#0a8a43'];
       return `<div class="arow"><span style="font-size:24px">${ph(it,1)}</span><span class="n">${it.name} <small style="color:#888">#${it.code}</small></span>
@@ -770,7 +771,12 @@ function renderDash(){
     const cT={};today.forEach(o=>o.lines.forEach(l=>cT[l.name]=(cT[l.name]||0)+l.qty));const topT=Object.entries(cT).sort((a,c)=>c[1]-a[1]).slice(0,5);
     const cs={};ol.filter(o=>o.src==='cashier').forEach(o=>{const n=o.cashier||'بدون اسم';const c=cs[n]=cs[n]||{n:0,t:0,d:0};c.n++;c.t+=o.total;if(day(o.time)===day(Date.now()))c.d+=o.total});
     const cashTable='<h3 style="margin-bottom:8px">👥 مبيعات كل كاشير</h3>'+(Object.keys(cs).length?Object.entries(cs).map(([k,v])=>`<div class="row"><span>👤 ${k}</span><span>اليوم: <b>${v.d} ج.م</b></span><span>الإجمالي: <b>${v.t} ج.م</b> (${v.n} فاتورة)</span></div>`).join(''):'<p class="empty" style="padding:10px">لا توجد مبيعات كاشير بعد</p>')+'<div style="height:14px"></div>';
+    const PT=calcProfit(today),PA=calcProfit(ol);
+    const profTbl='<h3 style="margin:12px 0 8px">💹 أعلى المنتجات ربحاً (الإجمالي)</h3>'+(PA.top.length?PA.top.map(t=>`<div class="row"><span>${t[0]}</span><b>${Math.round(t[1])} ج.م</b></div>`).join(''):'<p class="empty" style="margin-bottom:10px">أدخل سعر التكلفة للمنتجات (⚙️ المنتجات) لتظهر الأرباح</p>');
     b.innerHTML=`<div class="stats">
+      <div class="stat" style="background:#e8f7ee">💹 ربح اليوم<b>${PT.pf} ج.م</b></div>
+      <div class="stat" style="background:#e8f7ee">💹 إجمالي الربح<b>${PA.pf} ج.م</b></div>
+      <div class="stat" style="background:#e8f7ee">📈 هامش الربح<b>${PA.pct}%</b></div>
       <div class="stat">مبيعات اليوم<b>${sum(today)} ج.م</b></div>
       <div class="stat">طلبات اليوم<b>${today.length}</b></div>
       <div class="stat">إجمالي المبيعات<b>${sum(ol)} ج.م</b></div>
@@ -778,7 +784,7 @@ function renderDash(){
       <div class="stat">🏪 مبيعات المتجر<b>${sum(ol.filter(o=>o.src==='cashier'))} ج.م</b></div>
       <div class="stat">🌐 مبيعات أونلاين<b>${sum(ol.filter(o=>o.src!=='cashier'))} ج.م</b></div>
       <div class="stat">📒 ديون على العملاء<b>${customers.reduce((t,c)=>t+Math.max(0,custBal(c.id)),0)} ج.م</b></div></div>
-      ${cashTable}<h3 style="margin-bottom:8px">📅 الأكثر مبيعاً اليوم</h3>${topT.length?topT.map(t=>`<div class="row"><span>${t[0]}</span><b>${t[1]} قطعة</b></div>`).join(''):'<p class="empty" style="margin-bottom:10px">لا مبيعات اليوم بعد</p>'}<h3 style="margin:14px 0 8px">🏆 الأكثر مبيعاً (الكل)</h3>`+
+      ${PA.unk>0?`<div class="alert" style="margin-top:8px">ℹ️ الأرباح محسوبة على المنتجات اللي لها سعر تكلفة فقط. مبيعات ${Math.round(PA.unk)} ج.م بدون تكلفة لم تدخل في الحساب.</div>`:''}${profTbl}${cashTable}<h3 style="margin-bottom:8px">📅 الأكثر مبيعاً اليوم</h3>${topT.length?topT.map(t=>`<div class="row"><span>${t[0]}</span><b>${t[1]} قطعة</b></div>`).join(''):'<p class="empty" style="margin-bottom:10px">لا مبيعات اليوم بعد</p>'}<h3 style="margin:14px 0 8px">🏆 الأكثر مبيعاً (الكل)</h3>`+
       (top.length?top.map(t=>`<div class="row"><span>${t[0]}</span><b>${t[1]} قطعة</b></div>`).join(''):'<p class="empty">لا توجد مبيعات بعد</p>');
   }
 }
@@ -1185,12 +1191,14 @@ function saveRow(i,btn){
   const base=Math.max(0,+g('base')||0),d=Math.min(95,Math.max(0,+g('disc')||0));
   if(d>0){it.old=base;it.d=d;it.price=Math.round(base*(1-d/100))}
   else{it.price=base;delete it.old;delete it.d}
+  const cv=g('cost').trim();
+  if(cv==='')delete it.cost;else it.cost=Math.max(0,+cv||0);
   const od=Math.min(95,Math.max(0,+g('od')||0)),of=g('of'),ot=g('ot');
   if(od>0&&of&&ot){
     if(ot<of){toast('تاريخ نهاية العرض قبل بدايته',3500);return}
     it.offer={d:od,from:of,to:ot};
   }else delete it.offer;
-  afterEdit();toast('تم حفظ '+it.name+' ✅'+(it.offer?' (عرض مجدول)':''));
+  afterEdit();toast('تم حفظ '+it.name+' ✅'+(it.offer?' (عرض مجدول)':'')+(it.cost!=null&&it.price<it.cost?' — ⚠️ السعر أقل من التكلفة!':''),it.cost!=null&&it.price<it.cost?5000:undefined);
 }
 function addItem(){items.unshift({name:"منتج جديد",price:10,cat:"بقالة",img:"📦",stock:20,min:5});norm();cart={};afterEdit()}
 function delItem(i){askPin(()=>{items.splice(i,1);cart={};afterEdit();toast('تم حذف المنتج')},'🔐 حذف المنتج — اكتب الرقم السري')}
@@ -1214,7 +1222,8 @@ function renderAdmin0(){
     <div><label>السعر قبل الخصم</label><input class="p" type="number" min="0" value="${rv(it).old||rv(it).price}" data-f="base"></div>
     <div><label>خصم %</label><input class="p" type="number" min="0" max="95" value="${rv(it).old?(rv(it).d||Math.round((1-rv(it).price/rv(it).old)*100)):0}" data-f="disc"></div>
     <div style="background:#fff3e0;border:1px dashed #f0b45a;border-radius:8px;padding:3px 6px"><label>🗓 عرض مجدول: خصم %</label><input class="p" type="number" min="0" max="95" value="${it.offer?it.offer.d:''}" data-f="od" style="width:60px"><label>من</label><input type="date" value="${it.offer?it.offer.from:''}" data-f="of" style="width:130px;font-size:12px"><label>إلى</label><input type="date" value="${it.offer?it.offer.to:''}" data-f="ot" style="width:130px;font-size:12px">${it.offOn?'<div style="color:#c25b00;font-size:11px">✅ العرض شغّال الآن</div>':''}</div>
-    <div class="fin">${it.price} ج.م</div>
+    <div><label>🏷️ سعر التكلفة</label><input class="p" type="number" min="0" step="0.01" value="${it.cost!=null?it.cost:''}" data-f="cost" placeholder="—"></div>
+    <div class="fin">${it.price} ج.م${marginHTML(it)}</div>
     <button class="pbtn" onclick="saveRow(${i},this)">💾 حفظ</button>
     <button class="pbtn red" onclick="delItem(${i})">حذف</button>
   </div>`).join('');
@@ -1309,7 +1318,7 @@ async function publishGH(auto){
   _ghBusy=true;const btn=document.getElementById('ghBtn');if(btn){btn.disabled=true;btn.textContent='جاري النشر…'}
   try{
     markHot();
-    const cat=items.map(it=>{const o=Object.assign({},it);delete o.ord;return o});
+    const cat=items.map(it=>{const o=Object.assign({},it);delete o.ord;delete o.cost;return o});
     const content=b64utf8(JSON.stringify(cat));
     const api='https://api.github.com/repos/'+cfg.repo+'/contents/catalog.json';
     const h={'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json'};
@@ -1336,7 +1345,7 @@ async function publishCatalog(auto){
   if(!art){toast('النشر غير متاح هنا. افتح الصفحة المنشورة بحساب المالك',4000);return}
   const btn=document.getElementById('pubBtn');
   if(btn){btn.disabled=true;btn.textContent='جاري النشر…'}
-  markHot();const cat=items.map(it=>{const o=Object.assign({},it);delete o.ord;return o});
+  markHot();const cat=items.map(it=>{const o=Object.assign({},it);delete o.ord;delete o.cost;return o});
   const catJson=JSON.stringify(cat).replace(/</g,'\\u003c');
   const fonts='<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">';
   const reset=':root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}';
@@ -1426,6 +1435,32 @@ function seedDb(){
   askPin(()=>{for(const k in lastSync)lastSync[k]={};dbItemsEmpty=false;pushAll();renderSync();toast('تم رفع بيانات هذا الجهاز للمزامنة ✅',3000)},'🔐 رفع بيانات هذا الجهاز — الرقم السري');
 }
 
+
+/* ===== التكلفة والأرباح ===== */
+function marginHTML(it){
+  if(it.cost==null)return '<div style="font-size:11px;color:#999">بدون تكلفة</div>';
+  const pr=Math.round((it.price-it.cost)*100)/100,pc=it.price>0?Math.round(pr/it.price*100):0;
+  return '<div style="font-size:11.5px;color:'+(pr<0?'#e30613':pr===0?'#e68a00':'#0a8a43')+'">ربح '+pr+' ج ('+pc+'%)</div>';
+}
+function lineCost(l){
+  if(l.cost!=null)return l.cost;
+  const it=items.find(x=>(l.code!=null&&x.code===l.code)||x.name===l.name);
+  return it&&it.cost!=null?it.cost:null;
+}
+function calcProfit(list){
+  let rev=0,revK=0,pf=0,unk=0;const byP={};
+  list.forEach(o=>o.lines.forEach(l=>{
+    const r=l.price*l.qty;rev+=r;const c=lineCost(l);
+    if(c==null){unk+=r;return}
+    revK+=r;const g=(l.price-c)*l.qty;pf+=g;byP[l.name]=(byP[l.name]||0)+g;
+  }));
+  return {rev,revK,pf:Math.round(pf*100)/100,unk,pct:revK>0?Math.round(pf/revK*1000)/10:0,top:Object.entries(byP).sort((a,b)=>b[1]-a[1]).slice(0,5)};
+}
+function stockValue(){
+  let c=0,v=0,n=0;
+  items.forEach(it=>{if(it.cost==null){n++;return}const q=Math.max(+it.stock||0,0);c+=q*it.cost;v+=q*it.price});
+  return {c:Math.round(c),v:Math.round(v),pf:Math.round(v-c),n};
+}
 /* ===== نسخ احتياطي ===== */
 function bkDo(){
   const d={app:'supermarket',v:1,at:new Date().toISOString(),items,orders,customers,payments,cashiers,pin:PIN};
@@ -1520,7 +1555,7 @@ function importIncoming(id,d){
   if(!d||!Array.isArray(d.lines)||!d.lines.length)return;
   const ext=String(d.ext||id);
   if(orders.some(x=>String(x.ext)===ext)){try{DB&&DB.doc('incoming/'+id).delete()}catch(e){}return}
-  const lines=d.lines.map(l=>{const it=items.find(x=>x.name===l.name);if(it)it.stock=Math.max(0,(+it.stock||0)-(+l.qty||0));const r={name:l.name,qty:+l.qty||1,price:+l.price||0};if(it)r.code=it.code;return r});
+  const lines=d.lines.map(l=>{const it=items.find(x=>x.name===l.name);if(it)it.stock=Math.max(0,(+it.stock||0)-(+l.qty||0));const r={name:l.name,qty:+l.qty||1,price:+l.price||0};if(it){r.code=it.code;if(it.cost!=null)r.cost=it.cost}return r});
   const total=+d.total||lines.reduce((a,l)=>a+l.price*l.qty,0);
   orders.push({id:+ext||Date.now(),no:nextNo(),time:d.time||new Date().toISOString(),src:'online',lines,total,customer:d.name||'',addr:d.addr||'',note:d.note||'',phone:d.phone||'',ext,status:'new'});
   saveOrders();saveItems();
