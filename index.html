@@ -315,7 +315,12 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <div id="prodBox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeProd()">
 <div style="background:#fff;border-radius:22px 22px 0 0;padding:16px;width:100%;max-width:480px;max-height:92vh;overflow:auto" id="prodIn"></div></div>
 <div id="dealBar" style="display:none;margin:8px 12px;padding:11px 14px;border-radius:14px;background:linear-gradient(90deg,#fff3bf,#ffe08a);border:1px solid #f0c24b;color:#5b3b00;font-weight:800;font-size:15px;text-align:center"></div>
-<div id="listCta" style="margin:8px 12px"><button type="button" onclick="listOpen()" style="width:100%;padding:12px;border:2px dashed #16a34a;background:#f0fdf4;color:#166534;border-radius:14px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer">✍️ اكتب قائمتك وإحنا نجهزها لك</button></div>
+<div id="listCta" style="margin:8px 12px;display:flex;gap:8px"><button type="button" onclick="trkOpen()" style="flex:0 0 36%;padding:12px 6px;border:2px solid #0a6cff;background:#eef4ff;color:#0a4fb8;border-radius:14px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer">📦 تتبع طلبي</button><button type="button" onclick="listOpen()" style="flex:1;padding:12px;border:2px dashed #16a34a;background:#f0fdf4;color:#166534;border-radius:14px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer">✍️ اكتب قائمتك وإحنا نجهزها لك</button></div>
+<div id="trkBox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90;align-items:center;justify-content:center;padding:14px" onclick="if(event.target===this)trkClose()">
+<div style="background:#fff;border-radius:18px;padding:16px;width:100%;max-width:420px;max-height:90vh;overflow:auto">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="font-size:18px">📦 تتبع طلبي</b><button type="button" onclick="trkClose()" style="border:0;background:#eee;border-radius:10px;padding:6px 12px;font-family:inherit;cursor:pointer">✖</button></div>
+<div style="display:flex;gap:6px;margin-bottom:10px"><input id="trkQ" inputmode="numeric" placeholder="رقم الطلب (اختياري)" style="flex:1;padding:10px 12px;border:1px solid #d1d5db;border-radius:12px;font-family:inherit;direction:ltr;text-align:right"><button type="button" onclick="trkLookup()" style="padding:10px 16px;border:0;border-radius:12px;background:#0a6cff;color:#fff;font-weight:800;font-family:inherit;cursor:pointer">بحث</button></div>
+<div id="trkOut"></div></div></div>
 <div id="listBox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90;align-items:center;justify-content:center;padding:14px">
 <div style="background:#fff;border-radius:18px;padding:16px;width:100%;max-width:420px;max-height:92vh;overflow:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:18px">✍️ اكتب قائمتك</b><button type="button" onclick="listClose()" style="border:0;background:#eee;border-radius:10px;padding:6px 12px;font-family:inherit;cursor:pointer">✖</button></div>
@@ -399,6 +404,12 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <li>رقم المدير يُحفظ على هذا الجهاز ويتزامن مع باقي الأجهزة إذا كانت المزامنة مفعّلة.</li>
 <li>لا تشارك الأرقام السرية مع أحد.</li></ul></div>
 </div></div>
+<div id="camBox" style="display:none;position:fixed;inset:0;background:#000;z-index:95;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px">
+<div style="color:#fff;font-weight:800;font-size:16px">📷 وجّه الكاميرا للباركود</div>
+<video id="camV" playsinline muted style="width:100%;max-width:420px;border-radius:14px;background:#111"></video>
+<div id="camR" style="width:100%;max-width:420px"></div>
+<div id="camMsg" style="color:#a3e635;font-size:14px;min-height:22px;text-align:center"></div>
+<button type="button" class="pbtn red" onclick="camStop()">✖ إغلاق</button></div>
 <div id="stg">
 <div class="adm-top"><h2>🛠️ الإعدادات</h2><button class="pbtn red" onclick="toggleStg()">✖ إغلاق</button></div>
 <div class="sec-in">
@@ -525,6 +536,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <div class="pos-left">
 <div class="pos-filters">
 <input id="posQ" type="search" placeholder="🔍 ابحث بالاسم أو رقم المنتج، أو امسح الباركود..." oninput="renderPosGrid()" onkeydown="if(event.key==='Enter')posScan(this)">
+<button type="button" class="pbtn" style="background:#0d9488;margin-top:6px" onclick="camScan()">📷 مسح باركود بالكاميرا</button>
 <select id="posCat" onchange="renderPosGrid()">
 <option value="all">كل الأقسام</option>
 
@@ -1323,7 +1335,7 @@ function checkout(){
   try{localStorage.setItem('cust_name',nm);localStorage.setItem('cust_addr',addr);localStorage.setItem('cust_note',note0);localStorage.setItem('cust_phone',phone)}catch(e){}
   const o=commitOrder('online',{customer:nm,addr,note,phone});
   if(!o)return;
-  fbSend(o);
+  fbSend(o);myOrdersAdd(o.id);
   const lines=o.lines.map(l=>'• '+l.name+' × '+l.qty+' = '+(l.price*l.qty)+' ج.م');
   const msg='مرحباً بكم في متجر سوبر ماركت 🛒\nطلب رقم '+o.no+':\nالاسم: '+o.customer+'\nالعنوان: '+o.addr+(o.note?'\nملاحظات: '+o.note:'')+(o.phone?'\nالجوال: '+o.phone:'')+'\n'+lines.join('\n')+'\n\nالإجمالي: '+o.total+' ج.م\n🔖 '+o.id;
   return 'https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(msg);
@@ -1384,7 +1396,7 @@ function trkSet(id,st,silent){
     if(ph.length<10){toast('رقم الجوال غير صحيح',3000);return}
   }
   o.status=st;(o.hist=o.hist||[]).push({s:st,t:Date.now()});
-  saveOrders();renderDash();
+  saveOrders();renderDash();pubStatus();
   if(!silent&&st!=='new')window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(trkMsg(o,st)),'_blank');
 }
 function setTrkF(f){trkF=f;renderDash()}
@@ -2582,6 +2594,61 @@ function openProd(i){
   (sim.length?'<div style="margin-top:16px;font-weight:800">أصناف مشابهة</div><div style="display:flex;gap:8px;overflow-x:auto;padding:8px 0">'+sim.map(o=>'<div onclick="openProd('+o.k+')" style="min-width:96px;text-align:center;font-size:12px;cursor:pointer"><div style="width:84px;height:84px;margin:0 auto">'+ph(o.x).replace('<img','<img style="width:84px;height:84px;object-fit:contain;border-radius:12px"')+'</div><div style="height:32px;overflow:hidden;margin-top:4px">'+o.x.name.replace(/</g,'&lt;')+'</div><b style="color:#15803d">'+o.x.price+' ج.م</b></div>').join('')+'</div>':'');
   document.getElementById('prodBox').style.display='flex'}
 function closeProd(){document.getElementById('prodBox').style.display='none'}
+/* مسح الباركود بالكاميرا (للكاشير) */
+let _cam={on:false,last:'',at:0,stream:null,timer:null,h5:null};
+function camHit(code){
+  code=String(code||'').trim();if(!code)return;
+  const now=Date.now();if(code===_cam.last&&now-_cam.at<2000)return;_cam.last=code;_cam.at=now;
+  const i=items.findIndex(it=>String(it.barcode||'')===code||String(it.code)===code);
+  const m=document.getElementById('camMsg');
+  if(i<0){m.textContent='⚠️ الباركود '+code+' غير مسجل لأي منتج';try{beep(2)}catch(e){}return}
+  if(items[i].stock<=0){m.textContent='⛔ '+items[i].name+' — نفد المخزون';return}
+  add(i);m.textContent='✅ أُضيف: '+items[i].name;try{beep(1)}catch(e){}}
+async function camScan(){
+  const box=document.getElementById('camBox');box.style.display='flex';_cam.on=true;_cam.last='';
+  const msg=document.getElementById('camMsg');msg.textContent='جاري تشغيل الكاميرا…';
+  try{
+    if('BarcodeDetector' in window){
+      const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code']});
+      _cam.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      const v=document.getElementById('camV');v.style.display='block';v.srcObject=_cam.stream;await v.play();msg.textContent='جاهز — اعرض الباركود';
+      _cam.timer=setInterval(async()=>{try{const r=await det.detect(v);if(r&&r[0])camHit(r[0].rawValue)}catch(e){}},350);
+    }else{
+      document.getElementById('camV').style.display='none';
+      if(!window.Html5Qrcode)await new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';sc.onload=ok;sc.onerror=no;document.head.appendChild(sc)});
+      _cam.h5=new Html5Qrcode('camR');
+      await _cam.h5.start({facingMode:'environment'},{fps:10,qrbox:{width:260,height:140}},t=>camHit(t),()=>{});msg.textContent='جاهز — اعرض الباركود';
+    }
+  }catch(e){msg.textContent='تعذر تشغيل الكاميرا — اسمح للمتصفح باستخدامها، أو اكتب الباركود في خانة البحث'}
+}
+function camStop(){
+  _cam.on=false;clearInterval(_cam.timer);
+  if(_cam.stream){_cam.stream.getTracks().forEach(t=>t.stop());_cam.stream=null}
+  if(_cam.h5){try{_cam.h5.stop().then(()=>_cam.h5.clear()).catch(()=>{})}catch(e){}_cam.h5=null}
+  document.getElementById('camBox').style.display='none';updateCart();try{renderPosGrid()}catch(e){}}
+/* تتبع الطلب للزبون */
+const TRK_TXT={new:'⏳ تم إرسال طلبك — بانتظار تأكيد المتجر',prep:'🧑‍🍳 جاري تجهيز طلبك',out:'🚚 طلبك في الطريق إليك',done:'✅ تم تسليم طلبك — بالهنا والشفا',cancel:'❌ تم إلغاء الطلب'};
+function myOrdersAdd(id){try{const a=JSON.parse(localStorage.getItem('my_orders')||'[]');a.unshift({id:String(id),t:Date.now()});localStorage.setItem('my_orders',JSON.stringify(a.slice(0,8)))}catch(e){}}
+function trkOpen(){document.getElementById('trkBox').style.display='flex';trkLookup()}
+function trkClose(){document.getElementById('trkBox').style.display='none'}
+async function trkLookup(){
+  const out=document.getElementById('trkOut');out.textContent='جاري التحميل…';
+  let a=[];try{a=JSON.parse(localStorage.getItem('my_orders')||'[]')}catch(e){}
+  const q=document.getElementById('trkQ').value.trim().replace(/\D/g,'');
+  if(q&&!a.some(x=>x.id===q))a.unshift({id:q,t:Date.now()});
+  let map=null;const g=u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
+  map=await g('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/status.json?t='+Math.floor(Date.now()/6e4));if(!map)map=await g('status.json?t='+Date.now());map=map||{};
+  if(!a.length){out.innerHTML='<div style="color:#666">ما عندك طلبات محفوظة على هذا الجهاز. اكتب رقم طلبك (الرقم بعد 🔖 في رسالة الواتساب).</div>';return}
+  out.innerHTML=a.map(x=>{const st=(map[x.id]&&map[x.id].s)||'new';return '<div style="border:1px solid #d1d5db;border-radius:12px;padding:10px 12px;margin-bottom:8px"><div style="font-size:12px;color:#777">طلب 🔖 '+x.id+(x.t?' · '+new Date(x.t).toLocaleString('ar-EG'):'')+'</div><div style="font-weight:800;margin-top:4px">'+(TRK_TXT[st]||TRK_TXT.new)+'</div></div>'}).join('')+'<div style="font-size:12px;color:#777">الحالة تتحدث خلال دقائق من تغييرها في المتجر.</div>'}
+let _stT=null;
+function pubStatus(){
+  if(!STAFF)return;clearTimeout(_stT);
+  _stT=setTimeout(async()=>{
+    const cfg=ghCfg();if(!cfg)return;
+    const m={},lim=Date.now()-3*864e5;
+    orders.forEach(o=>{if(o.src!=='online')return;const k=String(o.ext||o.id),t=+o.id||0;if(t&&t<lim)return;const st=o.refunded?'cancel':(o.status||'new');m[k]={s:st}});
+    try{await phPut(cfg,'status.json',b64utf8(JSON.stringify(m)),'تحديث حالات الطلبات')}catch(e){}
+  },20000)}
 /* اكتب قائمتك + عرض اليوم */
 function listOpen(){
   try{document.getElementById('lName').value=localStorage.getItem('cust_name')||'';document.getElementById('lAddr').value=localStorage.getItem('cust_addr')||'';document.getElementById('lPhone').value=localStorage.getItem('cust_phone')||''}catch(e){}
@@ -2594,7 +2661,7 @@ function listSend(a){
   if(!ad){toast('اكتب العنوان أو رقم البيت 📍');return false}
   try{localStorage.setItem('cust_name',nm);localStorage.setItem('cust_addr',ad);localStorage.setItem('cust_phone',ph)}catch(e){}
   const id=Date.now(),o={id,customer:nm,addr:ad,note:'طلب بقائمة مكتوبة (بدون أسعار)'+(sl?' — ⏰ التوصيل '+sl:''),phone:ph,total:0,time:new Date().toISOString(),lines:t.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,40).map(x=>({name:x.slice(0,100),qty:1,price:0}))};
-  try{fbSend(o)}catch(e){}
+  try{fbSend(o)}catch(e){}myOrdersAdd(id);
   const msg='مرحباً بكم في متجر سوبر ماركت 🛒\nطلب بقائمة مكتوبة:\nالاسم: '+nm+'\nالعنوان: '+ad+(ph?'\nالجوال: '+ph:'')+(sl?'\n⏰ وقت التوصيل: '+sl:'')+'\n\nالقائمة:\n'+t+'\n\n🔖 '+id;
   a.href='https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(msg);
   document.getElementById('lText').value='';listClose();toast('تم تجهيز رسالتك ✅ أرسلها على واتساب');return true}
