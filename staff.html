@@ -1351,10 +1351,11 @@ function ghSave(){
   const old=ghCfg();const tk=token||(old&&old.token);
   if(!tk){toast('الصق مفتاح GitHub',3000);return}
   try{localStorage.setItem('gh_cfg',JSON.stringify({repo,token:tk,branch:'main'}))}catch(e){toast('تعذر الحفظ');return}
-  document.getElementById('ghTok').value='';ghState();toast('تم حفظ إعدادات النشر ✅');
+  document.getElementById('ghTok').value='';ghState();ghCloud(1);toast('تم حفظ إعدادات النشر ✅ (ثابتة لكل أجهزتك)');
 }
 function ghState(){const el=document.getElementById('ghState'),c=ghCfg();if(!el)return;el.textContent=c?'✅ مفعّل: '+c.repo:'غير مفعّل';if(c)document.getElementById('ghRepo').value=c.repo}
-function ghOff(){try{localStorage.removeItem('gh_cfg')}catch(e){}ghState();toast('تم إيقاف النشر التلقائي')}
+function ghCloud(up){try{if(!DB)return;const c=ghCfg();if(up&&c)DB.doc('config/gh').set({repo:c.repo,token:c.token,branch:c.branch||'main'}).catch(()=>{});else if(!up)DB.doc('config/gh').delete().catch(()=>{})}catch(e){}}
+function ghOff(){try{localStorage.removeItem('gh_cfg')}catch(e){}ghCloud(0);ghState();toast('تم إيقاف النشر التلقائي')}
 function b64utf8(s){const by=new TextEncoder().encode(s);let bin='';for(let i=0;i<by.length;i+=0x8000)bin+=String.fromCharCode.apply(null,by.subarray(i,i+0x8000));return btoa(bin)}
 let _ghBusy=false,_ghAgain=false;
 async function publishGH(auto){
@@ -1468,6 +1469,7 @@ async function connectDb(){
   const done=c=>{need.delete(c);if(!need.size&&!DB){DB=db;dbState='on';renderSync();incomingListen()}};
   const err=e=>{dbState=(e&&e.code==='revoked')?'off':'err';renderSync()};
   for(const col of ['items','orders','customers','payments','cashiers'])db.collection(col).onSnapshot(s=>{onCol(col,s);done(col)},err);
+  db.doc('config/gh').onSnapshot(s=>{try{const d=s.exists?s.data():null;if(d&&d.repo&&d.token){const o=ghCfg();if(!o||o.token!==d.token||o.repo!==d.repo){localStorage.setItem('gh_cfg',JSON.stringify({repo:d.repo,token:d.token,branch:d.branch||'main'}));ghState()}}else if(!d&&ghCfg()){const c=ghCfg();db.doc('config/gh').set({repo:c.repo,token:c.token,branch:c.branch||'main'}).catch(()=>{})}}catch(e){}},()=>{});
   db.doc('config/main').onSnapshot(s=>{const d=s.exists?s.data():null;if(d&&d.pin){PIN=d.pin;lastSync.config.main=cstr({pin:PIN})}done('config')},err);
 }
 function renderSync(){
