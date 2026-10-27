@@ -540,9 +540,9 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <div class="pos-top"><b>💵 كاشير <small id="posWho" style="font-weight:normal;font-size:13px"></small></b><span style="display:flex;gap:8px"><button class="pbtn" style="background:#8a4b00" onclick="openCredit()">📒 الآجل</button><button class="pbtn red" onclick="openReturns()">↩️ استرجاع فاتورة</button><button class="pbtn gray" onclick="togglePos()">خروج ✕</button></span></div>
 <div class="pos-wrap">
 <div class="pos-left">
+<button type="button" class="pbtn" style="background:#0d9488;width:100%;padding:12px;font-size:16px;margin-bottom:8px" onclick="camScan()">📷 مسح باركود بالكاميرا</button>
 <div class="pos-filters">
 <input id="posQ" type="search" placeholder="🔍 ابحث بالاسم أو رقم المنتج، أو امسح الباركود..." oninput="renderPosGrid()" onkeydown="if(event.key==='Enter')posScan(this)">
-<button type="button" class="pbtn" style="background:#0d9488;margin-top:6px" onclick="camScan()">📷 مسح باركود بالكاميرا</button>
 <select id="posCat" onchange="renderPosGrid()">
 <option value="all">كل الأقسام</option>
 
