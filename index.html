@@ -349,7 +349,8 @@ header{padding:9px 20px;gap:14px}
 <input id="fbEmail" placeholder="إيميل حساب الموظفين" style="width:210px;direction:ltr">
 <input id="fbPass" type="password" placeholder="كلمة سر الحساب" style="width:160px;direction:ltr">
 <button class="pbtn" style="background:#5b3fd6" onclick="fbLogin()">🔗 ربط هذا الجهاز</button>
-<button class="pbtn gray" onclick="fbOff()">فصل</button></div></div></div>
+<button class="pbtn gray" onclick="fbOff()">فصل</button></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px"><button class="pbtn" style="background:#d9366b" onclick="notifyPerm()">🔔 تفعيل إشعارات الطلبات + تجربة الصوت</button><span id="notifState" style="font-size:12.5px;color:#456"></span></div></div></div>
 <div class="bulk">
 <b>خصم جماعي:</b>
 <select id="bulkCat">
@@ -1199,7 +1200,7 @@ function toggleAdmin(){
   if(a.classList.contains('open')){a.classList.remove('open');return}
   askPin(()=>{a.classList.add('open');renderAdmin()},'🔐 دخول المدير — اكتب الرقم السري');
 }
-function renderAdmin(){initSch();renderAdmin0();renderCashiers();renderSync();bkState()}
+function renderAdmin(){initSch();renderAdmin0();renderCashiers();renderSync();bkState();notifState()}
 function renderAdmin0(){
   document.getElementById('adminList').innerHTML=items.map((it,i)=>`
   <div class="arow">
@@ -1472,7 +1473,48 @@ function fbSend(o){
   try{fetch('https://firestore.googleapis.com/v1/projects/'+c.projectId+'/databases/(default)/documents/incoming?documentId='+encodeURIComponent(o.id)+'&key='+encodeURIComponent(c.apiKey),
     {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),keepalive:true}).catch(()=>{})}catch(e){}
 }
-function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.value=.15;o.start();setTimeout(()=>{o.stop();a.close()},350)}catch(e){}}
+let _ac=null;
+function acInit(){try{_ac=_ac||new (window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume()}catch(e){}}
+function beep(n){
+  n=n||1;acInit();if(!_ac)return;
+  try{for(let i=0;i<n;i++){const o=_ac.createOscillator(),g=_ac.createGain();o.connect(g);g.connect(_ac.destination);
+    o.frequency.value=i%2?660:880;g.gain.value=.3;const t=_ac.currentTime+i*.45;o.start(t);o.stop(t+.3)}}catch(e){}
+}
+if(STAFF)addEventListener('pointerdown',acInit,{once:true});
+function osNotify(t,b){
+  try{
+    if(!('Notification' in window)||Notification.permission!=='granted')return;
+    const o={body:b,icon:'icon-192.png',badge:'icon-192.png',tag:'order',renotify:true,vibrate:[300,150,300]};
+    const fb=()=>{try{new Notification(t,o)}catch(e){}};
+    if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(r=>r?r.showNotification(t,o):fb()).catch(fb);
+    else fb();
+  }catch(e){}
+}
+let _flash=null;
+function flashTitle(msg){
+  if(!document.hidden)return;
+  const base=document.title.replace(/^🔔 /,'');clearInterval(_flash);let on=0;
+  _flash=setInterval(()=>{document.title=(on=!on)?'🔔 '+msg:base},900);
+  const stop=()=>{if(!document.hidden){clearInterval(_flash);document.title=base;document.removeEventListener('visibilitychange',stop)}};
+  document.addEventListener('visibilitychange',stop);
+}
+function notifyNew(name,total){
+  beep(3);try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}
+  osNotify('🔔 طلب جديد — سوبر ماركت',(name||'زبون')+' — '+total+' ج.م');
+  flashTitle('طلب جديد');
+  toast('🔔 طلب جديد من '+(name||'زبون')+' — '+total+' ج.م',8000);
+}
+function notifyPerm(){
+  acInit();beep(1);
+  if(!('Notification' in window)){toast('هذا المتصفح لا يدعم الإشعارات. الصوت والتنبيه داخل الصفحة يعملان',5000);return}
+  if(Notification.permission==='denied'){toast('الإشعارات محظورة: افعّلها من إعدادات الموقع (🔒 بجانب الرابط)',6000);notifState();return}
+  Notification.requestPermission().then(p=>{toast(p==='granted'?'تم تفعيل الإشعارات ✅':'لم يتم السماح بالإشعارات',3500);notifState();if(p==='granted')osNotify('🔔 جرّبنا الإشعار','لو ظهرت لك هذه الرسالة فالإشعارات شغالة')})
+}
+function notifState(){
+  const el=document.getElementById('notifState');if(!el)return;
+  const p=('Notification' in window)?Notification.permission:'none';
+  el.textContent=p==='granted'?'✅ الإشعارات مفعّلة (تعمل والصفحة أو التطبيق مفتوح ولو بالخلفية)':p==='denied'?'⛔ محظورة من المتصفح':p==='none'?'غير مدعومة':'غير مفعّلة بعد';
+}
 /* استلام الطلبات تلقائياً عند الموظفين */
 function importIncoming(id,d){
   if(!d||!Array.isArray(d.lines)||!d.lines.length)return;
@@ -1485,7 +1527,7 @@ function importIncoming(id,d){
   try{DB.doc('incoming/'+id).delete()}catch(e){}
   render();updateBadge();
   if(document.getElementById('dash').classList.contains('open'))renderDash();
-  beep();toast('🔔 طلب جديد من '+(d.name||'زبون')+' — '+total+' ج.م',7000);
+  notifyNew(d.name,total);
 }
 function incomingListen(){
   try{DB.collection('incoming').onSnapshot(s=>{s.docs.forEach(d=>importIncoming(d.id,d.data()))},()=>{})}catch(e){}
