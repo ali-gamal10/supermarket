@@ -250,6 +250,8 @@ header{padding:9px 20px;gap:14px}
 @media(max-width:600px){.hotb{font-size:10px;top:2px;left:2px}}
 
 /* ===== شريط الموظفين العمودي (يمين) ===== */
+#stg{position:fixed;inset:0;background:#fff;z-index:41;overflow:auto;display:none;padding:15px}
+#stg.open{display:block}
 #sec{position:fixed;inset:0;background:#fff;z-index:41;overflow:auto;display:none;padding:15px}
 #sec.open{display:block}
 .sec-in{max-width:640px;margin:0 auto}
@@ -261,14 +263,14 @@ header{padding:9px 20px;gap:14px}
 .topbar.on .tb-out{margin-top:auto !important;background:rgba(239,68,68,.35)}
 .topbar.on .lowbadge{top:3px;left:3px}
 body.sb{padding-right:84px}
-body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:84px}
+body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:84px}
 @media(max-width:600px){
 .topbar.on{width:58px;padding:8px 3px}
 .topbar.on .tb-label{display:none}
 .topbar.on .adm-btn{font-size:9.5px;padding:7px 1px;border-radius:10px}
 .topbar.on .adm-btn i{font-size:18px}
 body.sb{padding-right:58px}
-body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
+body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 .topbar.on .adm-btn.warn::after{content:"!";position:absolute;top:3px;left:3px;background:#ef4444;color:#fff;border-radius:50%;width:17px;height:17px;line-height:17px;font-size:12px;font-weight:800}
 .cls-t{width:100%;border-collapse:collapse;font-size:13.5px}.cls-t th{padding:7px;border-bottom:2px solid #ddd;text-align:right;white-space:nowrap}.cls-t td{padding:7px;border-bottom:1px solid #eee;white-space:nowrap}.cls-t tfoot td{font-weight:800;background:#f3f4f6}
 </style>
@@ -284,6 +286,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 <button class="adm-btn" title="المخزون والمبيعات" onclick="toggleDash()" style="position:relative"><i>📊</i><span>المخزون</span><span id="lowBadge" class="lowbadge" style="display:none"></span></button>
 <button class="adm-btn" title="إدارة المنتجات" onclick="toggleAdmin()"><i>⚙️</i><span>المنتجات</span></button>
 <button class="adm-btn" title="الرقم السري والأمان" onclick="toggleSec()"><i>🔐</i><span>الرقم السري</span></button>
+<button class="adm-btn" title="الإعدادات" onclick="toggleStg()"><i>🛠️</i><span>الإعدادات</span></button>
 <button class="adm-btn" title="شاشة الزبائن" onclick="location.href='./'"><i>🏪</i><span>المتجر</span></button>
 <button class="adm-btn tb-out" title="قفل اللوحة" onclick="staffOff()"><i>🔒</i><span>قفل</span></button>
 </div>
@@ -379,15 +382,18 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 <li>رقم المدير يُحفظ على هذا الجهاز ويتزامن مع باقي الأجهزة إذا كانت المزامنة مفعّلة.</li>
 <li>لا تشارك الأرقام السرية مع أحد.</li></ul></div>
 </div></div>
-<div id="admin">
-<div class="adm-top">
-<h2>⚙️ إدارة المنتجات والخصومات</h2>
-<button class="pbtn gray" onclick="toggleAdmin()">إغلاق ✕</button>
-</div>
-<div class="bulk" style="background:#e8f7ee;border-color:#9ad8b3">
-<button id="pubBtn" class="pbtn" style="padding:10px 18px;font-size:15px" onclick="askPin(publishCatalog,'🔐 نشر التعديلات للزبائن — الرقم السري')">🌐 نشر التعديلات للزبائن</button>
-<span style="font-size:13px;color:#2d5a3f">المنتجات والأسعار والخصومات والصور بتوصل للزبائن بعد النشر (الزبون يعمل تحديث للصفحة). المخزون والفواتير والآجل مش بتتنشر.</span>
-</div>
+<div id="stg">
+<div class="adm-top"><h2>🛠️ الإعدادات</h2><button class="pbtn red" onclick="toggleStg()">✖ إغلاق</button></div>
+<div class="sec-in">
+<div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🔗 روابط المتجر</b>
+<div style="font-size:12.5px;color:#456;margin:6px 0">رابط الزبائن يُرسل للناس. رابط المدير لك فقط ولا تشاركه.</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><span style="min-width:90px">🛒 الزبائن:</span><input id="lnkCust" readonly style="flex:1;min-width:200px;direction:ltr;font-size:12px"><button class="pbtn" onclick="stgCopy('lnkCust')">نسخ</button></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><span style="min-width:90px">🔐 المدير:</span><input id="lnkStaff" readonly style="flex:1;min-width:200px;direction:ltr;font-size:12px"><button class="pbtn" onclick="stgCopy('lnkStaff')">نسخ</button></div>
+<div style="font-size:13px;color:#374151">📱 واتساب الطلبات: <b id="stgWa" dir="ltr"></b></div></div>
+<div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🧾 الطباعة</b>
+<label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:14px;color:#374151"><input type="checkbox" id="autoPr2" onchange="try{localStorage.setItem('auto_print',this.checked?'1':'')}catch(e){};var c=document.getElementById('autoPr');if(c)c.checked=this.checked"> 🖨️ اطبع الفاتورة تلقائياً بعد كل بيع (على هذا الجهاز)</label></div>
+<div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🔐 الأمان</b>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="pbtn" onclick="stgGo('sec')">🔑 تغيير الرقم السري</button><button class="pbtn" onclick="stgGo('sec')">👥 الكاشيرية</button><button class="pbtn gray" onclick="stgGo('admin')">⚙️ إدارة المنتجات</button></div></div>
 <div class="bulk" style="display:block;background:#eef4ff;border-color:#b6ccf5">
 <b>🔗 النشر التلقائي للزبائن (GitHub)</b> <span id="ghState" style="font-size:13px;color:#2d5a3f"></span>
 <div style="font-size:12.5px;color:#456;margin:6px 0">بعد التفعيل، أي تعديل على المنتجات والأسعار والخصومات يظهر للزبائن لوحده خلال 5 دقائق تقريباً تقريباً.</div>
@@ -420,6 +426,16 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 <button class="pbtn" style="background:#5b3fd6" onclick="fbLogin()">🔗 ربط هذا الجهاز</button>
 <button class="pbtn gray" onclick="fbOff()">فصل</button></div>
 <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px"><button class="pbtn" style="background:#d9366b" onclick="notifyPerm()">🔔 تفعيل إشعارات الطلبات + تجربة الصوت</button><span id="notifState" style="font-size:12.5px;color:#456"></span></div></div></div>
+</div></div>
+<div id="admin">
+<div class="adm-top">
+<h2>⚙️ إدارة المنتجات والخصومات</h2>
+<button class="pbtn gray" onclick="toggleAdmin()">إغلاق ✕</button>
+</div>
+<div class="bulk" style="background:#e8f7ee;border-color:#9ad8b3">
+<button id="pubBtn" class="pbtn" style="padding:10px 18px;font-size:15px" onclick="askPin(publishCatalog,'🔐 نشر التعديلات للزبائن — الرقم السري')">🌐 نشر التعديلات للزبائن</button>
+<span style="font-size:13px;color:#2d5a3f">المنتجات والأسعار والخصومات والصور بتوصل للزبائن بعد النشر (الزبون يعمل تحديث للصفحة). المخزون والفواتير والآجل مش بتتنشر.</span>
+</div>
 <div class="bulk">
 <b>خصم جماعي:</b>
 <select id="bulkCat">
@@ -1842,6 +1858,20 @@ function saveRow(i,btn){
 function addItem(){items.unshift({name:"منتج جديد",price:10,cat:"بقالة",img:"📦",stock:20,min:5});norm();cart={};afterEdit()}
 function delItem(i){askPin(()=>{items.splice(i,1);cart={};afterEdit();toast('تم حذف المنتج')},'🔐 حذف المنتج — اكتب الرقم السري')}
 function resetItems(){askPin(()=>{items=JSON.parse(JSON.stringify(DEFAULT_ITEMS));norm();cart={};afterEdit();toast('تم استرجاع المنتجات')},'🔐 استرجاع المنتجات الأصلية — اكتب الرقم السري')}
+function toggleStg(){
+  const a=document.getElementById('stg');
+  if(a.classList.contains('open')){a.classList.remove('open');return}
+  askPin(()=>{a.classList.add('open');stgInit()},'🔐 الإعدادات — اكتب رقم المدير');
+}
+function stgInit(){
+  try{const base=location.href.replace(/[#?].*$/,'').replace(/[^\/]*$/,'');
+  document.getElementById('lnkCust').value=base;document.getElementById('lnkStaff').value=base+'staff.html';
+  document.getElementById('stgWa').textContent='0'+String(WHATSAPP).replace(/^20/,'');
+  document.getElementById('autoPr2').checked=autoPrOn()}catch(e){}
+  try{ghState();renderSync();bkState();notifState();cbRefresh()}catch(e){}
+}
+function stgCopy(id){const el=document.getElementById(id);el.select();try{navigator.clipboard.writeText(el.value)}catch(e){document.execCommand('copy')}toast('تم النسخ ✅')}
+function stgGo(w){document.getElementById('stg').classList.remove('open');if(w==='sec')toggleSec();else toggleAdmin()}
 function toggleSec(){
   const a=document.getElementById('sec');
   if(a.classList.contains('open')){a.classList.remove('open');return}
