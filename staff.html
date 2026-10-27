@@ -818,12 +818,14 @@ try{
     setTimeout(()=>{try{autoPub()}catch(e){}},3000);
   }
 }catch(e){}
-try{const n0=items.length;items=items.filter(i=>i.cat!=='خضار');if(items.length!==n0&&STAFF){localStorage.setItem('items_v1',JSON.stringify(items));setTimeout(()=>{try{autoPub()}catch(e){}},3000)}}catch(e){}
+try{const n0=JSON.stringify(items);items=fixFruit(items);if(JSON.stringify(items)!==n0&&STAFF){localStorage.setItem('items_v1',JSON.stringify(items));setTimeout(()=>{try{autoPub()}catch(e){}},3000)}}catch(e){}
 let cat="all",cart={};
 
 /* ===== المخزون والطلبات والمبيعات ===== */
+function fixFruit(a){const O=['طماطم 1 كيلو','بطاطس 1 كيلو','خيار 1 كيلو','موز 1 كيلو','برتقال 1 كيلو'];
+return a.filter(i=>!(i.cat==='خضار'&&O.includes(i.name))).map(i=>{if(i.cat==='خضار')i.cat=/عصير|مشروب|مياه|شراب|بيبسي|كولا|سفن|ميرندا|سبرايت|فانتا|شاي|ماء|مولت|برايم|بيريل|شويبس|جوز/.test(i.name)?'مشروبات':'بقالة';return i})}
 function norm(){
-  if(items.some(i=>i.cat==='خضار'))items=items.filter(i=>i.cat!=='خضار');
+  if(items.some(i=>i.cat==='خضار'))items=fixFruit(items);
   let mx=items.reduce((m,it)=>Math.max(m,+it.code||0),0);
   items.forEach(it=>{if(it.cat==='سناكس'&&/شيبس|كراتيه|كاراتيه/.test(it.name))it.cat='شيبسي';if(it.stock==null)it.stock=50;if(it.min==null)it.min=5;if(!it.code)it.code=String(++mx);if(it.barcode==null)it.barcode=''});
   applyOffers();
@@ -1668,7 +1670,7 @@ function onCol(col,snap){
     arr.sort((a,b)=>(a.ord||0)-(b.ord||0));arr.forEach(x=>delete x.ord);
     const by={};Object.keys(cart).forEach(i=>{if(items[i])by[items[i].code]=cart[i]});
     items=arr;
-    try{if(STAFF&&arr.some(x=>x.cat==='خضار'))setTimeout(()=>{try{items=items.filter(i=>i.cat!=='خضار');saveItems();pushAll();autoPub();render();renderAdmin()}catch(e){}},1500)}catch(e){}
+    try{if(STAFF&&arr.some(x=>x.cat==='خضار'))setTimeout(()=>{try{items=fixFruit(items);saveItems();pushAll();autoPub();render();renderAdmin()}catch(e){}},1500)}catch(e){}
     try{if(STAFF&&!localStorage.getItem('seed_cloud1')){[].concat(NEW_V3,NEW_V4).forEach(n=>{if(!items.some(i=>i.name===n.name))items.push({name:n.name,price:n.price,cat:n.cat,img:n.img,stock:20,min:5})});localStorage.setItem('seed_cloud1','1');setTimeout(()=>{try{saveItems();pushAll();autoPub()}catch(e){}},1500)}}catch(e){}
     norm();
     cart={};items.forEach((it,i)=>{const q=Math.min(by[it.code]||0,Math.max(+it.stock||0,0));if(q>0)cart[i]=q});
