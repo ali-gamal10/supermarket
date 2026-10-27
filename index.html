@@ -587,7 +587,7 @@ const NEW_V2=[
 ];
 DEFAULT_ITEMS.push(...NEW_V2);
 /* الزبون يشوف الكتالوج المنشور مع الصفحة دايماً. الموظف (بعد دخول المدير) يشتغل على بياناته المحفوظة أو المشتركة */
-let STAFF=false;try{STAFF=localStorage.getItem('staff_v1')==='1'}catch(e){}
+let STAFF=false;
 let CATALOG=null;
 try{const _c=JSON.parse(document.getElementById('catalog-data').textContent);if(Array.isArray(_c)&&_c.length)CATALOG=_c}catch(e){}
 let DB=null,dbState='off',dbItemsEmpty=false;
@@ -1718,14 +1718,8 @@ function staffOff(){try{localStorage.removeItem('staff_v1')}catch(e){}location.r
 (function(){
   const h=location.hash;
   const on=()=>{try{localStorage.setItem('staff_v1','1')}catch(e){}location.reload()};
-  if(STAFF){document.querySelector('.topbar').classList.add('on');document.body.classList.add('sb')}
-  else if(h==='#staff'||h==='#cashier')setTimeout(()=>askPin(on,'🔐 دخول الموظفين — الرقم السري للمدير'),300);
-  let _n=0,_t=0;
-  document.querySelector('.logo-txt b span').addEventListener('click',()=>{
-    if(document.querySelector('.topbar').classList.contains('on')){window.scrollTo({top:0,behavior:'smooth'});return}
-    const now=Date.now();_n=(now-_t<1500)?_n+1:1;_t=now;
-    if(_n>=5){_n=0;askPin(on,'🔐 دخول المدير — اكتب الرقم السري')}
-  });
+    if(h==='#staff'||h==='#cashier')location.replace('staff.html'+h);
+
 })();
 try{document.getElementById('custName').value=localStorage.getItem('cust_name')||'';document.getElementById('custAddr').value=localStorage.getItem('cust_addr')||'';document.getElementById('custNote').value=localStorage.getItem('cust_note')||'';document.getElementById('custPhone').value=localStorage.getItem('cust_phone')||''}catch(e){}
 (function(){const tb=document.querySelector('.topbar'),hd=document.querySelector('header');
