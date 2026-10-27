@@ -523,6 +523,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <div id="mvList" style="max-height:260px;overflow:auto;background:#fff;border:1px solid #ccc;border-radius:8px;padding:6px;line-height:2"></div>
 <div style="margin-top:6px">انقل إلى: <select id="mvTo" style="padding:7px;border:1px solid #ccc;border-radius:8px"><option value="شيبسي">🍟 شيبسي وكراتيه</option><option value="سناكس">🍫 سناكس وحلويات</option><option value="بقالة">🛒 بقالة</option><option value="البان">🥛 ألبان</option><option value="مشروبات">🧃 مشروبات</option><option value="لانشون">🥪 لانشون</option></select>
 <button class="pbtn" style="background:#0d9488" onclick="mvDo()">✅ نقل المحدد</button></div>
+<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="pbtn gray" onclick="mvHide(1)">🙈 إخفاء المحدد عن الزبائن</button><button class="pbtn" style="background:#0d9488" onclick="mvHide(0)">👁️ إظهار المحدد</button></div>
 <div id="mvRes" style="font-size:13px;margin-top:6px"></div></div>
 <div id="bulkAddBox" class="bulk" style="display:none;background:#f5f0ff;border-color:#c9bdf0">
 <b>📋 إضافة منتجات دفعة واحدة</b>
@@ -1931,7 +1932,7 @@ function toggleAdmin(){
 function renderAdmin(){initSch();renderAdmin0();renderCashiers();renderSync();bkState();notifState();cbRefresh()}
 function renderAdmin0(){
   document.getElementById('adminList').innerHTML=items.map((it,i)=>`
-  <div class="arow">
+  <div class="arow"${it.hide?' style="opacity:.55;background:#f3f4f6"':''}>
     <input class="e" data-f="img" value="${it.img}">
     <div style="text-align:center"><img class="thumb" src="${it.photo||''}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;display:${it.photo?'block':'none'};margin:0 auto 3px">
     <input type="file" accept="image/*" style="width:100px;font-size:11px" onchange="setPhoto(${i},this)">
@@ -1945,6 +1946,7 @@ function renderAdmin0(){
     <div><label>🏷️ سعر التكلفة</label><input class="p" type="number" min="0" step="0.01" value="${it.cost!=null?it.cost:''}" data-f="cost" placeholder="—"></div>
     <div class="fin">${it.price} ج.م${marginHTML(it)}</div>
     <button class="pbtn" onclick="saveRow(${i},this)">💾 حفظ</button>
+    <button class="pbtn ${it.hide?'':'gray'}" style="${it.hide?'background:#0d9488':''}" onclick="toggleHide(${i})">${it.hide?'👁️ إظهار للزبائن':'🙈 إخفاء عن الزبائن'}</button>
     <button class="pbtn red" onclick="delItem(${i})">حذف</button>
   </div>`).join('');
 }
@@ -1959,7 +1961,7 @@ function render(){
   const hc=document.getElementById('hotChip');if(hc)hc.style.display=items.some(it=>it.hot)?'':'none';
   updateHero();
   const q=document.getElementById('q').value.trim();
-  const list=items.map((it,i)=>({...it,i})).filter(it=>(cat==="all"||(cat==="offers"?!!it.old:cat==="hot"?!!it.hot:it.cat===cat))&&it.name.includes(q)&&(!onlyOff||!!it.old)&&(!onlyAv||it.stock>0));
+  const list=items.map((it,i)=>({...it,i})).filter(it=>(cat==="all"||(cat==="offers"?!!it.old:cat==="hot"?!!it.hot:it.cat===cat))&&it.name.includes(q)&&!it.hide&&(!onlyOff||!!it.old)&&(!onlyAv||it.stock>0));
   const box=document.getElementById('products');
   if(!list.length){box.innerHTML='<div class="empty">لا توجد منتجات مطابقة</div>';return}
   list.sort((a,b)=>{const o=(a.stock<=0)-(b.stock<=0);if(o)return o;if(sortMode==='cheap')return a.price-b.price;if(sortMode==='exp')return b.price-a.price;if(sortMode==='hot')return (b.hot|0)-(a.hot|0);if(sortMode==='name')return a.name.localeCompare(b.name,'ar');return 0});
@@ -2593,7 +2595,7 @@ const BULK_IMG={شيبسي:'🍟',سناكس:'🍫',البان:'🥛',مشروب
 function openProd(i){
   const it=items[i];if(!it)return;
   const big=it.photo?'<img src="'+it.photo+'" alt="" style="width:100%;max-height:260px;object-fit:contain;border-radius:14px;background:#f6f7f6">':'<img src="'+(pack(it)||'')+'" alt="" style="width:220px;height:220px;display:block;margin:0 auto;border-radius:20px">';
-  const sim=items.map((x,k)=>({x,k})).filter(o=>o.k!==i&&o.x.cat===it.cat&&o.x.stock>0).slice(0,6);
+  const sim=items.map((x,k)=>({x,k})).filter(o=>o.k!==i&&o.x.cat===it.cat&&o.x.stock>0&&!o.x.hide).slice(0,6);
   const off=it.old?'<span style="color:#e30613;font-weight:800;margin-inline-start:8px">خصم '+Math.round((1-it.price/it.old)*100)+'%</span>':'';
   document.getElementById('prodIn').innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:17px;line-height:1.5">'+it.name.replace(/</g,'&lt;')+'</b><button type="button" onclick="closeProd()" style="border:0;background:#eee;border-radius:10px;padding:6px 12px;font-family:inherit;cursor:pointer">✖</button></div>'+big+
   '<div style="margin:12px 0;font-size:20px;font-weight:800;color:#15803d">'+it.price+' ج.م'+(it.old?' <s style="color:#999;font-size:15px;font-weight:600">'+it.old+'</s>':'')+off+'</div>'+
@@ -2709,7 +2711,10 @@ async function phRun(inp){
   if(ok.length){norm();afterEdit()}
   out.innerHTML='✅ تم رفع <b>'+ok.length+'</b> صورة'+(miss.length?'<br>⚠️ ما لقيت منتج بنفس الاسم لـ '+miss.length+' صورة: '+miss.slice(0,12).join('، ')+(miss.length>12?' …':''):'')+(fail.length?'<br>❌ فشل رفع: '+fail.slice(0,8).join('، '):'')+(ok.length?'<br>تظهر للزبائن خلال دقائق.':'')}
 function mvRender(){const f=document.getElementById('mvFrom').value;
-document.getElementById('mvList').innerHTML=items.map((it,i)=>(!f||it.cat===f)?`<label style="display:block"><input type="checkbox" class="mvc" value="${i}"> ${it.img||''} ${it.name.replace(/</g,'&lt;')} <small style="color:#888">(${it.cat})</small></label>`:'').join('')||'لا توجد منتجات'}
+document.getElementById('mvList').innerHTML=items.map((it,i)=>(!f||it.cat===f)?`<label style="display:block"><input type="checkbox" class="mvc" value="${i}"> ${it.img||''} ${it.name.replace(/</g,'&lt;')} <small style="color:#888">(${it.cat})${it.hide?' 🙈 مخفي':''}</small></label>`:'').join('')||'لا توجد منتجات'}
+function toggleHide(i){const it=items[i];if(!it)return;if(it.hide)delete it.hide;else it.hide=1;afterEdit();toast(it.hide?'🙈 تم إخفاء المنتج عن الزبائن':'👁️ رجع المنتج ظاهر للزبائن')}
+function mvHide(v){const ids=[...document.querySelectorAll('.mvc:checked')].map(c=>+c.value);if(!ids.length){document.getElementById('mvRes').textContent='علّم منتج واحد على الأقل';return}
+askPin(()=>{ids.forEach(i=>{if(v)items[i].hide=1;else delete items[i].hide});afterEdit();mvRender();document.getElementById('mvRes').textContent=(v?'🙈 تم إخفاء ':'👁️ تم إظهار ')+ids.length+' منتج'})}
 function mvAll(v){document.querySelectorAll('.mvc').forEach(c=>c.checked=v)}
 function mvDo(){const to=document.getElementById('mvTo').value,ids=[...document.querySelectorAll('.mvc:checked')].map(c=>+c.value);
 if(!ids.length){document.getElementById('mvRes').textContent='علّم منتج واحد على الأقل';return}
