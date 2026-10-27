@@ -319,6 +319,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 <div class="cat" onclick="filterCat('بقالة',this)">بقالة</div>
 <div class="cat" onclick="filterCat('مشروبات',this)">مشروبات وعصائر</div>
 <div class="cat" onclick="filterCat('لانشون',this)">لانشون ومصنعات</div>
+<div class="cat" onclick="filterCat('شيبسي',this)">شيبسي وكراتيه</div>
 <div class="cat" onclick="filterCat('سناكس',this)">سناكس وحلويات</div>
 </div>
 
@@ -423,6 +424,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 <option value="بقالة">بقالة</option>
 <option value="مشروبات">مشروبات وعصائر</option>
 <option value="لانشون">لانشون ومصنعات</option>
+<option value="شيبسي">شيبسي وكراتيه</option>
 <option value="سناكس">سناكس وحلويات</option>
 </select>
 <input id="bulkPct" type="number" min="0" max="95" placeholder="%">
@@ -449,7 +451,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 <div id="bulkAddBox" class="bulk" style="display:none;background:#f5f0ff;border-color:#c9bdf0">
 <b>📋 إضافة منتجات دفعة واحدة</b>
 <div style="font-size:12.5px;color:#456;margin:6px 0;line-height:1.8">اكتب منتج في كل سطر بهذا الشكل (أو الصقه من Excel):<br><b>الاسم، السعر، التكلفة، المخزون</b> — التكلفة والمخزون اختياريين (المخزون الافتراضي 20).<br>مثال: <span style="direction:ltr;display:inline-block">شيبسي ملح 50 جم، 5، 4، 100</span></div>
-<select id="bulkCat" style="padding:7px;border:1px solid #ccc;border-radius:8px;margin-bottom:6px"><option value="سناكس">🍟 سناكس وحلويات</option><option value="بقالة">🛒 بقالة</option><option value="البان">🥛 ألبان وجبن</option><option value="مشروبات">🧃 مشروبات وعصائر</option><option value="لانشون">🥪 لانشون ومصنعات</option><option value="خضار">🥬 خضار وفاكهة</option></select>
+<select id="bulkCat" style="padding:7px;border:1px solid #ccc;border-radius:8px;margin-bottom:6px"><option value="شيبسي">🍟 شيبسي وكراتيه</option><option value="سناكس">🍫 سناكس وحلويات</option><option value="بقالة">🛒 بقالة</option><option value="البان">🥛 ألبان وجبن</option><option value="مشروبات">🧃 مشروبات وعصائر</option><option value="لانشون">🥪 لانشون ومصنعات</option><option value="خضار">🥬 خضار وفاكهة</option></select>
 <textarea id="bulkTxt" rows="6" placeholder="شيبسي ملح 50 جم، 5، 4، 100&#10;كراتيه جبنة، 5، 3.5، 80" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;font-family:inherit"></textarea>
 <button class="pbtn" style="margin-top:6px" onclick="bulkAdd()">✅ إضافة المنتجات</button>
 <div id="bulkRes" style="font-size:13px;margin-top:6px"></div></div>
@@ -471,6 +473,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 <option value="بقالة">بقالة</option>
 <option value="مشروبات">مشروبات وعصائر</option>
 <option value="لانشون">لانشون ومصنعات</option>
+<option value="شيبسي">شيبسي وكراتيه</option>
 <option value="سناكس">سناكس وحلويات</option>
 </select>
 </div>
@@ -646,7 +649,7 @@ let cat="all",cart={};
 /* ===== المخزون والطلبات والمبيعات ===== */
 function norm(){
   let mx=items.reduce((m,it)=>Math.max(m,+it.code||0),0);
-  items.forEach(it=>{if(it.stock==null)it.stock=50;if(it.min==null)it.min=5;if(!it.code)it.code=String(++mx);if(it.barcode==null)it.barcode=''});
+  items.forEach(it=>{if(it.cat==='سناكس'&&/شيبس|كراتيه|كاراتيه/.test(it.name))it.cat='شيبسي';if(it.stock==null)it.stock=50;if(it.min==null)it.min=5;if(!it.code)it.code=String(++mx);if(it.barcode==null)it.barcode=''});
   applyOffers();
 }
 /* ===== عروض مجدولة (تبدأ وتنتهي لوحدها) ===== */
@@ -923,7 +926,7 @@ function packType(it){
 function pack(it){
   const t=packType(it);if(!t)return null;
   const key=it.name+'|'+it.img+'|'+it.cat;if(PK_CACHE[key])return PK_CACHE[key];
-  const base={'بقالة':32,'البان':215,'مشروبات':20,'لانشون':355,'سناكس':275}[it.cat]||150;
+  const base={'بقالة':32,'البان':215,'مشروبات':20,'لانشون':355,'سناكس':275,'شيبسي':45}[it.cat]||150;
   let hs=0;for(const ch of it.name)hs=(hs*31+ch.charCodeAt(0))%997;
   const h=(base+(hs%40)-20+360)%360;
   const c1='hsl('+h+' 72% 46%)',c2='hsl('+h+' 78% 33%)',tint='hsl('+h+' 70% 95%)';
@@ -1210,7 +1213,7 @@ function payConfirm(){
 function payClose(){document.getElementById('payModal').classList.remove('open')}
 
 /* ===== إدارة المنتجات ===== */
-const CATS={"خضار":"خضار وفاكهة","البان":"ألبان وجبن","بقالة":"بقالة","مشروبات":"مشروبات وعصائر","لانشون":"لانشون ومصنعات","سناكس":"سناكس وحلويات"};
+const CATS={"خضار":"خضار وفاكهة","البان":"ألبان وجبن","بقالة":"بقالة","مشروبات":"مشروبات وعصائر","لانشون":"لانشون ومصنعات","شيبسي":"شيبسي وكراتيه","سناكس":"سناكس وحلويات"};
 function saveItems(){let ok=true;try{localStorage.setItem('items_v1',JSON.stringify(items))}catch(e){ok=false;toast('⚠️ مساحة التخزين ممتلئة — استخدم صور أصغر',4000)}pushAll();return ok}
 function disc(it){return it.old?(it.d||Math.round((1-it.price/it.old)*100)):0}
 function setDisc(it,v){
@@ -1909,7 +1912,7 @@ try{if(autoPrOn()){document.addEventListener('DOMContentLoaded',()=>{const c=doc
 
 
 /* ===== إضافة منتجات دفعة واحدة ===== */
-const BULK_IMG={سناكس:'🍟',البان:'🥛',مشروبات:'🧃',بقالة:'🛒',لانشون:'🥪',خضار:'🥬'};
+const BULK_IMG={شيبسي:'🍟',سناكس:'🍫',البان:'🥛',مشروبات:'🧃',بقالة:'🛒',لانشون:'🥪',خضار:'🥬'};
 function bulkAdd(){
   const R=costRows(document.getElementById('bulkTxt').value),cat=document.getElementById('bulkCat').value,res=document.getElementById('bulkRes');
   if(!R.length){toast('اكتب المنتجات أولاً');return}
