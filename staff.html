@@ -650,6 +650,71 @@ try{
     localStorage.setItem('items_v1',JSON.stringify(items));localStorage.setItem('seed_v2','1');
   }
 }catch(e){}
+const NEW_V3=[
+{name:"شيبسي كاتشب صغير",price:10,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي كاتشب كبير",price:20,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي ملح صغير",price:10,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي ملح كبير",price:20,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي جبنة صغير",price:10,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي جبنة كبير",price:20,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي شطة صغير",price:10,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي شطة كبير",price:20,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي فلفل حار صغير",price:10,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي فلفل حار كبير",price:20,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي خل وملح صغير",price:10,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي خل وملح كبير",price:20,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي شواء صغير",price:10,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي شواء كبير",price:20,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي ليمون وملح صغير",price:10,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي ليمون وملح كبير",price:20,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي طماطم صغير",price:10,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي طماطم كبير",price:20,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي كريمة وبصل صغير",price:10,cat:"شيبسي",img:"🍟"},
+{name:"شيبسي كريمة وبصل كبير",price:20,cat:"شيبسي",img:"🍟"},
+{name:"كراتيه كاتشب",price:5,cat:"شيبسي",img:"🍘"},
+{name:"كراتيه شطة",price:5,cat:"شيبسي",img:"🍘"},
+{name:"كراتيه حار",price:5,cat:"شيبسي",img:"🍘"},
+{name:"كراتيه شواء",price:5,cat:"شيبسي",img:"🍘"},
+{name:"كراتيه ليمون",price:5,cat:"شيبسي",img:"🍘"},
+{name:"كراتيه خل",price:5,cat:"شيبسي",img:"🍘"},
+{name:"كراتيه طماطم",price:5,cat:"شيبسي",img:"🍘"},
+{name:"كراتيه ميكس",price:5,cat:"شيبسي",img:"🍘"},
+{name:"كراتيه جبنة",price:5,cat:"شيبسي",img:"🍘"},
+{name:"بسكويت شوكولاتة",price:8,cat:"سناكس",img:"🍪"},
+{name:"بسكويت سادة",price:5,cat:"سناكس",img:"🍪"},
+{name:"بسكويت بالكريمة",price:10,cat:"سناكس",img:"🍪"},
+{name:"بسكويت بالتمر",price:8,cat:"سناكس",img:"🍪"},
+{name:"ويفر شوكولاتة",price:5,cat:"سناكس",img:"🍫"},
+{name:"ويفر فانيليا",price:5,cat:"سناكس",img:"🍫"},
+{name:"ويفر بالبندق",price:8,cat:"سناكس",img:"🍫"},
+{name:"كيك شوكولاتة",price:6,cat:"سناكس",img:"🍰"},
+{name:"كيك فانيليا",price:6,cat:"سناكس",img:"🍰"},
+{name:"كيك محشي",price:10,cat:"سناكس",img:"🍰"},
+{name:"كرواسون",price:8,cat:"سناكس",img:"🥐"},
+{name:"بوب كورن",price:10,cat:"سناكس",img:"🍿"},
+{name:"فول سوداني",price:10,cat:"سناكس",img:"🥜"},
+{name:"لب أبيض",price:10,cat:"سناكس",img:"🌰"},
+{name:"لب سوري",price:15,cat:"سناكس",img:"🌰"},
+{name:"سوداني مقشر",price:15,cat:"سناكس",img:"🥜"},
+{name:"حمص الشام",price:10,cat:"سناكس",img:"🫘"},
+{name:"مقرمشات",price:5,cat:"سناكس",img:"🥨"},
+{name:"شوكولاتة سادة",price:15,cat:"سناكس",img:"🍫"},
+{name:"شوكولاتة بالبندق",price:20,cat:"سناكس",img:"🍫"},
+{name:"شوكولاتة بالحليب",price:15,cat:"سناكس",img:"🍫"},
+{name:"حلاوة طحينية",price:12,cat:"سناكس",img:"🍯"},
+{name:"لبان",price:2,cat:"سناكس",img:"🍬"},
+{name:"حلوى جيلي",price:5,cat:"سناكس",img:"🍬"},
+{name:"مصاصة",price:2,cat:"سناكس",img:"🍭"},
+{name:"سكاكر",price:3,cat:"سناكس",img:"🍬"},
+{name:"تمر هندي",price:5,cat:"سناكس",img:"🍬"}
+];
+try{
+  if(STAFF&&!localStorage.getItem('seed_v3')){
+    NEW_V3.forEach(n=>{if(!items.some(i=>i.name===n.name))items.push({name:n.name,price:n.price,cat:n.cat,img:n.img,stock:20,min:5})});
+    norm();localStorage.setItem('items_v1',JSON.stringify(items));localStorage.setItem('seed_v3','1');
+    setTimeout(()=>{try{autoPub()}catch(e){}},3000);
+  }
+}catch(e){}
 let cat="all",cart={};
 
 /* ===== المخزون والطلبات والمبيعات ===== */
