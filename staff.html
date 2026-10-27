@@ -1740,16 +1740,18 @@ fit();addEventListener('resize',fit);setTimeout(fit,400)})();
 let _ip=null;
 const _standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const _ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+const _iosSafari=_ios&&/safari/i.test(navigator.userAgent)&&!/crios|fxios|edgios|fban|fbav|instagram|line\/|whatsapp|gsa\//i.test(navigator.userAgent);
+const _iosTxt='اضغط زر المشاركة ⬆️ (أسفل الشاشة) ← مرّر للأسفل ← «إضافة إلى الشاشة الرئيسية» ← «إضافة»';
 function pwaShow(){let x=0;try{x=localStorage.getItem('pwa_x')}catch(e){}if(_standalone||x)return;const b=document.getElementById('pwaBar');if(b)b.style.display='flex'}
 function pwaHide(){const b=document.getElementById('pwaBar');if(b)b.style.display='none';try{localStorage.setItem('pwa_x','1')}catch(e){}}
 function pwaInstall(){
   if(_ip){_ip.prompt();_ip.userChoice.then(()=>{_ip=null;pwaHide()}).catch(()=>{})}
-  else if(_ios)toast('افتح الرابط في Safari (مو داخل واتساب)، ثم اضغط زر المشاركة ⬆️ ← «إضافة إلى الشاشة الرئيسية»',8000);
+  else if(_ios)toast(_iosSafari?_iosTxt:'افتح الرابط في Safari (مو داخل واتساب أو كروم)، ثم '+_iosTxt,9000);
   else toast('من قائمة المتصفح ⋮ اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»',7000);
 }
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();_ip=e;pwaShow()});
 addEventListener('appinstalled',()=>{pwaHide()});
-if(_ios&&!_standalone){const sp=document.querySelector('#pwaBar span');if(sp)sp.textContent='📲 للتثبيت على الآيفون: افتح الرابط في Safari (مو داخل واتساب) ← زر المشاركة ⬆️ ← «إضافة إلى الشاشة الرئيسية»';setTimeout(pwaShow,2000)}
+if(_ios&&!_standalone){const sp=document.querySelector('#pwaBar span');if(sp)sp.textContent=_iosSafari?'📲 للتثبيت: '+_iosTxt:'📲 للتثبيت على الآيفون: افتح الرابط في Safari (مو داخل واتساب) ثم '+_iosTxt;setTimeout(pwaShow,2000)}
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 ghState();
 setTimeout(()=>{if(document.getElementById('lockScr').style.display!=='none')lockOpen()},400);
