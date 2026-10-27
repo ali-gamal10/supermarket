@@ -1661,7 +1661,9 @@ function onCol(col,snap){
     if(!arr.length)return;
     arr.sort((a,b)=>(a.ord||0)-(b.ord||0));arr.forEach(x=>delete x.ord);
     const by={};Object.keys(cart).forEach(i=>{if(items[i])by[items[i].code]=cart[i]});
-    items=arr;norm();
+    items=arr;
+    try{if(STAFF&&!localStorage.getItem('seed_cloud1')){[].concat(NEW_V3,NEW_V4).forEach(n=>{if(!items.some(i=>i.name===n.name))items.push({name:n.name,price:n.price,cat:n.cat,img:n.img,stock:20,min:5})});localStorage.setItem('seed_cloud1','1');setTimeout(()=>{try{saveItems();pushAll();autoPub()}catch(e){}},1500)}}catch(e){}
+    norm();
     cart={};items.forEach((it,i)=>{const q=Math.min(by[it.code]||0,Math.max(+it.stock||0,0));if(q>0)cart[i]=q});
   }else{
     arr.sort((a,b)=>(a.id||0)-(b.id||0));
