@@ -1602,7 +1602,8 @@ function bkState(){
   el.textContent=t?'آخر نسخة: '+new Date(t).toLocaleDateString('ar-EG'):'لم تُنزَّل نسخة بعد';
 }
 if(STAFF)setTimeout(()=>{let t=0;try{t=+localStorage.getItem('bk_last')||0}catch(e){}
-  if(Date.now()-t>7*864e5)toast('💾 مرّ أكثر من أسبوع على آخر نسخة احتياطية — نزّل نسخة من لوحة المدير',6000)},4000);
+  let g=0;try{g=+localStorage.getItem('bk_nag')||0}catch(e){}
+  if(Date.now()-t>7*864e5&&Date.now()-g>864e5){try{localStorage.setItem('bk_nag',String(Date.now()))}catch(e){}toast('💾 مرّ أكثر من أسبوع على آخر نسخة احتياطية — نزّل نسخة من لوحة المدير',6000)}},4000);
 
 /* ===== مزامنة Firebase ===== */
 let FB_REMOTE=null;
