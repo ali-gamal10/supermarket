@@ -312,6 +312,22 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 </section>
 <div id="pwaBar" style="display:none;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;background:#ecfdf3;border-bottom:1px solid #b7ebc9;padding:8px 12px;font-size:14px;color:#14532d"><span>📲 ثبّت المتجر على موبايلك وافتحه بضغطة</span><button onclick="pwaInstall()" style="background:#16a34a;color:#fff;border:0;border-radius:8px;padding:6px 14px;font-weight:700;cursor:pointer">تثبيت</button><button onclick="pwaHide()" aria-label="إغلاق" style="background:none;border:0;font-size:18px;cursor:pointer;color:#14532d">✕</button></div>
 <div class="banner">🚚 التوصيل مجاني لأي مكان بالقرية - اطلب الآن! · <a href="https://wa.me/201125678585" target="_blank" rel="noopener" style="color:#128c3e;text-decoration:none;white-space:nowrap">📱 واتساب 01125678585</a></div>
+<div id="prodBox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeProd()">
+<div style="background:#fff;border-radius:22px 22px 0 0;padding:16px;width:100%;max-width:480px;max-height:92vh;overflow:auto" id="prodIn"></div></div>
+<div id="dealBar" style="display:none;margin:8px 12px;padding:11px 14px;border-radius:14px;background:linear-gradient(90deg,#fff3bf,#ffe08a);border:1px solid #f0c24b;color:#5b3b00;font-weight:800;font-size:15px;text-align:center"></div>
+<div id="listCta" style="margin:8px 12px"><button type="button" onclick="listOpen()" style="width:100%;padding:12px;border:2px dashed #16a34a;background:#f0fdf4;color:#166534;border-radius:14px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer">✍️ اكتب قائمتك وإحنا نجهزها لك</button></div>
+<div id="listBox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90;align-items:center;justify-content:center;padding:14px">
+<div style="background:#fff;border-radius:18px;padding:16px;width:100%;max-width:420px;max-height:92vh;overflow:auto">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:18px">✍️ اكتب قائمتك</b><button type="button" onclick="listClose()" style="border:0;background:#eee;border-radius:10px;padding:6px 12px;font-family:inherit;cursor:pointer">✖</button></div>
+<div style="font-size:13px;color:#555;margin-bottom:8px;line-height:1.7">اكتب اللي تحتاجه بكلامك العادي، سطر لكل صنف. مثال:<br>2 كيلو سكر<br>زجاجتين بيبسي لتر<br>شاي العروسة</div>
+<textarea id="lText" rows="6" placeholder="اكتب قائمتك هنا…" maxlength="1200" style="width:100%;padding:11px 14px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;outline:none"></textarea>
+<select id="lSlot" style="width:100%;padding:11px 14px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;background:#fff"><option value="">⏰ وقت التوصيل: في أقرب وقت</option><option value="صباحاً (9 - 12)">⏰ صباحاً (9 - 12)</option><option value="ظهراً (12 - 4)">⏰ ظهراً (12 - 4)</option><option value="مساءً (4 - 9)">⏰ مساءً (4 - 9)</option></select>
+<input id="lName" placeholder="👤 اسمك (مطلوب)" maxlength="60" style="width:100%;padding:11px 14px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;outline:none">
+<input id="lAddr" placeholder="📍 العنوان أو رقم البيت (مطلوب)" maxlength="120" style="width:100%;padding:11px 14px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;outline:none">
+<input id="lPhone" type="tel" inputmode="tel" placeholder="📞 رقم جوالك (اختياري)" maxlength="20" style="width:100%;padding:11px 14px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;outline:none;direction:ltr;text-align:right">
+<a class="wa" id="lWa" href="#" target="_blank" rel="noopener" onclick="return listSend(this)" style="display:block;text-align:center">أرسل القائمة على واتساب 🛒</a>
+<div style="font-size:12px;color:#777;margin-top:8px;text-align:center">نرد عليك بالأسعار والإجمالي قبل التوصيل</div>
+</div></div>
 
 <div class="categories">
 <div class="cat active" onclick="filterCat('all',this)">الكل</div>
@@ -326,6 +342,11 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 </div>
 
 
+<div id="sortBar" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 12px;font-size:12px">
+<select id="sortSel" onchange="sortMode=this.value;render()" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:10px;font-family:inherit;font-size:12px;background:#fff"><option value="def">ترتيب</option><option value="cheap">الأرخص</option><option value="exp">الأغلى</option><option value="hot">الأكثر طلباً</option><option value="name">الاسم</option></select>
+<label style="display:flex;gap:5px;align-items:center;background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:5px 8px;cursor:pointer;font-size:12px"><input type="checkbox" onchange="onlyOff=this.checked;render()"> 🔥 العروض فقط</label>
+<label style="display:flex;gap:5px;align-items:center;background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:5px 8px;cursor:pointer;font-size:12px"><input type="checkbox" onchange="onlyAv=this.checked;render()"> ✅ المتوفر فقط</label>
+</div>
 <div class="products" id="products"></div>
 
 <div id="cart">
@@ -338,6 +359,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <input id="custName" placeholder="✍️ اكتب اسمك (مطلوب)" maxlength="40" style="width:100%;padding:11px 14px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;outline:none">
 <input id="custAddr" placeholder="📍 العنوان أو رقم البيت (مطلوب)" maxlength="120" style="width:100%;padding:11px 14px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;outline:none">
 <input id="custPhone" type="tel" inputmode="tel" placeholder="📞 رقم جوالك (اختياري) علشان نبعتلك حالة الطلب" maxlength="20" style="width:100%;padding:11px 14px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;outline:none;direction:ltr;text-align:right">
+<select id="custSlot" style="width:100%;padding:11px 14px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;background:#fff"><option value="">⏰ وقت التوصيل: في أقرب وقت</option><option value="صباحاً (9 - 12)">⏰ صباحاً (9 - 12)</option><option value="ظهراً (12 - 4)">⏰ ظهراً (12 - 4)</option><option value="مساءً (4 - 9)">⏰ مساءً (4 - 9)</option></select>
 <input id="custNote" placeholder="📝 ملاحظات (اختياري) مثل: اتصل قبل ما توصل" maxlength="150" style="width:100%;padding:11px 14px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;outline:none">
 <a class="wa" id="waLink" href="#" target="_blank" rel="noopener" onclick="return waClick(this)">اذهب إلى سوبر ماركت 🛒</a>
 </div>
@@ -385,6 +407,10 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><span style="min-width:90px">🛒 الزبائن:</span><input id="lnkCust" readonly style="flex:1;min-width:200px;direction:ltr;font-size:12px"><button class="pbtn" onclick="stgCopy('lnkCust')">نسخ</button></div>
 <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><span style="min-width:90px">🔐 المدير:</span><input id="lnkStaff" readonly style="flex:1;min-width:200px;direction:ltr;font-size:12px"><button class="pbtn" onclick="stgCopy('lnkStaff')">نسخ</button></div>
 <div style="font-size:13px;color:#374151">📱 واتساب الطلبات: <b id="stgWa" dir="ltr"></b></div></div>
+<div class="bulk" style="display:block;background:#fff8e1;border-color:#f0d27a"><b>📣 عرض اليوم (يظهر أعلى صفحة الزبائن)</b>
+<div style="font-size:12.5px;color:#765;margin:6px 0">اكتب جملة قصيرة مثل: «بيبسي 2 لتر بـ 25 جنيه اليوم فقط». تظهر للزبائن خلال دقائق من النشر.</div>
+<input id="dealTxt" maxlength="140" placeholder="نص العرض" style="width:100%;margin-bottom:8px">
+<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="pbtn" style="background:#d98200" onclick="dealPublish(false)">📣 نشر العرض</button><button class="pbtn gray" onclick="dealPublish(true)">إيقاف العرض</button></div></div>
 <div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🧾 الطباعة</b>
 <label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:14px;color:#374151"><input type="checkbox" id="autoPr2" onchange="try{localStorage.setItem('auto_print',this.checked?'1':'')}catch(e){};var c=document.getElementById('autoPr');if(c)c.checked=this.checked"> 🖨️ اطبع الفاتورة تلقائياً بعد كل بيع (على هذا الجهاز)</label></div>
 <div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🔐 الأمان</b>
@@ -1214,7 +1240,7 @@ try{
   }
 }catch(e){}
 try{const n0=JSON.stringify(items);items=fixFruit(items);if(JSON.stringify(items)!==n0&&STAFF){localStorage.setItem('items_v1',JSON.stringify(items));setTimeout(()=>{try{autoPub()}catch(e){}},3000)}}catch(e){}
-let cat="all",cart={};
+let cat="all",cart={},sortMode='def',onlyOff=false,onlyAv=false;
 
 /* ===== المخزون والطلبات والمبيعات ===== */
 function validCats(){return ['البان','بقالة','مشروبات','لانشون','شيبسي','سناكس']}
@@ -1292,9 +1318,9 @@ function checkout(){
   const inp=document.getElementById('custName'),nm=inp.value.trim();
   if(!Object.keys(cart).length){toast('السلة فاضية!');return}
   if(!nm){toast('اكتب اسمك أولاً ✍️');inp.focus();return}
-  const ad=document.getElementById('custAddr'),addr=ad.value.trim(),note=document.getElementById('custNote').value.trim(),phone=document.getElementById('custPhone').value.trim();
+  const ad=document.getElementById('custAddr'),addr=ad.value.trim(),note0=document.getElementById('custNote').value.trim(),slot=document.getElementById('custSlot').value,note=(note0+(slot?(note0?' — ':'')+'⏰ التوصيل '+slot:'')).trim(),phone=document.getElementById('custPhone').value.trim();
   if(!addr){toast('اكتب العنوان أو رقم البيت 📍');ad.focus();return}
-  try{localStorage.setItem('cust_name',nm);localStorage.setItem('cust_addr',addr);localStorage.setItem('cust_note',note);localStorage.setItem('cust_phone',phone)}catch(e){}
+  try{localStorage.setItem('cust_name',nm);localStorage.setItem('cust_addr',addr);localStorage.setItem('cust_note',note0);localStorage.setItem('cust_phone',phone)}catch(e){}
   const o=commitOrder('online',{customer:nm,addr,note,phone});
   if(!o)return;
   fbSend(o);
@@ -1870,6 +1896,7 @@ function stgInit(){
   document.getElementById('stgWa').textContent='0'+String(WHATSAPP).replace(/^20/,'');
   document.getElementById('autoPr2').checked=autoPrOn()}catch(e){}
   try{ghState();renderSync();bkState();notifState();cbRefresh()}catch(e){}
+  try{fetch('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/store.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.deal)document.getElementById('dealTxt').value=j.deal.text||''}).catch(()=>{})}catch(e){}
 }
 function stgCopy(id){const el=document.getElementById(id);el.select();try{navigator.clipboard.writeText(el.value)}catch(e){document.execCommand('copy')}toast('تم النسخ ✅')}
 function stgGo(w){document.getElementById('stg').classList.remove('open');if(w==='sec')toggleSec();else toggleAdmin()}
@@ -1914,16 +1941,16 @@ function render(){
   const hc=document.getElementById('hotChip');if(hc)hc.style.display=items.some(it=>it.hot)?'':'none';
   updateHero();
   const q=document.getElementById('q').value.trim();
-  const list=items.map((it,i)=>({...it,i})).filter(it=>(cat==="all"||(cat==="offers"?!!it.old:cat==="hot"?!!it.hot:it.cat===cat))&&it.name.includes(q));
+  const list=items.map((it,i)=>({...it,i})).filter(it=>(cat==="all"||(cat==="offers"?!!it.old:cat==="hot"?!!it.hot:it.cat===cat))&&it.name.includes(q)&&(!onlyOff||!!it.old)&&(!onlyAv||it.stock>0));
   const box=document.getElementById('products');
   if(!list.length){box.innerHTML='<div class="empty">لا توجد منتجات مطابقة</div>';return}
-  list.sort((a,b)=>(a.stock<=0)-(b.stock<=0));
+  list.sort((a,b)=>{const o=(a.stock<=0)-(b.stock<=0);if(o)return o;if(sortMode==='cheap')return a.price-b.price;if(sortMode==='exp')return b.price-a.price;if(sortMode==='hot')return (b.hot|0)-(a.hot|0);if(sortMode==='name')return a.name.localeCompare(b.name,'ar');return 0});
   box.innerHTML=list.map(it=>`
     <div class="card${it.stock<=0?' out':''}">
       ${it.stock<=0?`<span class="badge out">نفد</span>`:it.old?`<span class="badge">خصم ${Math.round((1-it.price/it.old)*100)}%</span>`:''}
       ${it.hot&&it.stock>0?`<span class="hotb" title="الأكثر طلباً">🏆</span>`:''}
-      <div class="img">${ph(it)}</div>
-      <h3>${it.name}</h3>
+      <div class="img" onclick="openProd(${it.i})" style="cursor:pointer">${ph(it)}</div>
+      <h3 onclick="openProd(${it.i})" style="cursor:pointer">${it.name}</h3>
       <div><span class="price">${it.price} ج.م</span>${it.old?`<span class="old-price">${it.old}</span>`:''}</div>
       ${it.offOn&&it.offer?`<div class="offend">⏳ العرض لحد ${fmtD(it.offer.to)}</div>`:''}
       ${it.stock>0&&it.stock<=it.min?`<div style="color:#e30613;font-size:11px">باقي ${it.stock} فقط!</div>`:''}
@@ -2542,15 +2569,53 @@ try{if(autoPrOn()){document.addEventListener('DOMContentLoaded',()=>{const c=doc
 
 /* ===== إضافة منتجات دفعة واحدة ===== */
 const BULK_IMG={شيبسي:'🍟',سناكس:'🍫',البان:'🥛',مشروبات:'🧃',بقالة:'🛒',لانشون:'🥪',خضار:'🥬'};
+/* تفاصيل المنتج */
+function openProd(i){
+  const it=items[i];if(!it)return;
+  const big=it.photo?'<img src="'+it.photo+'" alt="" style="width:100%;max-height:260px;object-fit:contain;border-radius:14px;background:#f6f7f6">':'<img src="'+(pack(it)||'')+'" alt="" style="width:220px;height:220px;display:block;margin:0 auto;border-radius:20px">';
+  const sim=items.map((x,k)=>({x,k})).filter(o=>o.k!==i&&o.x.cat===it.cat&&o.x.stock>0).slice(0,6);
+  const off=it.old?'<span style="color:#e30613;font-weight:800;margin-inline-start:8px">خصم '+Math.round((1-it.price/it.old)*100)+'%</span>':'';
+  document.getElementById('prodIn').innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:17px;line-height:1.5">'+it.name.replace(/</g,'&lt;')+'</b><button type="button" onclick="closeProd()" style="border:0;background:#eee;border-radius:10px;padding:6px 12px;font-family:inherit;cursor:pointer">✖</button></div>'+big+
+  '<div style="margin:12px 0;font-size:20px;font-weight:800;color:#15803d">'+it.price+' ج.م'+(it.old?' <s style="color:#999;font-size:15px;font-weight:600">'+it.old+'</s>':'')+off+'</div>'+
+  '<div style="font-size:13.5px;color:#555;margin-bottom:12px">'+(it.stock<=0?'<span style="color:#e30613;font-weight:700">نفد المخزون حالياً</span>':it.stock<=it.min?'<span style="color:#e68a00;font-weight:700">باقي '+it.stock+' فقط</span>':'✅ متوفر')+' · القسم: '+(CATS[it.cat]||it.cat)+'</div>'+
+  (it.stock>0?'<button type="button" onclick="add('+i+')" style="width:100%;padding:13px;border:0;border-radius:14px;background:#16a34a;color:#fff;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer">أضف للسلة 🛒</button>':'')+
+  (sim.length?'<div style="margin-top:16px;font-weight:800">أصناف مشابهة</div><div style="display:flex;gap:8px;overflow-x:auto;padding:8px 0">'+sim.map(o=>'<div onclick="openProd('+o.k+')" style="min-width:96px;text-align:center;font-size:12px;cursor:pointer"><div style="width:84px;height:84px;margin:0 auto">'+ph(o.x).replace('<img','<img style="width:84px;height:84px;object-fit:contain;border-radius:12px"')+'</div><div style="height:32px;overflow:hidden;margin-top:4px">'+o.x.name.replace(/</g,'&lt;')+'</div><b style="color:#15803d">'+o.x.price+' ج.م</b></div>').join('')+'</div>':'');
+  document.getElementById('prodBox').style.display='flex'}
+function closeProd(){document.getElementById('prodBox').style.display='none'}
+/* اكتب قائمتك + عرض اليوم */
+function listOpen(){
+  try{document.getElementById('lName').value=localStorage.getItem('cust_name')||'';document.getElementById('lAddr').value=localStorage.getItem('cust_addr')||'';document.getElementById('lPhone').value=localStorage.getItem('cust_phone')||''}catch(e){}
+  document.getElementById('listBox').style.display='flex'}
+function listClose(){document.getElementById('listBox').style.display='none'}
+function listSend(a){
+  const t=document.getElementById('lText').value.trim(),nm=document.getElementById('lName').value.trim(),ad=document.getElementById('lAddr').value.trim(),ph=document.getElementById('lPhone').value.trim(),sl=document.getElementById('lSlot').value;
+  if(t.length<3){toast('اكتب قائمتك أولاً ✍️');return false}
+  if(!nm){toast('اكتب اسمك أولاً ✍️');return false}
+  if(!ad){toast('اكتب العنوان أو رقم البيت 📍');return false}
+  try{localStorage.setItem('cust_name',nm);localStorage.setItem('cust_addr',ad);localStorage.setItem('cust_phone',ph)}catch(e){}
+  const id=Date.now(),o={id,customer:nm,addr:ad,note:'طلب بقائمة مكتوبة (بدون أسعار)'+(sl?' — ⏰ التوصيل '+sl:''),phone:ph,total:0,time:new Date().toISOString(),lines:t.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,40).map(x=>({name:x.slice(0,100),qty:1,price:0}))};
+  try{fbSend(o)}catch(e){}
+  const msg='مرحباً بكم في متجر سوبر ماركت 🛒\nطلب بقائمة مكتوبة:\nالاسم: '+nm+'\nالعنوان: '+ad+(ph?'\nالجوال: '+ph:'')+(sl?'\n⏰ وقت التوصيل: '+sl:'')+'\n\nالقائمة:\n'+t+'\n\n🔖 '+id;
+  a.href='https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(msg);
+  document.getElementById('lText').value='';listClose();toast('تم تجهيز رسالتك ✅ أرسلها على واتساب');return true}
+function showDeal(tx){const el=document.getElementById('dealBar');if(!el)return;tx=String(tx||'').trim();if(!tx){el.style.display='none';return}el.textContent='📣 '+tx;el.style.display='block'}
+function dealPublish(clear){
+  const cfg=ghCfg();if(!cfg){toast('فعّل النشر بمفتاح GitHub أولاً',3500);return}
+  const tx=clear?'':document.getElementById('dealTxt').value.trim().slice(0,140);
+  if(!clear&&!tx){toast('اكتب نص العرض أولاً',3000);return}
+  askPin(async()=>{
+    const st=await phPut(cfg,'store.json',b64utf8(JSON.stringify({deal:{text:tx,at:Date.now()}})),'تحديث عرض اليوم');
+    if(st===200){if(clear)document.getElementById('dealTxt').value='';toast(clear?'تم إيقاف عرض اليوم ✅':'تم نشر عرض اليوم ✅ يظهر للزبائن خلال دقائق',4000)}
+    else toast('تعذر النشر ('+st+') تأكد من مفتاح GitHub',4500)},'🔐 نشر عرض اليوم — الرقم السري')}
 /* رفع صور المنتجات دفعة واحدة إلى المستودع (img/) */
 function phNorm(x){return String(x).replace(/\.[a-z0-9]+$/i,'').replace(/[\s_\-]+/g,' ').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').trim().toLowerCase()}
 function phResize(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const m=320,k=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.78).split(',')[1])};im.onerror=()=>rej(new Error('img'));im.src=u})}
-async function phPut(cfg,path,b64){
+async function phPut(cfg,path,b64,msg){
   const api='https://api.github.com/repos/'+cfg.repo+'/contents/'+path,h={'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json'};
   for(let t=0;t<3;t++){
     let sha;const g=await fetch(api+'?ref='+cfg.branch+'&t='+Date.now(),{headers:h});
     if(g.ok)sha=(await g.json()).sha;else if(g.status!==404)return g.status;
-    const r=await fetch(api,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},h),body:JSON.stringify({message:'صورة منتج',content:b64,branch:cfg.branch,sha})});
+    const r=await fetch(api,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},h),body:JSON.stringify({message:msg||'صورة منتج',content:b64,branch:cfg.branch,sha})});
     if(r.ok)return 200;if(r.status!==409&&r.status!==422)return r.status}
   return 409}
 async function phRun(inp){
@@ -2622,6 +2687,10 @@ if(!STAFF&&/^https?:/.test(location.protocol)){
     items=c;norm();cart={};items.forEach((it,i)=>{const q=keep[it.code]||keep[it.name];if(q)cart[i]=Math.min(q,Math.max(it.stock||0,0))});
     render();updateCart();updateBadge();
   }).catch(()=>{});
+}
+if(!STAFF&&/^https?:/.test(location.protocol)){
+  const _sj=u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
+  _sj('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/store.json?t='+Math.floor(Date.now()/6e4)).then(j=>j||_sj('store.json?t='+Date.now())).then(j=>{if(j&&j.deal)showDeal(j.deal.text)}).catch(()=>{});
 }
 render();updateCart();updateBadge();
 if(location.hash==='#cashier'&&document.querySelector('.topbar').classList.contains('on'))togglePos();
