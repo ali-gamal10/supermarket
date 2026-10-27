@@ -268,6 +268,8 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:84px}
 .topbar.on .adm-btn i{font-size:18px}
 body.sb{padding-right:58px}
 body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
+.topbar.on .adm-btn.warn::after{content:"!";position:absolute;top:3px;left:3px;background:#ef4444;color:#fff;border-radius:50%;width:17px;height:17px;line-height:17px;font-size:12px;font-weight:800}
+.cls-t{width:100%;border-collapse:collapse;font-size:13.5px}.cls-t th{padding:7px;border-bottom:2px solid #ddd;text-align:right;white-space:nowrap}.cls-t td{padding:7px;border-bottom:1px solid #eee;white-space:nowrap}.cls-t tfoot td{font-weight:800;background:#f3f4f6}
 </style>
 </head>
 <body>
@@ -339,7 +341,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 
 <div id="sec">
 <div class="adm-top"><h2>🔐 الرقم السري والأمان</h2><button class="pbtn red" onclick="toggleSec()">✖ إغلاق</button></div>
-<div class="sec-in"><div class="bulk"><b>🔑 رقم سر المدير</b> <span style="font-size:12px;color:#6b7280">(يُستخدم لدخول لوحة المدير، استرجاع الفواتير، تعديل المخزون والحذف)</span><br>
+<div class="sec-in"><div id="secWarn" style="display:none;background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:10px;padding:10px 12px;margin-bottom:10px;font-weight:700">⚠️ رقم المدير ما زال الافتراضي (1234). غيّره الآن من الخانة بالأسفل.</div><div class="bulk"><b>🔑 رقم سر المدير</b> <span style="font-size:12px;color:#6b7280">(يُستخدم لدخول لوحة المدير، استرجاع الفواتير، تعديل المخزون والحذف)</span><br>
 <input id="pinOld" type="password" placeholder="الحالي" style="width:110px">
 <input id="pinNew" type="password" placeholder="الجديد" style="width:110px">
 <button class="pbtn" onclick="changePin()">تغيير</button></div>
@@ -349,6 +351,21 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 <input id="newCName" placeholder="اسم الكاشير" style="width:150px">
 <input id="newCPin" type="password" placeholder="رقم سري (4+)" style="width:120px">
 <button class="pbtn" onclick="addCashier()">➕ إضافة كاشير</button></div></div>
+<div class="bulk" style="display:block;background:#eef4ff;border-color:#b6ccf5"><b>🧰 أدوات المدير</b>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+<button class="pbtn" onclick="secGo('cls')">🧮 إقفال اليوم للكاشير</button>
+<button class="pbtn" style="background:#e68a00" onclick="secGo('inv')">⚠️ قائمة النواقص</button>
+<button class="pbtn" style="background:#0a8a43" onclick="secGo('prf')">📈 تقرير الأرباح</button></div></div>
+<div class="bulk" style="display:block;background:#e8f7ee;border-color:#9ad8b3">
+<b>🏷️ رفع سعر التكلفة دفعة واحدة (من Excel)</b>
+<div style="font-size:12.5px;color:#456;margin:6px 0;line-height:1.8">1) نزّل القالب ← 2) افتحه في Excel واكتب التكلفة في عمود «التكلفة» ← 3) احفظه <b>CSV UTF-8</b> وارفعه هنا. أو انسخ العمودين (الكود + التكلفة) من Excel والصقهم في الخانة. التكلفة للمدير فقط ولا تُنشر للزبائن.</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+<button class="pbtn" onclick="costTemplate()">⬇️ تنزيل القالب</button>
+<button class="pbtn" style="background:#0a6cff" onclick="document.getElementById('costFile').click()">⬆️ رفع ملف CSV</button>
+<input id="costFile" type="file" accept=".csv,.tsv,.txt" hidden onchange="costFileIn(this)"></div>
+<textarea id="costPaste" rows="3" placeholder="الصق هنا: الكود ثم التكلفة (سطر لكل منتج)" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;font-family:inherit"></textarea>
+<button class="pbtn" style="margin-top:6px" onclick="costApply(document.getElementById('costPaste').value)">✅ تطبيق التكلفة</button>
+<div id="costRes" style="font-size:13px;margin-top:6px"></div></div>
 <div class="bulk" style="display:block"><b>📌 ملاحظات</b>
 <ul style="margin:6px 18px;font-size:13px;color:#4b5563;line-height:1.9">
 <li>الرقم الافتراضي 1234 — غيّره قبل الإعلان.</li>
@@ -536,6 +553,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec{right:58px}}
 <div class="tab" data-t="ord" onclick="setTab('ord')">🧾 الطلبات</div>
 <div class="tab" data-t="prf" onclick="setTab('prf')">📈 تقرير الأرباح</div>
 <div class="tab" data-t="sal" onclick="setTab('sal')">💰 المبيعات</div>
+<div class="tab" data-t="cls" onclick="setTab('cls')">🧮 إقفال اليوم</div>
 <div class="tab" data-t="cr" onclick="setTab('cr')">📒 الآجل</div>
 </div>
 <div id="dashBody"></div>
@@ -776,10 +794,11 @@ function renderDash(){
   {const tk=document.querySelector('.tab[data-t="trk"]');if(tk){const n=orders.filter(o=>o.status&&o.status!=='done'&&!o.refunded).length;tk.textContent='🚚 تتبع الطلبات'+(n?' ('+n+')':'')}}
   if(tab==='trk'){b.innerHTML=trkHTML();return}
   if(tab==='prf'){b.innerHTML=prfHTML();return}
+  if(tab==='cls'){b.innerHTML=clsHTML();return}
   if(tab==='inv'){
     const low=items.filter(it=>it.stock<=it.min);
     const SV=stockValue();
-    b.innerHTML=`<div class="stats"><div class="stat">💰 قيمة المخزون (بالتكلفة)<b>${SV.c} ج.م</b></div><div class="stat">🏷️ قيمته بسعر البيع<b>${SV.v} ج.م</b></div><div class="stat" style="background:#e8f7ee">💹 ربح متوقع<b>${SV.pf} ج.م</b></div></div>`+(SV.n?`<div class="alert">ℹ️ ${SV.n} منتج بدون سعر تكلفة (لم يدخل في الحساب). أدخلها من ⚙️ المنتجات.</div>`:'')+(low.length?`<div class="alert">⚠️ ${low.length} منتج وصل لحد التنبيه أو خلص: ${low.map(i=>i.name).join('، ')}</div>`:'')+
+    b.innerHTML=`<div class="stats"><div class="stat">💰 قيمة المخزون (بالتكلفة)<b>${SV.c} ج.م</b></div><div class="stat">🏷️ قيمته بسعر البيع<b>${SV.v} ج.م</b></div><div class="stat" style="background:#e8f7ee">💹 ربح متوقع<b>${SV.pf} ج.م</b></div></div>`+(SV.n?`<div class="alert">ℹ️ ${SV.n} منتج بدون سعر تكلفة (لم يدخل في الحساب). أدخلها من ⚙️ المنتجات.</div>`:'')+(low.length?`<div class="alert">⚠️ ${low.length} منتج وصل لحد التنبيه أو خلص: ${low.map(i=>i.name).join('، ')}<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="pbtn" onclick="lowCopy()">📋 نسخ قائمة النواقص</button><button class="pbtn" style="background:#25d366" onclick="lowWA()">📤 إرسال واتساب</button><button class="pbtn" style="background:#6b7280" onclick="lowPrint()">🖨️ طباعة</button></div></div>`:'')+
     items.map((it,i)=>{
       const st=it.stock<=0?['نفد','#e30613']:it.stock<=it.min?['منخفض','#e68a00']:['متوفر','#0a8a43'];
       return `<div class="arow"><span style="font-size:24px">${ph(it,1)}</span><span class="n">${it.name} <small style="color:#888">#${it.code}</small></span>
@@ -834,10 +853,15 @@ function askPin(cb,title){
   document.getElementById('pinModal').classList.add('open');
   setTimeout(()=>i.focus(),50);
 }
+let _pf=0;
+function pinLocked(){let t=0;try{t=+localStorage.getItem('pin_lk')||0}catch(e){}if(Date.now()<t){toast('🔒 محاولات خاطئة كثيرة — انتظر '+Math.ceil((t-Date.now())/1000)+' ثانية',3500);return true}return false}
+function pinFail(){_pf++;if(_pf>=5){_pf=0;try{localStorage.setItem('pin_lk',String(Date.now()+12e4))}catch(e){}toast('🔒 تم القفل دقيقتين بعد 5 محاولات خاطئة',4500)}else toast('الرقم السري غير صحيح ❌ (باقي '+(5-_pf)+' محاولات)')}
+function pinWarn(){const w=PIN==='1234',b=document.querySelector('.topbar [onclick="toggleSec()"]');if(b)b.classList.toggle('warn',w);const x=document.getElementById('secWarn');if(x)x.style.display=w?'block':'none';return w}
 function pinOk(){
+  if(pinLocked())return;
   const i=document.getElementById('pinInput');
-  if(i.value===PIN){const cb=pinCb;pinClose();if(cb)cb()}
-  else{toast('الرقم السري غير صحيح ❌');i.value=''}
+  if(i.value===PIN){_pf=0;const cb=pinCb;pinClose();if(cb)cb()}
+  else{pinFail();i.value=''}
 }
 function pinClose(){
   document.getElementById('pinModal').classList.remove('open');pinCb=null;
@@ -847,8 +871,9 @@ function changePin(){
   const o=document.getElementById('pinOld'),n=document.getElementById('pinNew');
   if(o.value!==PIN){toast('الرقم السري الحالي غير صحيح ❌');return}
   if(n.value.length<4){toast('الرقم السري الجديد لازم 4 أرقام على الأقل');return}
+  if(['1234','0000','1111','12345','123456','4321'].includes(n.value)){toast('اختر رقماً أصعب من الأرقام المتتابعة أو المكررة',3500);return}
   PIN=n.value;try{localStorage.setItem('pin_v1',PIN)}catch(e){}pushAll();
-  o.value='';n.value='';toast('تم تغيير الرقم السري ✅');
+  o.value='';n.value='';pinWarn();toast('تم تغيير الرقم السري ✅');
 }
 function cancelOrder(id){askPin(()=>doCancel(id),'🔒 اكتب الرقم السري لاسترجاع الفاتورة')}
 function setOrdF(f){ordF=f;renderDash()}
@@ -1058,7 +1083,9 @@ function loginClose(){document.getElementById('loginModal').classList.remove('op
 function loginOk(){
   const c=cashiers.find(x=>String(x.id)===document.getElementById('loginCashier').value);
   const i=document.getElementById('loginPin');
-  if(!c||i.value!==c.pin){toast('الرقم السري غير صحيح ❌');i.value='';return}
+  if(pinLocked())return;
+  if(!c||i.value!==c.pin){pinFail();i.value='';return}
+  _pf=0;
   curCashier={id:c.id,name:c.name};loginClose();enterPos();toast('أهلاً '+c.name+' 👋');
 }
 function updatePosWho(){
@@ -1240,7 +1267,7 @@ function resetItems(){askPin(()=>{items=JSON.parse(JSON.stringify(DEFAULT_ITEMS)
 function toggleSec(){
   const a=document.getElementById('sec');
   if(a.classList.contains('open')){a.classList.remove('open');return}
-  askPin(()=>{a.classList.add('open');renderCashiers()},'🔐 الرقم السري والأمان — اكتب رقم المدير');
+  askPin(()=>{a.classList.add('open');renderCashiers();pinWarn()},'🔐 الرقم السري والأمان — اكتب رقم المدير');
 }
 function toggleAdmin(){
   const a=document.getElementById('admin');
@@ -1727,6 +1754,76 @@ try{document.getElementById('custName').value=localStorage.getItem('cust_name')|
 (function(){const tb=document.querySelector('.topbar'),hd=document.querySelector('header');
 function fit(){hd.style.top='0'}
 fit();addEventListener('resize',fit);setTimeout(fit,400)})();
+
+
+/* ===== أدوات المدير: إقفال اليوم، النواقص، استيراد التكلفة ===== */
+const rd2=x=>Math.round(x*100)/100;
+const ymd=t=>{const d=new Date(t);return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+let clsD='';
+function clsDay(){return clsD||ymd(Date.now())}
+function clsSet(v){clsD=v;renderDash()}
+function clsData(){
+  const D=clsDay(),rows={};const R=n=>rows[n]=rows[n]||{n,inv:0,sales:0,cash:0,cr:0,ref:0,refAmt:0,col:0};
+  orders.filter(o=>ymd(o.time)===D).forEach(o=>{
+    const r=R(o.src==='cashier'?(o.cashier||'بدون اسم'):'🌐 أونلاين');
+    if(o.refunded){r.ref++;r.refAmt+=o.total;return}
+    r.inv++;r.sales+=o.total;
+    if(o.credit){const pd=+o.credit.paid||0;r.cash+=pd;r.cr+=o.total-pd}else r.cash+=o.total});
+  payments.filter(p=>ymd(p.time)===D).forEach(p=>{R(p.by||'المدير').col+=+p.amount||0});
+  const list=Object.values(rows);list.forEach(r=>{['sales','cash','cr','refAmt','col'].forEach(k=>r[k]=rd2(r[k]));r.exp=rd2(r.cash+r.col)});
+  return{D,list}
+}
+function clsHTML(){
+  const{D,list}=clsData();const T=list.reduce((a,r)=>{['inv','sales','cash','cr','ref','refAmt','col','exp'].forEach(k=>a[k]=rd2((a[k]||0)+r[k]));return a},{});
+  const rows=list.map((r,i)=>`<tr><td><b>${r.n}</b></td><td>${r.inv}</td><td>${r.sales}</td><td>${r.cash}</td><td>${r.cr}</td><td>${r.col}</td><td>${r.ref?r.ref+' ('+r.refAmt+')':'—'}</td><td><b>${r.exp}</b></td><td><input type="number" class="p" style="width:90px" id="cnt${i}" oninput="clsDiff(${i},${r.exp})" placeholder="المعدود"></td><td id="dif${i}">—</td></tr>`).join('');
+  return`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><b>📅 اليوم:</b><input type="date" id="clsDate" value="${D}" onchange="clsSet(this.value)" style="padding:6px;border:1px solid #ccc;border-radius:8px">
+<button class="pbtn" onclick="clsCopy()">📋 نسخ التقرير</button><button class="pbtn" style="background:#6b7280" onclick="clsPrint()">🖨️ طباعة</button></div>
+<div class="stats"><div class="stat">🧾 الفواتير<b>${T.inv||0}</b></div><div class="stat">💰 المبيعات<b>${T.sales||0} ج.م</b></div><div class="stat" style="background:#e8f7ee">💵 نقدي<b>${T.cash||0} ج.م</b></div><div class="stat" style="background:#fff3e0">📒 آجل<b>${T.cr||0} ج.م</b></div></div>
+${list.length?`<div style="overflow-x:auto"><table class="cls-t"><thead><tr><th>الكاشير</th><th>فواتير</th><th>المبيعات</th><th>نقدي</th><th>آجل</th><th>تحصيل ديون</th><th>مرتجع</th><th>المتوقع بالدرج</th><th>المعدود فعلياً</th><th>الفرق</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td>الإجمالي</td><td>${T.inv||0}</td><td>${T.sales||0}</td><td>${T.cash||0}</td><td>${T.cr||0}</td><td>${T.col||0}</td><td>${T.ref||0}</td><td>${T.exp||0}</td><td></td><td></td></tr></tfoot></table></div><p style="font-size:12px;color:#6b7280;margin-top:8px">المتوقع بالدرج = النقدي + تحصيل الديون. اكتب المبلغ المعدود فعلياً ليظهر الفرق (لا يُحفظ).</p>`:'<p class="empty">لا توجد مبيعات في هذا اليوم</p>'}`;
+}
+function clsDiff(i,exp){const v=document.getElementById('cnt'+i).value,el=document.getElementById('dif'+i);if(v===''){el.textContent='—';el.style.color='';return}const d=rd2(+v-exp);el.textContent=(d>0?'+':'')+d+' ج.م'+(d===0?' ✅':'');el.style.color=d===0?'#0a8a43':'#e30613';el.style.fontWeight='800'}
+function clsText(){
+  const{D,list}=clsData();let t='🧮 إقفال يوم '+D+' — سوبر ماركت\n';let T={sales:0,cash:0,cr:0,exp:0};
+  list.forEach(r=>{t+='\n👤 '+r.n+'\n  فواتير: '+r.inv+' | مبيعات: '+r.sales+'\n  نقدي: '+r.cash+' | آجل: '+r.cr+' | تحصيل ديون: '+r.col+(r.ref?'\n  مرتجع: '+r.ref+' ('+r.refAmt+')':'')+'\n  المتوقع بالدرج: '+r.exp+'\n';T.sales+=r.sales;T.cash+=r.cash;T.cr+=r.cr;T.exp+=r.exp});
+  return t+'\n— الإجمالي —\nمبيعات: '+rd2(T.sales)+' | نقدي: '+rd2(T.cash)+' | آجل: '+rd2(T.cr)+' | المتوقع بالدرج: '+rd2(T.exp)
+}
+async function copyTxt(t,msg){try{await navigator.clipboard.writeText(t);toast(msg||'تم النسخ ✅')}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast(msg||'تم النسخ ✅')}catch(x){toast('تعذر النسخ')}a.remove()}}
+function clsCopy(){copyTxt(clsText(),'تم نسخ تقرير الإقفال ✅')}
+function printTxt(title,t){const w=window.open('','_blank');if(!w){toast('اسمح بالنوافذ المنبثقة للطباعة',3500);return}
+  w.document.write('<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>'+title+'</title><style>body{font-family:Tahoma,Arial;padding:20px;white-space:pre-wrap;line-height:1.9;font-size:16px}</style></head><body>'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</body></html>');w.document.close();w.focus();setTimeout(()=>w.print(),400)}
+function clsPrint(){printTxt('إقفال اليوم',clsText())}
+function lowText(){const low=items.filter(it=>it.stock<=it.min);return '⚠️ قائمة النواقص — سوبر ماركت ('+ymd(Date.now())+')\n\n'+(low.length?low.map(it=>'• '+it.name+' — '+(it.stock<=0?'خلص':'باقي '+it.stock)+' (الحد '+it.min+')').join('\n'):'لا توجد نواقص ✅')}
+function lowCopy(){copyTxt(lowText(),'تم نسخ قائمة النواقص ✅')}
+function lowWA(){window.open('https://wa.me/?text='+encodeURIComponent(lowText()),'_blank')}
+function lowPrint(){printTxt('قائمة النواقص',lowText())}
+function secGo(t){document.getElementById('sec').classList.remove('open');document.getElementById('dash').classList.add('open');setTab(t)}
+/* استيراد التكلفة */
+const _ad=v=>String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/٫/g,'.').replace(/[٬\s]/g,'');
+function costRows(txt){
+  txt=String(txt).replace(/^﻿/,'');const L=txt.split(/\r?\n/).filter(l=>l.trim());if(!L.length)return[];
+  const dl=L[0].includes('\t')?'\t':(L[0].split(';').length>L[0].split(',').length?';':',');
+  return L.map(l=>{const c=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===dl&&!q){c.push(cur);cur=''}else cur+=ch}c.push(cur);return c.map(x=>x.trim())})}
+function costApply(txt){
+  const res=document.getElementById('costRes');const R=costRows(txt);if(!R.length){toast('ما فيه بيانات');return}
+  let ci=-1,ki=0,ni=-1;const h=R[0].map(x=>x.toLowerCase());
+  const hc=h.findIndex(x=>/تكلف|cost/.test(x));let start=0;
+  if(hc>=0){ci=hc;start=1;const k=h.findIndex(x=>/كود|code/.test(x));ki=k>=0?k:0;ni=h.findIndex(x=>/اسم|name/.test(x))}
+  else{ci=R[0].length-1;if(isNaN(parseFloat(_ad(R[0][ci]))))start=1}
+  if(ci<=ki&&hc<0){ci=R[0].length-1}
+  let ok=0;const miss=[];const mapC={},mapN={};items.forEach(it=>{mapC[String(it.code)]=it;mapN[it.name]=it});
+  R.slice(start).forEach(r=>{const key=(r[ki]||'').trim(),nm=ni>=0?(r[ni]||'').trim():'';const raw=_ad(r[ci]||'');
+    if(raw==='')return;const v=parseFloat(raw);if(isNaN(v)||v<0){miss.push((key||nm)+' (تكلفة غير صالحة)');return}
+    const it=mapC[_ad(key)]||mapC[key]||mapN[key]||mapN[nm];if(!it){miss.push(key||nm);return}
+    it.cost=v;ok++});
+  if(ok){afterEdit()}
+  res.innerHTML='<span style="color:#0a8a43;font-weight:700">✅ تم تحديث تكلفة '+ok+' منتج</span>'+(miss.length?'<br><span style="color:#e30613">⚠️ '+miss.length+' سطر لم يُطابق: '+miss.slice(0,15).join('، ')+(miss.length>15?'…':'')+'</span>':'');
+  toast(ok?'تم تحديث التكلفة ('+ok+')':'ما تم تحديث شيء',2500)
+}
+function costFileIn(inp){const f=inp.files&&inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{costApply(rd.result);inp.value=''};rd.readAsText(f,'utf-8')}
+function costTemplate(){
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const csv='﻿'+['الكود','الاسم','سعر البيع','التكلفة'].join(',')+'\n'+items.map(it=>[q(it.code),q(it.name),it.price,it.cost!=null?it.cost:''].join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='قالب-التكلفة.csv';document.body.appendChild(a);a.click();a.remove()}
 
 /* ===== تثبيت كتطبيق (PWA) ===== */
 let _ip=null;
