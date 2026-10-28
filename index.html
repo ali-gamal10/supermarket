@@ -445,6 +445,10 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <div style="font-size:12.5px;color:#765;margin:6px 0">اكتب جملة قصيرة مثل: «بيبسي 2 لتر بـ 25 جنيه اليوم فقط». تظهر للزبائن خلال دقائق من النشر.</div>
 <input id="dealTxt" maxlength="140" placeholder="نص العرض" style="width:100%;margin-bottom:8px">
 <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="pbtn" style="background:#d98200" onclick="dealPublish(false)">📣 نشر العرض</button><button class="pbtn gray" onclick="dealPublish(true)">إيقاف العرض</button></div></div>
+<div class="bulk" style="display:block;background:#f1f5ff;border-color:#b6c8f5"><b>🎨 خلفية وألوان الموقع</b>
+<div style="font-size:12.5px;color:#456;margin:6px 0">اختر شكلاً، يظهر لك فوراً للمعاينة. ثم اضغط «نشر للزبائن» ليتغير عندهم خلال دقائق.</div>
+<div id="thGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-bottom:8px"></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="pbtn" style="background:#0a6cff" onclick="themePublish()">🌐 نشر للزبائن</button><button class="pbtn gray" onclick="themePick('green')">↩️ الشكل الأصلي</button></div></div>
 <div class="bulk" id="pmBox" style="display:block;background:#fff0f3;border-color:#f3b5c4"><b>🎨 صانع منشورات العروض</b>
 <div style="font-size:12.5px;color:#765;margin:6px 0">اختر من 1 إلى 6 منتجات (حتى 9 في ورقة A4)، ويطلع لك منشور جاهز بالسعر القديم والجديد لتنشره على واتساب وفيسبوك.</div>
 <input id="pmQ" placeholder="🔍 ابحث عن منتج لإضافته" oninput="pmList()" style="width:100%;margin-bottom:6px">
@@ -2096,7 +2100,8 @@ function stgInit(){
   document.getElementById('autoPr2').checked=autoPrOn()}catch(e){}
   try{ghState();renderSync();bkState();notifState();cbRefresh()}catch(e){}
   try{pmList()}catch(e){}
-  try{fetch('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/store.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.deal)document.getElementById('dealTxt').value=j.deal.text||''}).catch(()=>{})}catch(e){}
+  try{fetch('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/store.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j){lsSet('store_cfg',j);if(j.deal)document.getElementById('dealTxt').value=j.deal.text||'';if(j.theme&&THEMES[j.theme]){thSel=j.theme;themeApply(j.theme)}themeGrid()}}).catch(()=>{})}catch(e){}
+  try{thSel=localStorage.getItem('theme')||'green';themeGrid()}catch(e){}
 }
 function stgCopy(id){const el=document.getElementById(id);el.select();try{navigator.clipboard.writeText(el.value)}catch(e){document.execCommand('copy')}toast('تم النسخ ✅')}
 function stgGo(w){document.getElementById('stg').classList.remove('open');if(w==='sec')toggleSec();else toggleAdmin()}
@@ -3088,13 +3093,45 @@ function listSend(a){
   const msg='مرحباً بكم في متجر سوبر ماركت 🛒\nطلب بقائمة مكتوبة:\nالاسم: '+nm+'\nالعنوان: '+ad+(ph?'\nالجوال: '+ph:'')+(sl?'\n⏰ وقت التوصيل: '+sl:'')+'\n\nالقائمة:\n'+t+'\n\n🔖 '+id;
   a.href='https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(msg);
   document.getElementById('lText').value='';listClose();toast('تم تجهيز رسالتك ✅ أرسلها على واتساب');return true}
+
+/* ===== خلفيات وألوان الموقع ===== */
+const THEMES={
+ green:{n:'أخضر (الأصلي)',a:'#16a34a',b:'#22c55e',bg:'#f3f6f4',hero:'linear-gradient(135deg,#16a34a 0%,#22c55e 55%,#a3e635 100%)'},
+ red:{n:'أحمر',a:'#e11d48',b:'#fb7185',bg:'#fff4f5',hero:'linear-gradient(135deg,#be123c 0%,#e11d48 55%,#fb7185 100%)'},
+ orange:{n:'برتقالي',a:'#ea580c',b:'#fb923c',bg:'#fff7ed',hero:'linear-gradient(135deg,#c2410c 0%,#ea580c 55%,#fdba74 100%)'},
+ sky:{n:'أزرق سماوي',a:'#0a6cff',b:'#38bdf8',bg:'#eef6ff',hero:'linear-gradient(135deg,#0a4fb8 0%,#0a6cff 55%,#7dd3fc 100%)'},
+ purple:{n:'بنفسجي',a:'#7c3aed',b:'#a78bfa',bg:'#f6f1ff',hero:'linear-gradient(135deg,#5b21b6 0%,#7c3aed 55%,#c4b5fd 100%)'},
+ gold:{n:'ذهبي (رمضان/عيد)',a:'#b45309',b:'#f59e0b',bg:'#fffbeb radial-gradient(circle at 20px 20px,rgba(245,158,11,.14) 2px,transparent 3px) 0 0/40px 40px',hero:'linear-gradient(135deg,#78350f 0%,#b45309 55%,#fbbf24 100%)'},
+ dots:{n:'نقاط خضراء',a:'#15803d',b:'#4ade80',bg:'#f0fdf4 radial-gradient(circle at 12px 12px,rgba(22,163,74,.16) 2px,transparent 3px) 0 0/28px 28px',hero:'linear-gradient(135deg,#166534 0%,#15803d 55%,#86efac 100%)'},
+ teal:{n:'فيروزي مموّج',a:'#0d9488',b:'#2dd4bf',bg:'#f0fdfa repeating-linear-gradient(135deg,rgba(13,148,136,.07) 0 14px,transparent 14px 28px)',hero:'linear-gradient(135deg,#0f766e 0%,#0d9488 55%,#5eead4 100%)'},
+ pink:{n:'وردي حلو',a:'#db2777',b:'#f472b6',bg:'#fdf2f8 radial-gradient(circle at 14px 14px,rgba(219,39,119,.12) 3px,transparent 4px) 0 0/34px 34px',hero:'linear-gradient(135deg,#9d174d 0%,#db2777 55%,#f9a8d4 100%)'}
+};
+function themeApply(id){
+  const t=THEMES[id]||THEMES.green;let el=document.getElementById('themeCss');
+  if(!el){el=document.createElement('style');el.id='themeCss';document.head.appendChild(el)}
+  el.textContent=id==='green'||!THEMES[id]?'':`body{background:${t.bg}!important}.hero-main{background:${t.hero}!important}.hbtn{color:${t.a}!important}.cat.active{background:${t.a}!important;border-color:${t.a}!important}.cart-btn{background:linear-gradient(135deg,${t.a},${t.b})!important}.card button:not([disabled]){background:linear-gradient(135deg,${t.a},${t.b})!important}.logo-txt b,.logo-txt b span{color:${t.a}!important}`;
+  try{localStorage.setItem('theme',id)}catch(e){}
+}
+let thSel='green';
+function themeGrid(){
+  const g=document.getElementById('thGrid');if(!g)return;
+  g.innerHTML=Object.keys(THEMES).map(k=>{const t=THEMES[k];return `<div onclick="themePick('${k}')" style="cursor:pointer;border:3px solid ${thSel===k?t.a:'#e5e7eb'};border-radius:12px;overflow:hidden;background:#fff;text-align:center"><div style="height:42px;background:${t.hero}"></div><div style="height:22px;background:${t.bg}"></div><div style="font-size:12px;font-weight:700;padding:4px 2px;color:${t.a}">${t.n}${thSel===k?' ✔':''}</div></div>`}).join('');
+}
+function themePick(k){thSel=k;themeApply(k);themeGrid()}
+function themePublish(){
+  const cfg=ghCfg();if(!cfg){toast('فعّل النشر بمفتاح GitHub أولاً',3500);return}
+  askPin(async()=>{const o=Object.assign({},lsGet('store_cfg',{}),{theme:thSel});lsSet('store_cfg',o);
+    const st=await phPut(cfg,'store.json',b64utf8(JSON.stringify(o)),'تحديث شكل الموقع');
+    if(st===200)toast('تم نشر الشكل ✅ يظهر للزبائن خلال دقائق',4000);else toast('تعذر النشر ('+st+')',4500)},'🔐 نشر شكل الموقع — الرقم السري')}
+try{const _t=localStorage.getItem('theme');if(_t&&THEMES[_t])themeApply(_t)}catch(e){}
 function showDeal(tx){const el=document.getElementById('dealBar');if(!el)return;tx=String(tx||'').trim();if(!tx){el.style.display='none';return}el.textContent='📣 '+tx;el.style.display='block'}
 function dealPublish(clear){
   const cfg=ghCfg();if(!cfg){toast('فعّل النشر بمفتاح GitHub أولاً',3500);return}
   const tx=clear?'':document.getElementById('dealTxt').value.trim().slice(0,140);
   if(!clear&&!tx){toast('اكتب نص العرض أولاً',3000);return}
   askPin(async()=>{
-    const st=await phPut(cfg,'store.json',b64utf8(JSON.stringify({deal:{text:tx,at:Date.now()}})),'تحديث عرض اليوم');
+    const st=await phPut(cfg,'store.json',b64utf8(JSON.stringify(Object.assign({},lsGet('store_cfg',{}),{deal:{text:tx,at:Date.now()}}))),'تحديث عرض اليوم');
+    if(st===200)lsSet('store_cfg',Object.assign({},lsGet('store_cfg',{}),{deal:{text:tx,at:Date.now()}}));
     if(st===200){if(clear)document.getElementById('dealTxt').value='';toast(clear?'تم إيقاف عرض اليوم ✅':'تم نشر عرض اليوم ✅ يظهر للزبائن خلال دقائق',4000)}
     else toast('تعذر النشر ('+st+') تأكد من مفتاح GitHub',4500)},'🔐 نشر عرض اليوم — الرقم السري')}
 /* رفع صور المنتجات دفعة واحدة إلى المستودع (img/) */
@@ -3231,7 +3268,7 @@ if(!STAFF&&/^https?:/.test(location.protocol)){
 }
 if(!STAFF&&/^https?:/.test(location.protocol)){
   const _sj=u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
-  _sj('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/store.json?t='+Math.floor(Date.now()/6e4)).then(j=>j||_sj('store.json?t='+Date.now())).then(j=>{if(j&&j.deal)showDeal(j.deal.text)}).catch(()=>{});
+  _sj('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/store.json?t='+Math.floor(Date.now()/6e4)).then(j=>j||_sj('store.json?t='+Date.now())).then(j=>{if(j&&j.deal)showDeal(j.deal.text);if(j&&j.theme)themeApply(j.theme);else if(j&&!j.theme)themeApply('green')}).catch(()=>{});
 }
 render();updateCart();updateBadge();
 if(location.hash==='#cashier'&&document.querySelector('.topbar').classList.contains('on'))togglePos();
