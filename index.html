@@ -16,6 +16,7 @@
 <style>
 html.dark{background:#fff;filter:invert(1) hue-rotate(180deg)}
 html.dark img,html.dark video,html.dark canvas{filter:invert(1) hue-rotate(180deg)}
+.cbx .stp{display:flex;align-items:center;margin-top:6px;border:2px solid #16a34a;border-radius:12px;overflow:hidden;background:#f0fdf4}.cbx .stp button{width:40px;margin:0;border-radius:0;padding:5px 0;font-size:18px;line-height:1.2}.cbx .stp b{flex:1;text-align:center;font-size:16px;color:#14532d}
 .hbtn2{background:rgba(255,255,255,.25);border:0;border-radius:12px;padding:6px 9px;font-size:17px;cursor:pointer;margin-inline-start:6px}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',Segoe UI,Tahoma,sans-serif}
 body{background:#f5f5f5;padding-bottom:70px}
@@ -319,6 +320,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <div id="prodBox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeProd()">
 <div style="background:#fff;border-radius:22px 22px 0 0;padding:16px;width:100%;max-width:480px;max-height:92vh;overflow:auto" id="prodIn"></div></div>
 <div id="dealBar" style="display:none;margin:8px 12px;padding:11px 14px;border-radius:14px;background:linear-gradient(90deg,#fff3bf,#ffe08a);border:1px solid #f0c24b;color:#5b3b00;font-weight:800;font-size:15px;text-align:center"></div>
+<div id="welcome" style="margin:8px 12px"></div>
 <div id="listCta" style="margin:8px 12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" onclick="voxOpen()" style="flex:1 1 100%;padding:12px 6px;border:2px solid #e11d48;background:#fff1f2;color:#be123c;border-radius:14px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer">🎤 سجّل طلبك بالصوت</button><button type="button" onclick="trkOpen()" style="flex:1 1 44%;padding:12px 6px;border:2px solid #0a6cff;background:#eef4ff;color:#0a4fb8;border-radius:14px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer">📦 تتبع طلبي</button><button type="button" onclick="listOpen()" style="flex:1 1 44%;padding:12px 4px;border:2px dashed #16a34a;background:#f0fdf4;color:#166534;border-radius:14px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer">✍️ اكتب قائمتك</button><button type="button" onclick="budOpen()" style="flex:1 1 44%;padding:11px 4px;border:2px solid #d98200;background:#fff8e1;color:#8a5200;border-radius:14px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer">💰 ميزانيتي</button><button type="button" onclick="shareStore()" style="flex:1 1 44%;padding:11px 4px;border:2px solid #9333ea;background:#faf5ff;color:#6b21a8;border-radius:14px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer">🎁 شارك صديقك</button></div>
 <div id="budBox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90;align-items:center;justify-content:center;padding:14px" onclick="if(event.target===this)budClose()">
 <div style="background:#fff;border-radius:18px;padding:16px;width:100%;max-width:440px;max-height:90vh;overflow:auto">
@@ -2162,7 +2164,7 @@ function render(){
       <div><span class="price">${it.price} ج.م</span>${it.old?`<span class="old-price">${it.old}</span>`:''}</div>
       ${it.offOn&&it.offer?`<div class="offend">⏳ العرض لحد ${fmtD(it.offer.to)}</div>`:''}
       ${it.stock>0&&it.stock<=it.min?`<div style="color:#e30613;font-size:11px">باقي ${it.stock} فقط!</div>`:''}
-      ${it.stock>0?`<button onclick="add(${it.i})">أضف للسلة</button>`:'<button disabled style="background:#999;cursor:default">نفد المخزون</button>'}
+      <div class="cbx" id="cb${it.i}">${cbHTML(it.i)}</div>
     </div>`).join('');
 }
 function updateHero(){
@@ -2181,9 +2183,16 @@ function filterCat(c,el){
   el.classList.add('active');
   render();
 }
+function cbHTML(i){
+  const it=items[i];if(!it)return '';
+  if(!(it.stock>0))return '<button disabled style="background:#999;cursor:default">نفد المخزون</button>';
+  const q=cart[i]||0;
+  return q>0?`<div class="stp"><button onclick="change(${i},1)">+</button><b>${q}</b><button onclick="change(${i},-1)">−</button></div>`:`<button onclick="add(${i})">أضف للسلة</button>`;
+}
+function stpRefresh(){document.querySelectorAll('.cbx').forEach(e=>{const i=+e.id.slice(2);const h=cbHTML(i);if(e.innerHTML!==h)e.innerHTML=h})}
 function add(i){
   if((cart[i]||0)>=items[i].stock){toast('المتاح من '+items[i].name+' هو '+items[i].stock+' فقط');return}
-  cart[i]=(cart[i]||0)+1;updateCart();toast('تمت الإضافة ✅ '+items[i].name)
+  cart[i]=(cart[i]||0)+1;updateCart();if(cart[i]===1&&Object.keys(cart).length===1)toast('تمت الإضافة ✅ تقدر تزيد الكمية بـ + و −',1800)
 }
 function change(i,d){
   if(d>0&&(cart[i]||0)>=items[i].stock){toast('وصلت للمتاح في المخزون');return}
@@ -2200,6 +2209,7 @@ function updateCart(){
   }).join(''):'<p style="text-align:center;color:#888;padding:15px">السلة فاضية</p>';
   document.getElementById('total').textContent=total;
   document.getElementById('count').textContent=count;
+  try{stpRefresh()}catch(e){}
   renderPos();
 }
 function toggleCart(){document.getElementById('cart').classList.toggle('open')}
@@ -3078,6 +3088,26 @@ function micGo(){
   r.onend=done;
   try{r.start()}catch(e){done()}
 }
+
+/* ===== سجّل بياناتك مرة واحدة ===== */
+function profGet(){try{return {n:localStorage.getItem('cust_name')||'',p:localStorage.getItem('cust_phone')||'',a:localStorage.getItem('cust_addr')||''}}catch(e){return {n:'',p:'',a:''}}}
+function profRender(edit){
+  const el=document.getElementById('welcome');if(!el||STAFF)return;
+  const P=profGet(),x=(()=>{try{return sessionStorage.getItem('prof_x')}catch(e){return ''}})();
+  const inp='width:100%;padding:10px 12px;margin-bottom:8px;border:1px solid #d1d5db;border-radius:11px;font-size:15px;font-family:inherit;outline:none';
+  if(P.n&&!edit){
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:8px;background:#ecfdf3;border:1px solid #b7ebc9;border-radius:14px;padding:9px 12px;font-size:14px;color:#14532d"><span style="flex:1">👋 أهلاً يا <b>${P.n.replace(/</g,'&lt;')}</b>${P.a?' · 📍 '+P.a.replace(/</g,'&lt;').slice(0,40):''}</span><button type="button" onclick="profRender(true)" style="border:0;background:#fff;border-radius:9px;padding:5px 10px;font-family:inherit;cursor:pointer;font-size:13px">✏️ تعديل</button></div>`;return}
+  if(x&&!edit){el.innerHTML='';return}
+  el.innerHTML=`<div style="background:#fff;border:2px solid #16a34a;border-radius:16px;padding:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b style="font-size:16px">👤 سجّل بياناتك مرة واحدة</b>${edit?'':'<button type="button" onclick="try{sessionStorage.setItem(\'prof_x\',\'1\')}catch(e){}profRender()" style="border:0;background:#eee;border-radius:9px;padding:4px 10px;font-family:inherit;cursor:pointer">لاحقاً</button>'}</div><div style="font-size:13px;color:#555;margin-bottom:8px">بعدها طلباتك تنكتب لوحدها، ولا تكتب اسمك وعنوانك كل مرة.</div><input id="pfN" value="${P.n.replace(/"/g,'&quot;')}" placeholder="✍️ اسمك" maxlength="40" style="${inp}"><input id="pfP" type="tel" inputmode="tel" value="${P.p.replace(/"/g,'&quot;')}" placeholder="📞 رقم جوالك (علشان نبعت لك حالة الطلب)" maxlength="20" style="${inp};direction:ltr;text-align:right"><input id="pfA" value="${P.a.replace(/"/g,'&quot;')}" placeholder="📍 العنوان أو رقم البيت" maxlength="120" style="${inp}"><button type="button" onclick="profSave()" style="width:100%;padding:11px;border:0;background:#16a34a;color:#fff;border-radius:12px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer">حفظ ✅</button></div>`;
+}
+function profSave(){
+  const n=document.getElementById('pfN').value.trim(),ph=document.getElementById('pfP').value.trim(),a=document.getElementById('pfA').value.trim();
+  if(!n){toast('اكتب اسمك أولاً ✍️');return}
+  try{localStorage.setItem('cust_name',n);localStorage.setItem('cust_phone',ph);localStorage.setItem('cust_addr',a)}catch(e){}
+  [['custName',n],['custPhone',ph],['custAddr',a],['lName',n],['lPhone',ph],['lAddr',a]].forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.value=v});
+  profRender();toast('تم الحفظ ✅ طلباتك الجاية أسرع');
+}
+try{profRender()}catch(e){}
 function listOpen(){
   try{document.getElementById('lName').value=localStorage.getItem('cust_name')||'';document.getElementById('lAddr').value=localStorage.getItem('cust_addr')||'';document.getElementById('lPhone').value=localStorage.getItem('cust_phone')||''}catch(e){}
   document.getElementById('listBox').style.display='flex'}
