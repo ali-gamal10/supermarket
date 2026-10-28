@@ -298,7 +298,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <path d="M12 29h40l-4.2 19.5a5 5 0 0 1-4.9 3.9H21.1a5 5 0 0 1-4.9-3.9z" fill="#fff"/>
 <path d="M24.5 35v12M32 35v12M39.5 35v12" stroke="#16a34a" stroke-width="2.6" stroke-linecap="round" opacity=".45"/>
 </svg><div class="logo-txt"><b><span>سوبر ماركت</span></b><small>طازة كل يوم · توصيل لباب بيتك</small></div></div>
-<div class="hsearch"><span>🔍</span><input id="q" type="search" placeholder="دور على رز، زيت، لبن..." oninput="render()"></div>
+<div class="hsearch"><span>🔍</span><input id="q" type="search" placeholder="دور على رز، زيت، لبن..." oninput="render()"><button type="button" id="micBtn" onclick="micGo()" title="بحث بالصوت" style="border:0;background:#fee2e2;border-radius:50%;width:34px;height:34px;font-size:17px;cursor:pointer;flex:none;display:none">🎤</button></div>
 <button class="hbtn2" id="darkBtn" onclick="toggleDark()" title="الوضع الليلي">🌙</button><button class="cart-btn" onclick="toggleCart()"><span id="count">0</span> 🛒</button>
 </header>
 
@@ -692,6 +692,9 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <div class="tab" data-t="ord" onclick="setTab('ord')">🧾 الطلبات</div>
 <div class="tab" data-t="prf" onclick="setTab('prf')">📈 تقرير الأرباح</div>
 <div class="tab" data-t="rep" onclick="setTab('rep')">📋 تقرير المنتجات</div>
+<div class="tab" data-t="cmp" onclick="setTab('cmp')">📊 مقارنة الفترات</div>
+<div class="tab" data-t="csh" onclick="setTab('csh')">👥 تقرير الكاشيرية</div>
+<div class="tab" data-t="bc" onclick="setTab('bc')">📣 رسائل الزبائن</div>
 <div class="tab" data-t="sal" onclick="setTab('sal')">💰 المبيعات</div>
 <div class="tab" data-t="cls" onclick="setTab('cls')">🧮 إقفال اليوم</div>
 <div class="tab" data-t="cr" onclick="setTab('cr')">📒 الآجل</div>
@@ -1494,6 +1497,9 @@ function renderDash(){
   if(tab==='trk'){b.innerHTML=trkHTML();return}
   if(tab==='prf'){b.innerHTML=prfHTML();return}
   if(tab==='rep'){b.innerHTML=repHTML();return}
+  if(tab==='cmp'){b.innerHTML=cmpHTML();return}
+  if(tab==='csh'){b.innerHTML=cshHTML();return}
+  if(tab==='bc'){b.innerHTML=bcHTML();return}
   if(tab==='cls'){b.innerHTML=clsHTML();return}
   if(tab==='inv'){
     const low=items.filter(it=>it.stock<=it.min);
@@ -2379,6 +2385,120 @@ function stockValue(){
 
 /* ===== تقرير الأرباح (للمدير فقط) ===== */
 let prfP='week',prfFrom='',prfTo='';
+/* ===== مقارنة الفترات + تقرير الكاشيرية ===== */
+let cmpP='week',cshP='today';
+/* ===== إرسال العروض لأرقام الزبائن (واتساب) ===== */
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function bcList(){
+  const m={};
+  const add=(ph,name,t)=>{const n=waPhone(ph);if(!/^20(10|11|12|15)\d{8}$/.test(n))return;const r=m[n]=m[n]||{n,name:'',t:0};if(name&&(!r.name||t>=r.t))r.name=name;r.t=Math.max(r.t,t||0)};
+  orders.forEach(o=>{if(o.phone)add(o.phone,o.customer,new Date(o.time).getTime()||0)});
+  customers.forEach(c=>{if(c.phone)add(c.phone,c.name,0)});
+  return Object.values(m).sort((a,b)=>b.t-a.t);
+}
+const BC_DEF='أهلاً {الاسم} 🌟\n🔥 عروض سوبر ماركت اليوم:\n• \n• \n🚚 توصيل لباب بيتك\nاطلب من هنا 👇\n{الرابط}\n\nلإيقاف وصول العروض رد بكلمة: إيقاف';
+function bcMsgFor(r){
+  const base=location.href.replace(/[#?].*$/,'').replace(/[^\/]*$/,'');
+  return (localStorage.getItem('bc_msg')||BC_DEF).replace(/\{الاسم\}/g,r.name||'عزيزي الزبون').replace(/\{الرابط\}/g,base);
+}
+function bcToday(){return dayKey(Date.now())}
+function bcSentSet(){const o=lsGet('bc_sent',{});return new Set(o.d===bcToday()?o.l:[])}
+function bcMarkSent(n){const st=bcSentSet();st.add(n);lsSet('bc_sent',{d:bcToday(),l:[...st]})}
+let bcCur=null;
+function bcSaveMsg(v){try{localStorage.setItem('bc_msg',v)}catch(e){}}
+function bcOff(n,on){const o=new Set(lsGet('bc_off',[]));on?o.delete(n):o.add(n);lsSet('bc_off',[...o]);renderDash()}
+function bcQueue(){const off=new Set(lsGet('bc_off',[])),sent=bcSentSet();return bcList().filter(r=>!off.has(r.n)&&!sent.has(r.n))}
+function bcStart(){const q=bcQueue();if(!q.length){toast('لا يوجد أرقام جاهزة للإرسال');return}bcCur=q[0].n;renderDash()}
+function bcOpen(n){
+  const r=bcList().find(x=>x.n===n);if(!r)return;
+  window.open('https://wa.me/'+n+'?text='+encodeURIComponent(bcMsgFor(r)),'_blank');
+  bcMarkSent(n);const q=bcQueue();bcCur=q.length?q[0].n:null;renderDash();
+}
+function bcSkip(n){bcMarkSent(n);const q=bcQueue();bcCur=q.length?q[0].n:null;renderDash()}
+function bcCopy(){const a=bcList().map(r=>'+'+r.n).join('\n');try{navigator.clipboard.writeText(a)}catch(e){}toast('تم نسخ '+a.split('\n').length+' رقم ✅')}
+function bcCsv(){
+  const b=new Blob(['﻿'+'الاسم,الرقم\r\n'+bcList().map(r=>'"'+(r.name||'').replace(/"/g,'""')+'","+'+r.n+'"').join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ارقام-الزبائن.csv';document.body.appendChild(a);a.click();a.remove();toast('تم تنزيل الأرقام ✅',2500);
+}
+function bcResetToday(){lsSet('bc_sent',{d:bcToday(),l:[]});bcCur=null;renderDash()}
+function bcHTML(){
+  const L=bcList(),off=new Set(lsGet('bc_off',[])),sent=bcSentSet(),ready=L.filter(r=>!off.has(r.n)&&!sent.has(r.n)).length;
+  const msg=localStorage.getItem('bc_msg')||BC_DEF;
+  const cur=bcCur&&L.find(r=>r.n===bcCur);
+  const curBox=cur?`<div style="background:#ecfdf3;border:2px solid #16a34a;border-radius:14px;padding:12px;margin:10px 0"><div style="font-weight:800;font-size:16px">الآن: ${(cur.name||'زبون').replace(/</g,'&lt;')} — <span dir="ltr">+${cur.n}</span></div><div style="font-size:13px;color:#444;white-space:pre-wrap;background:#fff;border-radius:10px;padding:8px;margin:8px 0">${bcMsgFor(cur).replace(/</g,'&lt;')}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="pbtn" style="background:#25a244;font-size:15px" onclick="bcOpen('${cur.n}')">📲 افتح واتساب وأرسل</button><button class="pbtn gray" onclick="bcSkip('${cur.n}')">⏭️ تخطّي</button><button class="pbtn gray" onclick="bcCur=null;renderDash()">إنهاء</button></div><div style="font-size:12px;color:#666;margin-top:6px">اضغط «إرسال» داخل واتساب ثم ارجع هنا واضغط للرقم التالي. باقي ${ready} رقم.</div></div>`:'';
+  const rows=L.length?L.map(r=>`<label class="row" style="gap:8px;align-items:center;cursor:pointer"><input type="checkbox" ${off.has(r.n)?'':'checked'} onchange="bcOff('${r.n}',this.checked)"><span style="flex:1">${(r.name||'—').replace(/</g,'&lt;')}</span><span dir="ltr" style="color:#555;font-size:13px">+${r.n}</span>${sent.has(r.n)?'<span style="color:#15803d;font-size:12px">✅ أُرسل اليوم</span>':''}</label>`).join(''):'<p class="empty" style="padding:14px">لا توجد أرقام بعد. الأرقام تُحفظ من الطلبات (حقل الجوال) ومن الآجل.</p>';
+  return `<h3 style="margin-bottom:6px">📣 إرسال العروض للزبائن</h3>
+  <div class="alert" style="background:#fff8e1;border-color:#f0d27a;color:#7a5200;margin-bottom:8px;font-size:13px;line-height:1.8">ℹ️ واتساب لا يسمح بإرسال تلقائي جماعي من رقم عادي (يُعرّض رقمك للحظر). لذلك نجهّز لك الرسالة باسم كل زبون وتضغط «إرسال» لكل واحد، وهي طريقة آمنة وسريعة. أرسل لعدد معقول يومياً، وأوقف من يطلب الإيقاف (أزل علامة ✔ عن اسمه).</div>
+  <div style="font-size:13.5px;margin-bottom:4px">✍️ نص الرسالة <small style="color:#888">({الاسم} و{الرابط} تُستبدل تلقائياً)</small></div>
+  <textarea id="bcMsg" oninput="bcSaveMsg(this.value)" style="width:100%;height:150px;padding:10px;border:1px solid #ccc;border-radius:10px;font-family:inherit;font-size:14px;line-height:1.7">${msg.replace(/</g,'&lt;')}</textarea>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0"><button class="pbtn" style="background:#25a244" onclick="bcStart()">▶️ ابدأ الإرسال (${ready} رقم)</button><button class="pbtn gray" onclick="bcCopy()">📋 نسخ كل الأرقام</button><button class="pbtn gray" onclick="bcCsv()">⬇️ تنزيل الأرقام</button><button class="pbtn gray" onclick="bcResetToday()">🔄 مسح علامات اليوم</button></div>
+  <div style="font-size:12.5px;color:#777;margin-bottom:6px">💡 لإرفاق صورة العرض: أنشئها من ⚙️ الإعدادات ← صانع المنشورات، ثم أرفقها يدوياً داخل واتساب مع الرسالة. أو انسخ الأرقام وأنشئ بها «قائمة بث» في واتساب (يستقبلها من حفظ رقمك).</div>
+  ${curBox}
+  <h3 style="margin:10px 0 6px">👥 الأرقام المسجّلة (${L.length})</h3>${rows}`;
+}
+
+function d0t(){const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime()}
+function okOrders(a,b){return orders.filter(o=>{if(o.refunded)return false;const t=new Date(o.time).getTime();return t>=a&&t<=b})}
+function cmpDelta(a,b,money){
+  if(!b&&!a)return '<small style="color:#888">—</small>';
+  if(!b)return '<small style="color:#15803d">جديد ▲</small>';
+  const p=Math.round((a-b)/b*100);
+  return '<small style="color:'+(p>=0?'#15803d':'#c81e3a')+';font-weight:700">'+(p>=0?'▲ ':'▼ ')+Math.abs(p)+'% عن الفترة السابقة</small>';
+}
+function setCmpP(k){cmpP=k;renderDash()}
+function cmpHTML(){
+  const n=cmpP==='month'?30:7,D=d0t(),A=D-(n-1)*864e5,B=D-(2*n-1)*864e5;
+  const cur=okOrders(A,Infinity),prev=okOrders(B,A-1);
+  const st=l=>{const rev=l.reduce((s,o)=>s+o.total,0);return {rev,n:l.length,avg:l.length?Math.round(rev/l.length):0,pf:calcProfit(l).pf}};
+  const c=st(cur),p=st(prev);
+  const card=(t,a,b,u,bg)=>`<div class="stat"${bg?` style="background:${bg}"`:''}>${t}<b>${a}${u||''}</b>${cmpDelta(a,b)}<small style="display:block;color:#888">قبلها: ${b}${u||''}</small></div>`;
+  const dayS=(t0)=>{const m=cur.concat(prev);return orders.filter(o=>!o.refunded&&new Date(o.time).getTime()>=t0&&new Date(o.time).getTime()<t0+864e5).reduce((s,o)=>s+o.total,0)};
+  const bars=[];let mx=1;
+  for(let i=0;i<n;i++){const a=dayS(A+i*864e5),b=dayS(B+i*864e5);bars.push([A+i*864e5,a,b]);mx=Math.max(mx,a,b)}
+  const wd=['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+  const barH=v=>Math.max(2,Math.round(v/mx*90));
+  const barsH='<div style="display:flex;align-items:flex-end;gap:'+(n>7?2:6)+'px;height:110px;background:#f9fafb;border-radius:10px;padding:8px 6px 4px;overflow-x:auto">'+bars.map(([t,a,b])=>`<div style="flex:1;min-width:${n>7?10:30}px;text-align:center;font-size:10px"><div style="display:flex;align-items:flex-end;justify-content:center;gap:2px;height:94px"><div title="${b}" style="width:40%;height:${barH(b)}px;background:#cbd5e1;border-radius:3px 3px 0 0"></div><div title="${a}" style="width:40%;height:${barH(a)}px;background:#16a34a;border-radius:3px 3px 0 0"></div></div>${n>7?'':wd[new Date(t).getDay()]}</div>`).join('')+'</div><div style="font-size:12px;color:#666;margin:4px 0 10px"><span style="color:#16a34a">■</span> الفترة الحالية &nbsp; <span style="color:#94a3b8">■</span> السابقة</div>';
+  const qty=l=>{const m={};l.forEach(o=>o.lines.forEach(x=>m[x.name]=(m[x.name]||0)+x.qty));return m};
+  const qc=qty(cur),qp=qty(prev),diff=[];
+  new Set([...Object.keys(qc),...Object.keys(qp)]).forEach(k=>diff.push([k,(qc[k]||0)-(qp[k]||0),qc[k]||0,qp[k]||0]));
+  diff.sort((x,y)=>y[1]-x[1]);
+  const up=diff.filter(x=>x[1]>0).slice(0,5),dn=diff.filter(x=>x[1]<0).slice(-5).reverse();
+  const row=(x,g)=>`<div class="row"><span>${x[0].replace(/</g,'&lt;')}</span><span style="color:${g?'#15803d':'#c81e3a'};font-weight:700">${g?'▲ +':'▼ '}${x[1]}</span><span style="color:#888;font-size:12px">(${x[3]} ← ${x[2]})</span></div>`;
+  const best=bars.slice().sort((x,y)=>y[1]-x[1])[0];
+  const f=k=>`<div class="tab ${cmpP===k?'active':''}" onclick="setCmpP('${k}')">${k==='week'?'آخر 7 أيام مقابل 7 قبلها':'آخر 30 يوم مقابل 30 قبلها'}</div>`;
+  return `<div class="tabs">${f('week')}${f('month')}</div>
+  <div class="stats" style="margin-top:8px">${card('إجمالي المبيعات',c.rev,p.rev,' ج.م')}${card('عدد الفواتير',c.n,p.n)}${card('متوسط الفاتورة',c.avg,p.avg,' ج.م')}${card('💹 صافي الربح',r2(c.pf),r2(p.pf),' ج.م','#e8f7ee')}</div>
+  ${best&&best[1]>0?`<div class="alert" style="margin:8px 0;background:#ecfdf3;border-color:#b7ebc9;color:#14532d">🏆 أفضل يوم في الفترة: <b>${dayKey(best[0])}</b> — ${best[1]} ج.م</div>`:''}
+  <h3 style="margin:10px 0 6px">📅 المبيعات يوماً بيوم</h3>${barsH}
+  <h3 style="margin:10px 0 6px">🔺 أكثر أصناف زادت مبيعاتها</h3>${up.length?up.map(x=>row(x,1)).join(''):'<p class="empty" style="padding:8px">لا بيانات كافية</p>'}
+  <h3 style="margin:12px 0 6px">🔻 أكثر أصناف قلّت مبيعاتها</h3>${dn.length?dn.map(x=>row(x,0)).join(''):'<p class="empty" style="padding:8px">لا بيانات كافية</p>'}`;
+}
+function csRange(){const D=d0t();return cshP==='today'?[D,Infinity]:cshP==='week'?[D-6*864e5,Infinity]:cshP==='month'?[D-29*864e5,Infinity]:[0,Infinity]}
+function cshData(){
+  const [a,b]=csRange(),ol=okOrders(a,b),g={};
+  ol.forEach(o=>{const k=o.src==='cashier'?(o.cashier||'بدون اسم'):'🌐 أونلاين';const r=g[k]=g[k]||{k,l:[],credit:0,last:0};r.l.push(o);if(o.credit)r.credit+=o.total;r.last=Math.max(r.last,new Date(o.time).getTime())});
+  return Object.values(g).map(r=>{const rev=r.l.reduce((s,o)=>s+o.total,0);return {k:r.k,n:r.l.length,rev,avg:r.l.length?Math.round(rev/r.l.length):0,credit:r.credit,pf:calcProfit(r.l).pf,last:r.last}}).sort((x,y)=>y.rev-x.rev);
+}
+function setCshP(k){cshP=k;renderDash()}
+function cshHTML(){
+  const R=cshData(),tot=R.reduce((s,r)=>s+r.rev,0);
+  const f=k=>`<div class="tab ${cshP===k?'active':''}" onclick="setCshP('${k}')">${PRF_L[k]}</div>`;
+  const th='style="padding:6px;border-bottom:2px solid #ddd;text-align:right;white-space:nowrap"',td='style="padding:6px;border-bottom:1px solid #eee;white-space:nowrap"';
+  const tb=R.length?`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13.5px"><tr><th ${th}>الكاشير</th><th ${th}>الفواتير</th><th ${th}>المبيعات</th><th ${th}>المتوسط</th><th ${th}>آجل</th><th ${th}>الربح</th><th ${th}>آخر فاتورة</th></tr>`+R.map(r=>`<tr><td ${td}><b>${r.k.replace(/</g,'&lt;')}</b></td><td ${td}>${r.n}</td><td ${td}>${r2(r.rev)}</td><td ${td}>${r.avg}</td><td ${td}>${r2(r.credit)}</td><td ${td}>${r2(r.pf)}</td><td ${td}>${fmt(r.last)}</td></tr>`).join('')+`<tr><td ${td}><b>الإجمالي</b></td><td ${td}>${R.reduce((s,r)=>s+r.n,0)}</td><td ${td}><b>${r2(tot)}</b></td><td ${td}></td><td ${td}>${r2(R.reduce((s,r)=>s+r.credit,0))}</td><td ${td}>${r2(R.reduce((s,r)=>s+r.pf,0))}</td><td ${td}></td></tr></table></div>`:'<p class="empty" style="padding:14px">لا مبيعات في هذه الفترة</p>';
+  return `<div class="tabs">${f('today')}${f('week')}${f('month')}${f('all')}</div>
+  <h3 style="margin:10px 0 6px">👥 أداء كل كاشير — ${PRF_L[cshP]}</h3>${tb}
+  <div style="margin:10px 0"><button class="pbtn" onclick="cshCsv()">⬇️ تنزيل Excel (CSV)</button></div>
+  <div style="font-size:12.5px;color:#777">الفواتير المرتجعة لا تُحتسب. «الآجل» هو إجمالي ما بيع بالدين.</div>`;
+}
+function cshCsv(){
+  const q=v=>'"'+String(v).replace(/"/g,'""')+'"',R=cshData();
+  const L=[['تقرير الكاشيرية — '+PRF_L[cshP]],[],['الكاشير','الفواتير','المبيعات','المتوسط','آجل','الربح','آخر فاتورة']].concat(R.map(r=>[r.k,r.n,r2(r.rev),r.avg,r2(r.credit),r2(r.pf),fmt(r.last)]));
+  const b=new Blob(['﻿'+L.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='تقرير-الكاشيرية-'+dayKey(Date.now())+'.csv';
+  document.body.appendChild(a);a.click();a.remove();toast('تم تنزيل التقرير ✅',2500);
+}
+
 const PRF_L={today:'اليوم',week:'آخر 7 أيام',month:'آخر 30 يوم',all:'الكل',range:'فترة محددة'};
 function r2(x){return Math.round(x*100)/100}
 function prfRange(){
@@ -2902,6 +3022,25 @@ function budCalc(){
 function budAdd(){
   budPlan.forEach(([i,n])=>{const it=items[i];cart[i]=Math.min((cart[i]||0)+n,Math.max(it.stock||0,0))});
   updateCart();updateBadge();render();budClose();toast('تمت الإضافة للسلة ✅');
+}
+
+/* ===== بحث بالصوت ===== */
+const _SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(_SR){const b=document.getElementById('micBtn');if(b)b.style.display='inline-block'}
+let _micR=null;
+function micGo(){
+  if(!_SR){toast('جهازك لا يدعم البحث بالصوت');return}
+  const b=document.getElementById('micBtn');
+  if(_micR){try{_micR.stop()}catch(e){}return}
+  const r=new _SR();_micR=r;r.lang='ar-EG';r.interimResults=false;r.maxAlternatives=1;
+  b.style.background='#ef4444';b.textContent='⏺';toast('🎤 تكلّم الآن… قل اسم الصنف',2500);
+  const done=()=>{_micR=null;b.style.background='#fee2e2';b.textContent='🎤'};
+  r.onresult=e=>{const t=(e.results[0][0].transcript||'').replace(/[.،,؟?!]/g,'').trim();const q=document.getElementById('q');q.value=t;render();
+    const n=items.filter(it=>!it.hide&&it.name.includes(t)).length;toast(n?'🔎 '+t+' — '+n+' نتيجة':'ما لقينا «'+t+'»، جرّب كلمة أبسط',3000);
+    try{document.getElementById('prodGrid')&&document.getElementById('prodGrid').scrollIntoView({behavior:'smooth'})}catch(e){}};
+  r.onerror=e=>{done();toast(e.error==='not-allowed'?'اسمح للموقع باستخدام الميكروفون':'ما سمعتك، حاول مرة ثانية',3500)};
+  r.onend=done;
+  try{r.start()}catch(e){done()}
 }
 function listOpen(){
   try{document.getElementById('lName').value=localStorage.getItem('cust_name')||'';document.getElementById('lAddr').value=localStorage.getItem('cust_addr')||'';document.getElementById('lPhone').value=localStorage.getItem('cust_phone')||''}catch(e){}
