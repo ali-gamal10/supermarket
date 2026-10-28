@@ -2041,6 +2041,7 @@ async function publishGH(auto){
   _ghBusy=true;const btn=document.getElementById('ghBtn');if(btn){btn.disabled=true;btn.textContent='جاري النشر…'}
   try{
     markHot();
+    await phMove(cfg);
     const cat=items.map(it=>{const o=Object.assign({},it);delete o.ord;delete o.cost;return o});
     const content=b64utf8(JSON.stringify(cat));const _h=catHash();
     const api='https://api.github.com/repos/'+cfg.repo+'/contents/catalog.json';
@@ -2695,6 +2696,19 @@ function dealPublish(clear){
 /* رفع صور المنتجات دفعة واحدة إلى المستودع (img/) */
 function phNorm(x){return String(x).replace(/\.[a-z0-9]+$/i,'').replace(/[\s_\-]+/g,' ').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').trim().toLowerCase()}
 function phResize(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const m=320,k=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.78).split(',')[1])};im.onerror=()=>rej(new Error('img'));im.src=u})}
+/* الصور المرفوعة من الجوال تُنقل لملفات في مجلد img بدل ما تتضمّن داخل catalog.json (يخفّف الصفحة على الزبائن) */
+async function phMove(cfg){
+  let n=0,ch=false;
+  for(const it of items){
+    if(n>=40)break;
+    if(typeof it.photo==='string'&&it.photo.startsWith('data:image')){
+      const b64=it.photo.split(',')[1];if(!b64)continue;
+      const path='img/p'+it.code+'.jpg';
+      try{const st=await phPut(cfg,path,b64,'صورة منتج');if(st===200){it.photo=path+'?v='+Date.now().toString(36);ch=true}}catch(e){}
+      n++}
+  }
+  if(ch){try{localStorage.setItem('items_v1',JSON.stringify(items));pushAll()}catch(e){}}
+}
 async function phPut(cfg,path,b64,msg){
   const api='https://api.github.com/repos/'+cfg.repo+'/contents/'+path,h={'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json'};
   for(let t=0;t<3;t++){
