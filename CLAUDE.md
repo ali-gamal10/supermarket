@@ -4,6 +4,7 @@
 
 ## الاستضافة والنشر
 - GitHub: `ali-gamal10/supermarket` (فرع `main`) ← GitHub Pages ينشر تلقائياً عند كل push خلال دقيقة أو دقيقتين.
+- رابط المدير والموظفين (ثابت، للمالك فقط، لا يُعرض للزبائن): https://ali-gamal10.github.io/supermarket/staff.html
 - الرابط العام: https://ali-gamal10.github.io/supermarket/ (GitHub Pages، مجاني بلا حدود نشر؛ المطبوع في البوستر وQR). الرابط القديم https://supermarket-eg.netlify.app توقف عن التحديث لنفاد رصيد Netlify.
 - لا يوجد build: Pages ينشر جذر المستودع كما هو (مسار فرعي /supermarket/: استخدم روابط نسبية فقط).
 
