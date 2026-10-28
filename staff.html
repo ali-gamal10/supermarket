@@ -2042,7 +2042,7 @@ async function publishGH(auto){
   try{
     markHot();
     const cat=items.map(it=>{const o=Object.assign({},it);delete o.ord;delete o.cost;return o});
-    const content=b64utf8(JSON.stringify(cat));
+    const content=b64utf8(JSON.stringify(cat));const _h=catHash();
     const api='https://api.github.com/repos/'+cfg.repo+'/contents/catalog.json';
     const h={'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json'};
     let ok=false,code=0;
@@ -2052,12 +2052,19 @@ async function publishGH(auto){
       const r=await fetch(api,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},h),body:JSON.stringify({message:'تحديث المنتجات',content,branch:cfg.branch,sha})});
       ok=r.ok;code=r.status;
     }
+    if(ok){try{localStorage.setItem('pub_hash',_h)}catch(e){}}
     if(ok)toast(auto?'✅ اتنشرت التعديلات للزبائن (تظهر خلال 5 دقائق تقريباً)':'تم النشر ✅ الزبائن بيشوفوا التعديل خلال 5 دقائق تقريباً',5000);
     else toast(code===401||code===403?'مفتاح GitHub غير صحيح أو ما عنده صلاحية':code===404?'المستودع غير موجود أو المفتاح ما يشمله':code===422?'تعذر الحفظ، جرّب مرة ثانية':'تعذر النشر ('+code+')',6000);
   }catch(e){toast('تعذر الاتصال بالإنترنت',4000)}
   _ghBusy=false;if(btn){btn.disabled=false;btn.textContent='🌐 نشر للزبائن الآن'}
   if(_ghAgain){_ghAgain=false;publishGH(true)}
 }
+function catHash(){try{const j=JSON.stringify(items.map(it=>{const o=Object.assign({},it);delete o.ord;delete o.cost;return o}));let h=5381;for(let i=0;i<j.length;i++)h=((h<<5)+h+j.charCodeAt(i))|0;return j.length+':'+h}catch(e){return ''}}
+/* لو المنتجات على لوحة المدير مختلفة عن المنشور للزبائن، انشرها تلقائياً */
+let _pcT=null;
+function pubCheck(){
+  if(!STAFF)return;clearTimeout(_pcT);
+  _pcT=setTimeout(()=>{try{if(!ghCfg()||!items.length)return;if(localStorage.getItem('pub_hash')!==catHash())publishGH(true)}catch(e){}},12000)}
 let _apT=null;function autoPub(){if(!STAFF)return true;if(!ghCfg()&&!document.getElementById('app-script'))return true;clearTimeout(_apT);_apT=setTimeout(()=>{const m=document.querySelector('.modal.show,.overlay.show');if(m){autoPub();return}publishCatalog(true)},30000);return true}
 async function publishCatalog(auto){
   if(ghCfg())return publishGH(auto===true);
@@ -2131,6 +2138,7 @@ function onCol(col,snap){
     try{if(STAFF&&arr.some(x=>x.cat==='خضار'||!validCats().includes(x.cat)))setTimeout(()=>{try{items=fixFruit(items);saveItems();pushAll();autoPub();render();renderAdmin()}catch(e){}},1500)}catch(e){}
     try{if(STAFF&&!localStorage.getItem('seed_cloud2')){NEW_V5.forEach(n=>{if(!items.some(i=>i.name===n.name))items.push({name:n.name,price:n.price,cat:n.cat,img:n.img,stock:20,min:5})});localStorage.setItem('seed_cloud2','1');setTimeout(()=>{try{saveItems();pushAll();autoPub()}catch(e){}},1500)}}catch(e){}
     try{if(STAFF&&!localStorage.getItem('seed_cloud3')){NEW_V6.forEach(n=>{if(!items.some(i=>i.name===n.name))items.push({name:n.name,price:n.price,cat:n.cat,img:n.img,stock:20,min:5})});localStorage.setItem('seed_cloud3','1');setTimeout(()=>{try{saveItems();pushAll();autoPub()}catch(e){}},1500)}}catch(e){}
+    try{pubCheck()}catch(e){}
     try{if(STAFF&&!localStorage.getItem('seed_cloud1')){[].concat(NEW_V3,NEW_V4).forEach(n=>{if(!items.some(i=>i.name===n.name))items.push({name:n.name,price:n.price,cat:n.cat,img:n.img,stock:20,min:5})});localStorage.setItem('seed_cloud1','1');setTimeout(()=>{try{saveItems();pushAll();autoPub()}catch(e){}},1500)}}catch(e){}
     norm();
     cart={};items.forEach((it,i)=>{const q=Math.min(by[it.code]||0,Math.max(+it.stock||0,0));if(q>0)cart[i]=q});
@@ -2759,6 +2767,7 @@ if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.se
 ghState();
 setTimeout(()=>{if(document.getElementById('lockScr').style.display!=='none')lockOpen()},400);
 if(STAFF)FB_READY.then(()=>{if(fbCfg())connectDb()});
+if(STAFF)setTimeout(pubCheck,15000);
 if(!STAFF&&/^https?:/.test(location.protocol)){
   /* الكتالوج يُقرأ من GitHub مباشرة (بدون نشر على Netlify)، وإن تعذّر نقرأ نسخة الموقع */
   const _gj=u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(c=>Array.isArray(c)&&c.length?c:null).catch(()=>null);
