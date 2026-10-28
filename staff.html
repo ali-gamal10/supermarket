@@ -701,6 +701,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <div class="tabs">
 <div class="tab" data-t="home" onclick="setTab('home')">🏠 الرئيسية</div>
 <div class="tab" data-t="inv" onclick="setTab('inv')">📦 المخزون</div>
+<div class="tab" data-t="hid" onclick="setTab('hid')">🙈 إخفاء المنتجات</div>
 <div class="tab" data-t="trk" onclick="setTab('trk')">🚚 تتبع الطلبات</div>
 <div class="tab" data-t="ord" onclick="setTab('ord')">🧾 الطلبات</div>
 <div class="tab" data-t="prf" onclick="setTab('prf')">📈 تقرير الأرباح</div>
@@ -1512,6 +1513,7 @@ function renderDash(){
   if(tab==='prf'){b.innerHTML=prfHTML();return}
   if(tab==='rep'){b.innerHTML=repHTML();return}
   if(tab==='home'){b.innerHTML=homeHTML();return}
+  if(tab==='hid'){b.innerHTML=hdHTML();setTimeout(hdCnt,0);return}
   if(tab==='cmp'){b.innerHTML=cmpHTML();return}
   if(tab==='csh'){b.innerHTML=cshHTML();return}
   if(tab==='bc'){b.innerHTML=bcHTML();return}
@@ -2457,6 +2459,38 @@ function stockValue(){
 let prfP='week',prfFrom='',prfTo='';
 /* ===== مقارنة الفترات + تقرير الكاشيرية ===== */
 let cmpP='week',cshP='today';
+/* ===== تبويب إخفاء المنتجات ===== */
+let hdQ='',hdC='',hdF='all',hdSel=new Set();
+function hdKey(it){return String(it.code!=null?it.code:it.name)}
+function hdList(){
+  return items.map((it,i)=>[it,i]).filter(([it])=>!it.bundle&&(!hdQ||it.name.includes(hdQ))&&(!hdC||it.cat===hdC)&&(hdF==='all'||(hdF==='hid'?it.hide:!it.hide)));
+}
+function hdHTML(){
+  const L=hdList(),show=L.slice(0,200),nh=items.filter(i=>i.hide).length;
+  const f=(k,l)=>`<div class="tab ${hdF===k?'active':''}" onclick="hdF='${k}';renderDash()">${l}</div>`;
+  const cats=validCats().filter(c=>c!=='سلال');
+  return `<div style="font-size:13.5px;color:#555;margin-bottom:8px">علّم على المنتجات اللي تبغى تخفيها عن الزبائن، ثم اضغط «إخفاء». المخفي يظل عندك في الكاشير والمخزون. (مخفي الآن: <b>${nh}</b>)</div>
+  <div class="tabs">${f('all','الكل')}${f('vis','الظاهرة')}${f('hid','المخفية ('+nh+')')}</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0"><input id="hdQi" value="${hdQ.replace(/"/g,'&quot;')}" placeholder="🔍 ابحث عن منتج" oninput="hdQ=this.value.trim();hdRows()" style="flex:1;min-width:160px;padding:9px;border:1px solid #ccc;border-radius:10px"><select onchange="hdC=this.value;renderDash()" style="padding:9px;border:1px solid #ccc;border-radius:10px"><option value="">كل الأقسام</option>${cats.map(c=>`<option ${hdC===c?'selected':''}>${c}</option>`).join('')}</select></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><button class="pbtn gray" style="padding:6px 12px;font-size:13px" onclick="hdAll(true)">تحديد كل النتائج</button><button class="pbtn gray" style="padding:6px 12px;font-size:13px" onclick="hdAll(false)">إلغاء التحديد</button><span id="hdCnt" style="align-self:center;font-size:13px;color:#555"></span></div>
+  <div style="position:sticky;top:0;z-index:3;background:#fff;padding:6px 0;display:flex;gap:8px;flex-wrap:wrap"><button class="pbtn red" onclick="hdDo(1)">🙈 إخفاء المحدد</button><button class="pbtn" style="background:#0d9488" onclick="hdDo(0)">👁️ إظهار المحدد</button></div>
+  <div id="hdRows">${hdRowsHTML()}</div>`;
+}
+function hdRowsHTML(){
+  const L=hdList(),show=L.slice(0,200);
+  return (show.length?show.map(([it,i])=>`<label class="row" style="gap:8px;align-items:center;cursor:pointer;${it.hide?'background:#fff7ed':''}"><input type="checkbox" ${hdSel.has(hdKey(it))?'checked':''} onchange="hdTog('${hdKey(it).replace(/'/g,"\\'")}',this.checked)"><span style="flex:1">${it.name.replace(/</g,'&lt;')} <small style="color:#888">${it.cat||''}</small></span>${it.hide?'<span style="color:#c2410c;font-size:12px;font-weight:700">🙈 مخفي</span>':''}<b>${it.price} ج</b></label>`).join(''):'<p class="empty" style="padding:14px">لا توجد منتجات</p>')+(L.length>200?`<p style="text-align:center;color:#888;font-size:13px;padding:8px">يظهر أول 200 من ${L.length}. استخدم البحث لتضييق النتائج.</p>`:'');
+}
+function hdRows(){const e=document.getElementById('hdRows');if(e)e.innerHTML=hdRowsHTML();hdCnt()}
+function hdCnt(){const e=document.getElementById('hdCnt');if(e)e.textContent='المحدد: '+hdSel.size}
+function hdTog(k,on){on?hdSel.add(k):hdSel.delete(k);hdCnt()}
+function hdAll(on){hdList().forEach(([it])=>{on?hdSel.add(hdKey(it)):hdSel.delete(hdKey(it))});hdRows()}
+function hdDo(v){
+  if(!hdSel.size){toast('علّم على منتج واحد على الأقل');return}
+  let n=0;items.forEach(it=>{if(hdSel.has(hdKey(it))){if(v){if(!it.hide){it.hide=1;n++}}else if(it.hide){delete it.hide;n++}}});
+  hdSel.clear();afterEdit();renderDash();
+  toast((v?'🙈 تم إخفاء ':'👁️ تم إظهار ')+n+' منتج — ينشر للزبائن تلقائياً خلال لحظات',4000);
+}
+
 /* ===== الصفحة الرئيسية للمدير ===== */
 function homeGo(w){
   if(w==='pos'){document.getElementById('dash').classList.remove('open');togglePos();return}
@@ -2504,7 +2538,7 @@ function homeHTML(){
   </div>
   <h3 style="margin:12px 0 6px">🔔 تحتاج انتباهك</h3>${al.length?al.join(''):'<div class="alert" style="background:#ecfdf3;border-color:#b7ebc9;color:#14532d">✅ كل شيء تمام. لا يوجد ما يحتاج انتباهك الآن.</div>'}
   <h3 style="margin:14px 0 6px">⚡ اختصارات</h3>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">${q('💵','كاشير','pos')}${q('➕','المنتجات','admin')}${q('🌐','نشر للزبائن','pub')}${q('📣','رسائل الزبائن','bc')}${q('🧮','إقفال اليوم','cls')}${q('📊','مقارنة الفترات','cmp')}${q('🎨','منشور عروض','stg')}${q('📈','تقرير الأرباح','prf')}${q('🛠️','الإعدادات','stg')}</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">${q('💵','كاشير','pos')}${q('➕','المنتجات','admin')}${q('🙈','إخفاء منتجات','hid')}${q('🌐','نشر للزبائن','pub')}${q('📣','رسائل الزبائن','bc')}${q('🧮','إقفال اليوم','cls')}${q('📊','مقارنة الفترات','cmp')}${q('🎨','منشور عروض','stg')}${q('📈','تقرير الأرباح','prf')}${q('🛠️','الإعدادات','stg')}</div>
   <h3 style="margin:14px 0 6px">🏆 الأكثر مبيعاً اليوم</h3>${topH}
   <h3 style="margin:14px 0 6px">🕒 آخر الطلبات</h3>${last}
   ${hid?`<div style="font-size:12.5px;color:#888;margin-top:10px">👁️ عندك ${hid} منتج مخفي عن الزبائن.</div>`:''}`;
