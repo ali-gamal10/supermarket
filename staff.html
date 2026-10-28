@@ -439,6 +439,19 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <div style="font-size:12.5px;color:#765;margin:6px 0">اكتب جملة قصيرة مثل: «بيبسي 2 لتر بـ 25 جنيه اليوم فقط». تظهر للزبائن خلال دقائق من النشر.</div>
 <input id="dealTxt" maxlength="140" placeholder="نص العرض" style="width:100%;margin-bottom:8px">
 <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="pbtn" style="background:#d98200" onclick="dealPublish(false)">📣 نشر العرض</button><button class="pbtn gray" onclick="dealPublish(true)">إيقاف العرض</button></div></div>
+<div class="bulk" id="pmBox" style="display:block;background:#fff0f3;border-color:#f3b5c4"><b>🎨 صانع منشورات العروض</b>
+<div style="font-size:12.5px;color:#765;margin:6px 0">اختر من 1 إلى 6 منتجات (حتى 9 في ورقة A4)، ويطلع لك منشور جاهز بالسعر القديم والجديد لتنشره على واتساب وفيسبوك.</div>
+<input id="pmQ" placeholder="🔍 ابحث عن منتج لإضافته" oninput="pmList()" style="width:100%;margin-bottom:6px">
+<label style="display:flex;gap:6px;align-items:center;font-size:13px;margin-bottom:6px"><input type="checkbox" id="pmOff" onchange="pmList()"> أعرض المنتجات اللي عليها خصم فقط</label>
+<div id="pmL" style="max-height:170px;overflow:auto;background:#fff;border:1px solid #eee;border-radius:8px;padding:4px;margin-bottom:8px"></div>
+<div id="pmSel" style="font-size:13px;margin-bottom:8px"></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+<input id="pmT" value="عروض اليوم" maxlength="30" style="width:170px">
+<select id="pmSz" style="padding:7px;border:1px solid #ccc;border-radius:8px"><option value="sq">مربع (منشور)</option><option value="st">طولي (ستوري / حالة)</option><option value="a4">ورقة A4 (PDF للطباعة والإرسال)</option></select>
+<select id="pmTh" style="padding:7px;border:1px solid #ccc;border-radius:8px"><option value="red">أحمر</option><option value="green">أخضر</option><option value="orange">برتقالي</option><option value="blue">أزرق</option></select>
+<button class="pbtn" style="background:#d6336c" onclick="pmMake()">🎨 إنشاء المنشور</button></div>
+<canvas id="pmC" style="display:none;width:100%;max-width:360px;border-radius:10px;border:1px solid #ddd;background:#fff"></canvas>
+<div id="pmAct" style="display:none;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="pbtn" onclick="pmSave()">⬇️ تنزيل (صورة / PDF)</button><button class="pbtn gray" onclick="window.print&&pmPrint()">🖨️ طباعة</button><button class="pbtn" style="background:#25a244" onclick="pmShare()">📤 مشاركة</button></div></div>
 <div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🧾 الطباعة</b>
 <label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:14px;color:#374151"><input type="checkbox" id="autoPr2" onchange="try{localStorage.setItem('auto_print',this.checked?'1':'')}catch(e){};var c=document.getElementById('autoPr');if(c)c.checked=this.checked"> 🖨️ اطبع الفاتورة تلقائياً بعد كل بيع (على هذا الجهاز)</label></div>
 <div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🔐 الأمان</b>
@@ -1942,6 +1955,122 @@ function saveRow(i,btn){
 function addItem(){items.unshift({name:"منتج جديد",price:10,cat:"بقالة",img:"📦",stock:20,min:5});norm();cart={};afterEdit()}
 function delItem(i){askPin(()=>{items.splice(i,1);cart={};afterEdit();toast('تم حذف المنتج')},'🔐 حذف المنتج — اكتب الرقم السري')}
 function resetItems(){askPin(()=>{items=JSON.parse(JSON.stringify(DEFAULT_ITEMS));norm();cart={};afterEdit();toast('تم استرجاع المنتجات')},'🔐 استرجاع المنتجات الأصلية — اكتب الرقم السري')}
+
+/* ===== صانع المنشورات ===== */
+let pmPick=[];
+const PM_TH={red:['#c81e3a','#7f1027'],green:['#1c9a55','#0d5a30'],orange:['#f08a00','#a85200'],blue:['#1d6fe0','#0f3f8f']};
+function pmList(){
+  const el=document.getElementById('pmL');if(!el)return;
+  const q=(document.getElementById('pmQ').value||'').trim(),off=document.getElementById('pmOff').checked;
+  const arr=items.map((it,i)=>[it,i]).filter(([it])=>!it.hide&&(!q||it.name.includes(q))&&(!off||it.old)).slice(0,60);
+  el.innerHTML=arr.map(([it,i])=>'<label style="display:flex;gap:6px;align-items:center;padding:4px 6px;font-size:13px;border-bottom:1px solid #f3f3f3"><input type="checkbox" '+(pmPick.includes(it.code||it.name)?'checked':'')+' onchange="pmTog('+i+',this)"><span style="flex:1">'+it.name.replace(/</g,'&lt;')+'</span><b>'+it.price+'</b>'+(it.old?'<s style="color:#999">'+it.old+'</s>':'')+'</label>').join('')||'<div style="padding:8px;color:#888">لا نتائج</div>';
+  pmSelShow();
+}
+function pmKey(it){return it.code||it.name}
+function pmTog(i,cb){
+  const k=pmKey(items[i]);
+  if(cb.checked){if(pmPick.length>=9){cb.checked=false;toast('الحد الأقصى 9 منتجات');return}pmPick.push(k)}
+  else pmPick=pmPick.filter(x=>x!==k);
+  pmSelShow();
+}
+function pmSelShow(){
+  const e=document.getElementById('pmSel');if(!e)return;
+  const its=pmPick.map(k=>items.find(x=>pmKey(x)===k)).filter(Boolean);
+  e.innerHTML=its.length?'المختار ('+its.length+'/9): <b>'+its.map(x=>x.name.replace(/</g,'&lt;')).join(' ، ')+'</b>':'لم تختر منتجات بعد';
+}
+function pmLoad(src){return new Promise(r=>{const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=src})}
+function pmWrap(ctx,t,w,max){
+  const ws=t.split(' ');const L=[];let cur='';
+  for(const x of ws){const tr=cur?cur+' '+x:x;if(ctx.measureText(tr).width>w&&cur){L.push(cur);cur=x}else cur=tr}
+  if(cur)L.push(cur);
+  if(L.length>max){L.length=max;L[max-1]=L[max-1].replace(/\s*\S*$/,'')+'…'}
+  return L;
+}
+function pmRR(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+async function pmMake(){
+  const its=pmPick.map(k=>items.find(x=>pmKey(x)===k)).filter(Boolean);
+  if(!its.length){toast('اختر منتجاً واحداً على الأقل');return}
+  try{if(document.fonts&&document.fonts.load){await document.fonts.load('800 40px Cairo');await document.fonts.load('600 30px Cairo')}}catch(e){}
+  const sz=document.getElementById('pmSz').value,st=sz!=='sq',a4=sz==='a4';
+  if(!a4&&its.length>6){toast('المربع والطولي حتى 6 منتجات، اختر ورقة A4 لأكثر');return}
+  const W=a4?1240:1080,H=a4?1754:(st?1920:1080);
+  const cv=document.getElementById('pmC');cv.width=W;cv.height=H;cv.style.display='block';
+  const c=cv.getContext('2d');c.direction='rtl';c.textAlign='center';c.textBaseline='alphabetic';
+  const th=PM_TH[document.getElementById('pmTh').value]||PM_TH.red;
+  const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,th[0]);g.addColorStop(1,th[1]);c.fillStyle=g;c.fillRect(0,0,W,H);
+  c.fillStyle='rgba(255,255,255,.07)';for(let i=0;i<6;i++){c.beginPath();c.arc(W*(i%3)/2.2+60,H*(i/6)+80,160,0,7);c.fill()}
+  const F='Cairo,Tahoma,Arial,sans-serif';
+  const title=(document.getElementById('pmT').value||'عروض اليوم').trim();
+  const top=st?120:70;
+  c.fillStyle='#fff';c.font='800 '+(st?120:96)+'px '+F;c.fillText(title,W/2,top+(st?100:80));
+  c.font='600 36px '+F;c.fillStyle='rgba(255,255,255,.9)';c.fillText('سوبر ماركت',W/2,top+(st?160:128));
+  const gy=top+(st?200:160),footH=st?150:120,gh=H-gy-footH-20;
+  const n=its.length;let cols=n===1?1:(n<=4?2:3);if(st&&n>=5)cols=2;
+  if(a4&&n>=3)cols=3;const rows=Math.ceil(n/cols),gap=24,mx=50;
+  const cw=(W-mx*2-gap*(cols-1))/cols,ch=Math.min((gh-gap*(rows-1))/rows,n===1?(st?900:700):9999);
+  const imgs=await Promise.all(its.map(it=>pmLoad(it.photo||pack(it))));
+  for(let i=0;i<n;i++){
+    const it=its[i],r=Math.floor(i/cols),k=i%cols;
+    const inRow=Math.min(cols,n-r*cols),rw=inRow*cw+(inRow-1)*gap,x0=(W-rw)/2+k*(cw+gap),y0=gy+r*(ch+gap);
+    c.save();c.shadowColor='rgba(0,0,0,.25)';c.shadowBlur=24;c.shadowOffsetY=8;c.fillStyle='#fff';pmRR(c,x0,y0,cw,ch,32);c.fill();c.restore();
+    const big=n<=2||ch>420,ts=big?44:34,ps=big?80:58;
+    const ih=ch-(big?250:200),iw=cw-40;
+    const im=imgs[i];
+    if(im){const sc=Math.min(iw/im.width,ih/im.height);const w2=im.width*sc,h2=im.height*sc;c.drawImage(im,x0+(cw-w2)/2,y0+20+(ih-h2)/2,w2,h2)}
+    c.fillStyle='#1f2937';c.font='700 '+ts+'px '+F;
+    const L=pmWrap(c,it.name,cw-40,2);
+    let ty=y0+ch-(big?150:118)-(L.length-1)*(ts+4);
+    L.forEach((l,j)=>c.fillText(l,x0+cw/2,ty+j*(ts+4)));
+    const py=y0+ch-(big?34:26);
+    c.font='800 '+ps+'px '+F;c.fillStyle=th[0];
+    const pt=it.price+' ج';const pw=c.measureText(pt).width;
+    c.fillText(pt,x0+cw/2-(it.old?ps*0.55:0),py);
+    if(it.old){
+      c.font='600 '+Math.round(ps*0.5)+'px '+F;const ot=it.old+'';const ow=c.measureText(ot).width;
+      const ox=x0+cw/2+pw/2+ow/2-ps*0.35;c.fillStyle='#8a8f98';c.fillText(ot,ox,py);
+      c.strokeStyle='#8a8f98';c.lineWidth=4;c.beginPath();c.moveTo(ox-ow/2-4,py-ps*0.2);c.lineTo(ox+ow/2+4,py-ps*0.2);c.stroke();
+      const pc=Math.round((1-it.price/it.old)*100);
+      if(pc>0){const bw=big?170:140,bh=big?66:52;c.fillStyle='#ffd400';pmRR(c,x0+18,y0+18,bw,bh,bh/2);c.fill();c.fillStyle='#7a1020';c.font='800 '+(big?38:28)+'px '+F;c.fillText('خصم '+pc+'%',x0+18+bw/2,y0+18+bh*0.68)}
+    }
+  }
+  c.fillStyle='#fff';c.font='800 '+(st?56:48)+'px '+F;
+  c.fillText('📱 اطلب على واتساب: 0'+String(WHATSAPP).replace(/^20/,''),W/2,H-(st?70:56));
+  document.getElementById('pmAct').style.display='flex';
+  cv.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function pmBlob(){return new Promise(r=>document.getElementById('pmC').toBlob(r,'image/png'))}
+function pmPdf(){
+  const cv=document.getElementById('pmC');
+  const u=atob(cv.toDataURL('image/jpeg',0.93).split(',')[1]);const img=new Uint8Array(u.length);for(let i=0;i<u.length;i++)img[i]=u.charCodeAt(i);
+  const enc=new TextEncoder(),parts=[],offs=[];let len=0;
+  const add=x=>{const b=typeof x==='string'?enc.encode(x):x;parts.push(b);len+=b.length};
+  add('%PDF-1.4\n');
+  const obj=(n,body)=>{offs[n]=len;add(n+' 0 obj\n'+body+'\nendobj\n')};
+  obj(1,'<</Type/Catalog/Pages 2 0 R>>');obj(2,'<</Type/Pages/Kids[3 0 R]/Count 1>>');
+  obj(3,'<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]/Resources<</XObject<</I 4 0 R>>>>/Contents 5 0 R>>');
+  offs[4]=len;add('4 0 obj\n<</Type/XObject/Subtype/Image/Width '+cv.width+'/Height '+cv.height+'/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length '+img.length+'>>\nstream\n');add(img);add('\nendstream\nendobj\n');
+  const cs='q 595 0 0 842 0 0 cm /I Do Q';obj(5,'<</Length '+cs.length+'>>\nstream\n'+cs+'\nendstream');
+  const xr=len;let x='xref\n0 6\n0000000000 65535 f \n';for(let i=1;i<=5;i++)x+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+  add(x+'trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n'+xr+'\n%%EOF');
+  const out=new Uint8Array(len);let o=0;for(const b of parts){out.set(b,o);o+=b.length}
+  return new Blob([out],{type:'application/pdf'});
+}
+function pmPrint(){
+  const cv=document.getElementById('pmC');const w=window.open('','_blank');if(!w){toast('اسمح بالنوافذ المنبثقة');return}
+  w.document.write('<html dir="rtl"><body style="margin:0"><img src="'+cv.toDataURL('image/jpeg',0.93)+'" style="width:100%;max-width:210mm"><script>onload=function(){print()}<\/script></body></html>');w.document.close();
+}
+function pmIsA4(){return document.getElementById('pmC').width===1240}
+async function pmSave(){
+  const a4=pmIsA4();const b=a4?pmPdf():await pmBlob();if(!b)return;
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='منشور-عروض-'+new Date().toISOString().slice(0,10)+(a4?'.pdf':'.png');
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('تم تنزيل الصورة ✅');
+}
+async function pmShare(){
+  const b=await pmBlob();if(!b)return;
+  const a4=pmIsA4();const f=a4?new File([pmPdf()],'offers.pdf',{type:'application/pdf'}):new File([b],'offers.png',{type:'image/png'});
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:'عروض سوبر ماركت'});return}}catch(e){if(e&&e.name==='AbortError')return}
+  pmSave();
+}
 function toggleStg(){
   const a=document.getElementById('stg');
   if(a.classList.contains('open')){a.classList.remove('open');return}
@@ -1953,6 +2082,7 @@ function stgInit(){
   document.getElementById('stgWa').textContent='0'+String(WHATSAPP).replace(/^20/,'');
   document.getElementById('autoPr2').checked=autoPrOn()}catch(e){}
   try{ghState();renderSync();bkState();notifState();cbRefresh()}catch(e){}
+  try{pmList()}catch(e){}
   try{fetch('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/store.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.deal)document.getElementById('dealTxt').value=j.deal.text||''}).catch(()=>{})}catch(e){}
 }
 function stgCopy(id){const el=document.getElementById(id);el.select();try{navigator.clipboard.writeText(el.value)}catch(e){document.execCommand('copy')}toast('تم النسخ ✅')}
