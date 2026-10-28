@@ -700,6 +700,7 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 </div>
 <div class="tabs">
 <div class="tab" data-t="home" onclick="setTab('home')">🏠 الرئيسية</div>
+<div class="tab" data-t="rank" onclick="setTab('rank')">🏆 لوحة الترتيب</div>
 <div class="tab" data-t="inv" onclick="setTab('inv')">📦 المخزون</div>
 <div class="tab" data-t="hid" onclick="setTab('hid')">🙈 إخفاء المنتجات</div>
 <div class="tab" data-t="trk" onclick="setTab('trk')">🚚 تتبع الطلبات</div>
@@ -1513,6 +1514,7 @@ function renderDash(){
   if(tab==='prf'){b.innerHTML=prfHTML();return}
   if(tab==='rep'){b.innerHTML=repHTML();return}
   if(tab==='home'){b.innerHTML=homeHTML();return}
+  if(tab==='rank'){b.innerHTML=rankHTML();return}
   if(tab==='hid'){b.innerHTML=hdHTML();setTimeout(hdCnt,0);return}
   if(tab==='cmp'){b.innerHTML=cmpHTML();return}
   if(tab==='csh'){b.innerHTML=cshHTML();return}
@@ -2459,6 +2461,50 @@ function stockValue(){
 let prfP='week',prfFrom='',prfTo='';
 /* ===== مقارنة الفترات + تقرير الكاشيرية ===== */
 let cmpP='week',cshP='today';
+/* ===== لوحة الترتيب ===== */
+let rkP='week';
+function setRkP(k){rkP=k;renderDash()}
+function rankHTML(){
+  const D=d0t(),a=rkP==='today'?D:rkP==='week'?D-6*864e5:rkP==='month'?D-29*864e5:0;
+  const ol=okOrders(a,Infinity);
+  const f=k=>`<div class="tab ${rkP===k?'active':''}" onclick="setRkP('${k}')">${PRF_L[k]}</div>`;
+  if(!ol.length)return `<div class="tabs">${f('today')}${f('week')}${f('month')}${f('all')}</div><p class="empty" style="padding:20px">لا توجد مبيعات في هذه الفترة</p>`;
+  const prod={},cust={},cash={},hr={},wd={};
+  ol.forEach(o=>{
+    const t=new Date(o.time),tot=+o.total||0;
+    const h=t.getHours();(hr[h]=hr[h]||{n:0,rev:0});hr[h].n++;hr[h].rev+=tot;
+    const w=t.getDay();(wd[w]=wd[w]||{n:0,rev:0});wd[w].n++;wd[w].rev+=tot;
+    const ck=o.src==='cashier'?(o.cashier||'بدون اسم'):'🌐 أونلاين';(cash[ck]=cash[ck]||{n:0,rev:0});cash[ck].n++;cash[ck].rev+=tot;
+    const cn=(o.customer||(o.credit&&o.credit.name)||'').toString().trim(),cp=o.phone?waPhone(o.phone):'';
+    if(cn||cp){const k=cp||cn;const c=cust[k]=cust[k]||{name:cn,n:0,rev:0};if(cn)c.name=cn;c.n++;c.rev+=tot}
+    o.lines.forEach(l=>{const r=prod[l.name]=prod[l.name]||{q:0,rev:0,pf:0,kn:false};const rv=l.price*l.qty;r.q+=l.qty;r.rev+=rv;const c=lineCost(l);if(c!=null){r.pf+=rv-c*l.qty;r.kn=true}});
+  });
+  const sold=new Set(Object.keys(prod));
+  const med=['🥇','🥈','🥉'];
+  const sec=(t,rows,fmtv,sub)=>{
+    if(!rows.length)return '';
+    const mx=Math.max(...rows.map(r=>r.v),1);
+    return `<h3 style="margin:16px 0 6px">${t}</h3>`+rows.map((r,i)=>`<div style="margin:5px 0"><div style="display:flex;justify-content:space-between;gap:8px;font-size:14px"><span><b style="display:inline-block;min-width:26px">${med[i]||(i+1)+'.'}</b>${String(r.n).replace(/</g,'&lt;')}${r.s?` <small style="color:#888">${r.s}</small>`:''}</span><b>${fmtv(r.v)}</b></div><div style="height:7px;background:#eef2f0;border-radius:6px;margin-top:3px;overflow:hidden"><div style="height:100%;width:${Math.round(r.v/mx*100)}%;background:${i===0?'#f59e0b':i<3?'#16a34a':'#86efac'};border-radius:6px"></div></div></div>`).join('');
+  };
+  const top=(o,key,n)=>Object.entries(o).map(([k,v])=>({n:v.name||k,v:v[key],s:v.s,raw:v})).sort((x,y)=>y.v-x.v).slice(0,n);
+  const byQ=top(prod,'q',10).map(r=>(r.s=r.raw.rev+' ج.م',r));
+  const byRev=top(prod,'rev',10);
+  const byPf=Object.entries(prod).filter(([,v])=>v.kn).map(([k,v])=>({n:k,v:r2(v.pf),s:''})).sort((x,y)=>y.v-x.v).slice(0,10);
+  const byCust=top(cust,'rev',10).map(r=>(r.s=r.raw.n+' طلب',r));
+  const byCash=top(cash,'rev',10).map(r=>(r.s=r.raw.n+' فاتورة',r));
+  const hrs=Object.entries(hr).map(([h,v])=>({n:(+h%12||12)+(+h<12?' ص':' م')+' — '+((+h+1)%12||12)+((+h+1)%24<12?' ص':' م'),v:v.n,s:r2(v.rev)+' ج.م'})).sort((x,y)=>y.v-x.v).slice(0,5);
+  const WD=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const days=Object.entries(wd).map(([d,v])=>({n:WD[d],v:r2(v.rev),s:v.n+' فاتورة'})).sort((x,y)=>y.v-x.v).slice(0,7);
+  const dead=items.filter(i=>!i.bundle&&!i.hide&&i.stock>0&&!sold.has(i.name)).map(i=>({n:i.name,v:r2(i.stock*i.price),s:'مخزون '+i.stock})).sort((x,y)=>y.v-x.v).slice(0,10);
+  const n=v=>v+' قطعة',m=v=>r2(v)+' ج.م';
+  return `<div class="tabs">${f('today')}${f('week')}${f('month')}${f('all')}</div>
+  <div style="font-size:13px;color:#666;margin:6px 0">الترتيب حسب ${PRF_L[rkP]} — ${ol.length} فاتورة</div>
+  ${sec('🛒 الأكثر مبيعاً (بالكمية)',byQ,n)}${sec('💰 الأعلى إيراداً',byRev,m)}${sec('💹 الأكثر ربحاً',byPf,m)}
+  ${sec('👑 أفضل الزبائن',byCust,m)}${sec('👥 ترتيب الكاشيرية',byCash,m)}
+  ${sec('⏰ أوقات الذروة (الأكثر ازدحاماً)',hrs,v=>v+' فاتورة')}${sec('📅 أفضل أيام الأسبوع',days,m)}
+  ${sec('🐌 راكد: ما اتباع في هذه الفترة (الأعلى قيمة مخزون)',dead,m)}`;
+}
+
 /* ===== تبويب إخفاء المنتجات ===== */
 let hdQ='',hdC='',hdF='all',hdSel=new Set();
 function hdKey(it){return String(it.code!=null?it.code:it.name)}
@@ -2538,7 +2584,7 @@ function homeHTML(){
   </div>
   <h3 style="margin:12px 0 6px">🔔 تحتاج انتباهك</h3>${al.length?al.join(''):'<div class="alert" style="background:#ecfdf3;border-color:#b7ebc9;color:#14532d">✅ كل شيء تمام. لا يوجد ما يحتاج انتباهك الآن.</div>'}
   <h3 style="margin:14px 0 6px">⚡ اختصارات</h3>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">${q('💵','كاشير','pos')}${q('➕','المنتجات','admin')}${q('🙈','إخفاء منتجات','hid')}${q('🌐','نشر للزبائن','pub')}${q('📣','رسائل الزبائن','bc')}${q('🧮','إقفال اليوم','cls')}${q('📊','مقارنة الفترات','cmp')}${q('🎨','منشور عروض','stg')}${q('📈','تقرير الأرباح','prf')}${q('🛠️','الإعدادات','stg')}</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">${q('💵','كاشير','pos')}${q('🏆','لوحة الترتيب','rank')}${q('➕','المنتجات','admin')}${q('🙈','إخفاء منتجات','hid')}${q('🌐','نشر للزبائن','pub')}${q('📣','رسائل الزبائن','bc')}${q('🧮','إقفال اليوم','cls')}${q('📊','مقارنة الفترات','cmp')}${q('🎨','منشور عروض','stg')}${q('📈','تقرير الأرباح','prf')}${q('🛠️','الإعدادات','stg')}</div>
   <h3 style="margin:14px 0 6px">🏆 الأكثر مبيعاً اليوم</h3>${topH}
   <h3 style="margin:14px 0 6px">🕒 آخر الطلبات</h3>${last}
   ${hid?`<div style="font-size:12.5px;color:#888;margin-top:10px">👁️ عندك ${hid} منتج مخفي عن الزبائن.</div>`:''}`;
