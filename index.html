@@ -3612,11 +3612,11 @@ function wheelPublish(){
 function showDeal(tx){const el=document.getElementById('dealBar');if(!el)return;tx=String(tx||'').trim();if(!tx){el.style.display='none';return}el.textContent='📣 '+tx;el.style.display='block'}
 try{document.addEventListener('DOMContentLoaded',()=>{try{const c=lsGet('store_cfg',{});window.HNP=!!c.hideNoPhoto&&!STAFF;hpApply(c.hidePrices);if(c.float)flShow(c.float.text)}catch(e){}})}catch(e){}
 function flShow(tx){let e=document.getElementById('flMsg');tx=String(tx||'').trim();
-  let dis='';try{dis=localStorage.getItem('fl_dis')||''}catch(x){}
+  let dis='';try{dis=sessionStorage.getItem('fl_dis')||''}catch(x){}
   if(!tx||STAFF||dis===tx){if(e)e.style.display='none';return}
   if(!e){e=document.createElement('div');e.id='flMsg';document.body.appendChild(e)}
   e.innerHTML='<span class="flt"></span><button aria-label="إغلاق" onclick="flClose()">✕</button>';e.querySelector('.flt').textContent=tx;e.dataset.t=tx;e.style.display='flex'}
-function flClose(){const e=document.getElementById('flMsg');if(!e)return;try{localStorage.setItem('fl_dis',e.dataset.t||'')}catch(x){}e.style.display='none'}
+function flClose(){const e=document.getElementById('flMsg');if(!e)return;try{sessionStorage.setItem('fl_dis',e.dataset.t||'')}catch(x){}e.style.display='none'}
 function flPublish(clear){
   const cfg=ghCfg();if(!cfg){toast('فعّل النشر بمفتاح GitHub أولاً',3500);return}
   const tx=clear?'':document.getElementById('flTxt').value.trim().slice(0,80);
