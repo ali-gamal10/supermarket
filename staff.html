@@ -110,6 +110,7 @@ table.stmt{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
 .arow input,.arow select{padding:7px;border:1px solid #ddd;border-radius:8px;font-size:14px}
 .arow .e{width:48px;text-align:center}.arow .n{flex:1;min-width:140px}.arow .p{width:80px}
 .arow label{font-size:11px;color:#666;display:block}
+.kmi{display:block;width:100%;text-align:right;background:#fff;border:none;border-bottom:1px solid #f0f0f0;padding:11px 14px;font-size:14px;cursor:pointer}.kmi:hover{background:#fff3e0}
 .fin{font-weight:bold;color:#e30613;min-width:70px;text-align:center}
 /* ===== واجهة المتجر الجديدة ===== */
 body{font-family:'Cairo',Segoe UI,Tahoma,sans-serif;background:#f3f6f4;color:#1f2937}
@@ -2212,7 +2213,21 @@ function toggleAdmin(){
 function renderAdmin(){initSch();renderAdmin0();renderCashiers();renderSync();bkState();notifState();cbRefresh()}
 function renderAdmin0(){
   document.getElementById('adminList').innerHTML=items.map((it,i)=>`
-  <div class="arow"${it.hide?' style="opacity:.55;background:#f3f4f6"':''}>
+  <div class="arow"${it.hide?' style="background:#f3f4f6"':''}>
+    <div class="ahead" style="width:100%;display:flex;align-items:center;gap:10px${it.hide?';opacity:.6':''}">
+      ${it.photo?`<img src="${it.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:8px">`:`<span style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:26px;background:#fff;border-radius:8px">${it.img||'📦'}</span>`}
+      <div style="flex:1;min-width:0"><b style="font-size:14px">${it.name.replace(/</g,'&lt;')}</b>${it.hide?' <span style="color:#c2410c;font-size:12px;font-weight:700">🙈 مخفي عن الزبائن</span>':''}<div style="font-size:12px;color:#666">${CATS[it.cat]||it.cat||''} · ${it.price} ج.م · مخزون ${it.stock!=null?it.stock:'—'}</div></div>
+      <div class="kmenu" style="position:relative">
+        <button class="pbtn gray" style="padding:6px 12px;font-size:20px;line-height:1" onclick="kmToggle(this,event)" aria-label="قائمة">⋮</button>
+        <div class="kpop" style="display:none;position:absolute;left:0;top:100%;z-index:50;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.18);min-width:190px;overflow:hidden">
+          <button class="kmi" onclick="kmEdit(this)">✏️ تعديل</button>
+          <button class="kmi" onclick="kmAct(this,()=>toggleHide(${i}))">${it.hide?'👁️ إظهار للزبائن':'🙈 إخفاء عن الزبائن'}</button>
+          <button class="kmi" onclick="kmAct(this,()=>openProd(${i}))">🔍 معاينة</button>
+          <button class="kmi" style="color:#e30613" onclick="kmAct(this,()=>delItem(${i}))">🗑️ حذف</button>
+        </div>
+      </div>
+    </div>
+    <div class="aed" style="display:none;width:100%;flex-wrap:wrap;gap:6px;align-items:center;border-top:1px dashed #ddd;padding-top:8px">
     <input class="e" data-f="img" value="${it.img}">
     <div style="text-align:center"><img class="thumb" src="${it.photo||''}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;display:${it.photo?'block':'none'};margin:0 auto 3px">
     <input type="file" accept="image/*" style="width:100px;font-size:11px" onchange="setPhoto(${i},this)">
@@ -2226,11 +2241,16 @@ function renderAdmin0(){
     <div><label>🏷️ سعر التكلفة</label><input class="p" type="number" min="0" step="0.01" value="${it.cost!=null?it.cost:''}" data-f="cost" placeholder="—"></div>
     <div class="fin">${it.price} ج.م${marginHTML(it)}</div>
     <button class="pbtn" onclick="saveRow(${i},this)">💾 حفظ</button>
-    <button class="pbtn ${it.hide?'':'gray'}" style="${it.hide?'background:#0d9488':''}" onclick="toggleHide(${i})">${it.hide?'👁️ إظهار للزبائن':'🙈 إخفاء عن الزبائن'}</button>
-    <button class="pbtn red" onclick="delItem(${i})">حذف</button>
+    </div>
   </div>`).join('');
 }
 
+
+function kmToggle(b,e){e.stopPropagation();const p=b.nextElementSibling,o=p.style.display!=='none';kmClose();if(!o)p.style.display='block'}
+function kmClose(){document.querySelectorAll('.kpop').forEach(x=>x.style.display='none')}
+function kmEdit(b){const r=b.closest('.arow'),e=r.querySelector('.aed');kmClose();e.style.display=e.style.display==='none'?'flex':'none'}
+function kmAct(b,f){kmClose();f()}
+document.addEventListener('click',kmClose);
 function markHot(){
   if(!STAFF)return;const c={};orders.filter(o=>!o.refunded).forEach(o=>o.lines.forEach(l=>{const k=l.code!=null?l.code:l.name;c[k]=(c[k]||0)+l.qty}));
   const top=new Set(Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,6).filter(e=>e[1]>0).map(e=>e[0]));
