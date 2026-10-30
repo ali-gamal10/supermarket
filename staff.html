@@ -249,10 +249,13 @@ header{padding:9px 20px;gap:14px}
  .badge{font-size:7px;padding:0 3px;top:2px;right:2px}
  .card button{font-size:9px;padding:2px 0;margin-top:1px;border-radius:5px}
 }
-/* ===== إطار جميل لصورة المنتج ===== */
-.card .img{border:2px solid #f6c9a3;border-radius:16px;background:linear-gradient(180deg,#fff,#fff7f0);padding:4px;box-shadow:0 3px 10px rgba(234,88,12,.14),inset 0 0 0 2px #fff;overflow:hidden}
-.card .img img,.card .img img.pk{border-radius:12px;object-fit:contain}
-.card:hover .img{border-color:#ea580c;box-shadow:0 5px 14px rgba(234,88,12,.25),inset 0 0 0 2px #fff}
+/* ===== إطار فخم لصورة المنتج (ذهبي مزدوج) ===== */
+.card .img{position:relative;border:3px solid transparent;border-radius:18px;padding:5px;
+ background:linear-gradient(180deg,#fffdf8,#fff6e6) padding-box,linear-gradient(135deg,#f8e08e,#c8923a 35%,#f6d77a 55%,#a9741f 80%,#f3d98a) border-box;
+ box-shadow:0 6px 16px rgba(160,110,30,.28),0 1px 0 rgba(255,255,255,.9) inset;overflow:hidden}
+.card .img::after{content:"";position:absolute;inset:3px;border:1.5px solid rgba(200,146,58,.55);border-radius:13px;pointer-events:none}
+.card .img img,.card .img img.pk{border-radius:11px;object-fit:contain}
+.card:hover .img{box-shadow:0 9px 22px rgba(160,110,30,.42),0 1px 0 rgba(255,255,255,.9) inset}
 /* ===== صورة المنتج أكبر من الاسم والسعر ===== */
 @media(max-width:800px){
  .products{grid-template-columns:repeat(3,1fr);gap:8px;padding:8px}
