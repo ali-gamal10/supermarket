@@ -110,6 +110,7 @@ table.stmt{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
 .arow .e{width:48px;text-align:center}.arow .n{flex:1;min-width:140px}.arow .p{width:80px}
 .arow label{font-size:11px;color:#666;display:block}
 body.nop .card .price,body.nop .card .old-price,body.nop .card .badge:not(.out),body.nop #cartItems .row>span:last-child,body.nop .total{display:none!important}
+.stgrp{margin-bottom:12px;border:1px solid #cfe0d6;border-radius:14px;background:#fff;padding:0 10px 4px}.stgrp>summary{cursor:pointer;font-weight:800;font-size:16.5px;color:#14532d;padding:14px 38px 14px 6px;list-style:none;position:relative;display:block;line-height:1.5}.stgrp>summary::-webkit-details-marker{display:none}.stgrp>summary::after{content:'⌄';position:absolute;left:8px;top:12px;font-size:22px;color:#14532d}.stgrp>summary small{display:block;margin-top:2px}.stgrp[open]>summary::after{content:'⌃'}.stgrp>summary small{font-weight:400;font-size:12px;color:#6b7280}.stgrp .bulk{margin-bottom:10px}
 .agrp{margin-bottom:10px}.agrp>summary{cursor:pointer;font-weight:800;font-size:16px;background:#e8f7ee;color:#14532d;border-radius:10px;padding:12px 14px;margin-bottom:8px;list-style:none}.agrp>summary small{font-weight:400;color:#456;font-size:13px}.kmi{display:block;width:100%;text-align:right;background:#fff;border:none;border-bottom:1px solid #f0f0f0;padding:11px 14px;font-size:14px;cursor:pointer}.kmi:hover{background:#fff3e0}
 .fin{font-weight:bold;color:#e30613;min-width:70px;text-align:center}
 /* ===== واجهة المتجر الجديدة ===== */
@@ -465,12 +466,22 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <div id="stg">
 <div class="adm-top"><h2>🛠️ الإعدادات</h2><button class="pbtn red" onclick="toggleStg()">✖ إغلاق</button></div>
 <div class="sec-in">
-<div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🔗 روابط المتجر</b>
+<details class="stgrp" open><summary>🔗 الروابط والنشر <small>روابط المتجر + ربط النشر بـ GitHub</small></summary><div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🔗 روابط المتجر</b>
 <div style="font-size:12.5px;color:#456;margin:6px 0">رابط الزبائن يُرسل للناس. رابط المدير لك فقط ولا تشاركه.</div>
 <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><span style="min-width:90px">🛒 الزبائن:</span><input id="lnkCust" readonly style="flex:1;min-width:200px;direction:ltr;font-size:12px"><button class="pbtn" onclick="stgCopy('lnkCust')">نسخ</button></div>
 <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><span style="min-width:90px">🔐 المدير:</span><input id="lnkStaff" readonly style="flex:1;min-width:200px;direction:ltr;font-size:12px"><button class="pbtn" onclick="stgCopy('lnkStaff')">نسخ</button></div>
 <div style="font-size:13px;color:#374151">📱 واتساب الطلبات: <b id="stgWa" dir="ltr"></b></div></div>
-<div class="bulk" style="display:block;background:#fff8e1;border-color:#f0d27a"><b>📣 عرض اليوم (يظهر أعلى صفحة الزبائن)</b>
+<div class="bulk" style="display:block;background:#eef4ff;border-color:#b6ccf5">
+<b>🔗 النشر التلقائي للزبائن (GitHub)</b> <span id="ghState" style="font-size:13px;color:#2d5a3f"></span>
+<div style="font-size:12.5px;color:#456;margin:6px 0">بعد التفعيل، أي تعديل على المنتجات والأسعار والخصومات يظهر للزبائن لوحده خلال 5 دقائق تقريباً تقريباً.</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+<input id="ghRepo" placeholder="المستودع: اسمك/اسم-المشروع" style="width:230px;direction:ltr">
+<input id="ghTok" type="password" placeholder="مفتاح GitHub" style="width:200px;direction:ltr">
+<button class="pbtn" onclick="ghSave()">حفظ</button>
+<button id="ghBtn" class="pbtn" style="background:#0a6cff" onclick="askPin(()=>publishGH(false),'🔐 نشر للزبائن — الرقم السري')">🌐 نشر للزبائن الآن</button>
+<button class="pbtn gray" onclick="ghOff()">إيقاف</button></div></div>
+</details>
+<details class="stgrp" open><summary>🌐 شكل الموقع للزبائن <small>عرض اليوم، رسالة عائمة، الأسعار، الألوان، عجلة الحظ، المنشورات</small></summary><div class="bulk" style="display:block;background:#fff8e1;border-color:#f0d27a"><b>📣 عرض اليوم (يظهر أعلى صفحة الزبائن)</b>
 <div style="font-size:12.5px;color:#765;margin:6px 0">اكتب جملة قصيرة مثل: «بيبسي 2 لتر بـ 25 جنيه اليوم فقط». تظهر للزبائن خلال دقائق من النشر.</div>
 <input id="dealTxt" maxlength="140" placeholder="نص العرض" style="width:100%;margin-bottom:8px">
 <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="pbtn" style="background:#d98200" onclick="dealPublish(false)">📣 نشر العرض</button><button class="pbtn gray" onclick="dealPublish(true)">إيقاف العرض</button></div></div>
@@ -505,20 +516,11 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <button class="pbtn" style="background:#d6336c" onclick="pmMake()">🎨 إنشاء المنشور</button></div>
 <canvas id="pmC" style="display:none;width:100%;max-width:360px;border-radius:10px;border:1px solid #ddd;background:#fff"></canvas>
 <div id="pmAct" style="display:none;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="pbtn" onclick="pmSave()">⬇️ تنزيل (صورة / PDF)</button><button class="pbtn gray" onclick="window.print&&pmPrint()">🖨️ طباعة</button><button class="pbtn" style="background:#25a244" onclick="pmShare()">📤 مشاركة</button></div></div>
-<div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🧾 الطباعة</b>
+</details>
+<details class="stgrp"><summary>🧾 الطباعة <small></small></summary><div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🧾 الطباعة</b>
 <label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:14px;color:#374151"><input type="checkbox" id="autoPr2" onchange="try{localStorage.setItem('auto_print',this.checked?'1':'')}catch(e){};var c=document.getElementById('autoPr');if(c)c.checked=this.checked"> 🖨️ اطبع الفاتورة تلقائياً بعد كل بيع (على هذا الجهاز)</label></div>
-<div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🔐 الأمان</b>
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="pbtn" onclick="stgGo('sec')">🔑 تغيير الرقم السري</button><button class="pbtn" onclick="stgGo('sec')">👥 الكاشيرية</button><button class="pbtn gray" onclick="stgGo('admin')">⚙️ إدارة المنتجات</button></div></div>
-<div class="bulk" style="display:block;background:#eef4ff;border-color:#b6ccf5">
-<b>🔗 النشر التلقائي للزبائن (GitHub)</b> <span id="ghState" style="font-size:13px;color:#2d5a3f"></span>
-<div style="font-size:12.5px;color:#456;margin:6px 0">بعد التفعيل، أي تعديل على المنتجات والأسعار والخصومات يظهر للزبائن لوحده خلال 5 دقائق تقريباً تقريباً.</div>
-<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-<input id="ghRepo" placeholder="المستودع: اسمك/اسم-المشروع" style="width:230px;direction:ltr">
-<input id="ghTok" type="password" placeholder="مفتاح GitHub" style="width:200px;direction:ltr">
-<button class="pbtn" onclick="ghSave()">حفظ</button>
-<button id="ghBtn" class="pbtn" style="background:#0a6cff" onclick="askPin(()=>publishGH(false),'🔐 نشر للزبائن — الرقم السري')">🌐 نشر للزبائن الآن</button>
-<button class="pbtn gray" onclick="ghOff()">إيقاف</button></div></div>
-<div class="bulk" style="display:block;background:#fff7e6;border-color:#f0d49a">
+</details>
+<details class="stgrp"><summary>💾 النسخ الاحتياطي والمزامنة <small>نسخ يومية + ربط الأجهزة</small></summary><div class="bulk" style="display:block;background:#fff7e6;border-color:#f0d49a">
 <b>💾 النسخ الاحتياطي</b> <span id="bkState" style="font-size:13px;color:#7a5b00"></span>
 <div style="font-size:12.5px;color:#765;margin:6px 0">نزّل نسخة من المنتجات والطلبات والمبيعات والآجل والكاشيرية واحتفظ بها (واتساب لنفسك / Google Drive). لو انمسح المتصفح أو تغيّر الجهاز ترجّعها بضغطة.</div>
 <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
@@ -540,7 +542,11 @@ body.sb #pos,body.sb #dash,body.sb #admin,body.sb #sec,body.sb #stg{right:58px}}
 <input id="fbPass" type="password" placeholder="كلمة سر الحساب" style="width:160px;direction:ltr">
 <button class="pbtn" style="background:#5b3fd6" onclick="fbLogin()">🔗 ربط هذا الجهاز</button>
 <button class="pbtn gray" onclick="fbOff()">فصل</button></div>
-<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px"><button class="pbtn" style="background:#d9366b" onclick="notifyPerm()">🔔 تفعيل إشعارات الطلبات + تجربة الصوت</button><span id="notifState" style="font-size:12.5px;color:#456"></span></div></div></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px"><button class="pbtn" style="background:#d9366b" onclick="notifyPerm()">🔔 تفعيل إشعارات الطلبات + تجربة الصوت</button><span id="notifState" style="font-size:12.5px;color:#456"></span></div></div></div></details>
+<details class="stgrp"><summary>🔐 الأمان والرقم السري <small>تغيير الرقم السري والكاشيرية</small></summary><div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🔐 الأمان</b>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="pbtn" onclick="stgGo('sec')">🔑 تغيير الرقم السري</button><button class="pbtn" onclick="stgGo('sec')">👥 الكاشيرية</button><button class="pbtn gray" onclick="stgGo('admin')">⚙️ إدارة المنتجات</button></div></div>
+</details>
+
 </div></div>
 <div id="admin">
 <div class="adm-top">
