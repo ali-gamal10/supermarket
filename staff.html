@@ -3089,7 +3089,9 @@ function sgAdd(id,d){
   const nm=d.lines&&d.lines[0]?String(d.lines[0].name||'').replace(/^اقتراح:\s*/,''):'';
   l.unshift({id:String(id),text:nm.slice(0,150),name:String(d.name||'زبون').slice(0,40),phone:String(d.phone||'').slice(0,15),time:d.time||new Date().toISOString()});
   sgSave(l.slice(0,300));
-  beep(2);toast('💡 اقتراح جديد من '+(d.name||'زبون')+': '+nm,6000);
+  beep(2);try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
+  try{osNotify('💡 اقتراح منتج جديد — سوبر ماركت',(d.name||'زبون')+': '+nm)}catch(e){}try{flashTitle('اقتراح جديد')}catch(e){}
+  toast('💡 اقتراح جديد من '+(d.name||'زبون')+': '+nm,6000);
   try{if(document.getElementById('dash').classList.contains('open'))renderDash()}catch(e){}
 }
 function sugHTML(){
