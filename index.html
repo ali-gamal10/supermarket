@@ -415,13 +415,27 @@ body.sb .arow{background:#fff;border-color:#d7e6dc;box-shadow:0 1px 4px rgba(20,
 #sortBar::before{content:"تصفية وترتيب";font-weight:800;color:var(--tx);margin-inline-end:auto;font-size:14px}
 #sortBar select,#sortBar label{height:38px;border-radius:12px!important;font-size:13px!important;font-weight:600;padding:0 12px!important;display:flex;align-items:center}
 #dealStrip{margin:0 22px}
-.dstrip{margin:14px 0!important;background:#fff;border-radius:22px;padding:16px 18px 8px;box-shadow:0 2px 10px rgba(20,30,40,.05)}
-.dstrip h4{margin:0 0 10px!important;padding-inline-start:12px;position:relative}
-.dstrip h4::before{content:"";position:absolute;right:0;top:15%;bottom:15%;width:4px;border-radius:4px;background:var(--gold)}
-.dstrip .mini{background:#f6ecd0!important;box-shadow:none!important}
-.dstrip .mini .im{background:#fff!important}
 .ptitle{margin:18px 22px 0;font-size:19px;font-weight:800;color:var(--tx)}
 @media(max-width:800px){#sortBar{margin:10px 12px 4px!important;padding:8px 10px;flex-wrap:wrap!important}#sortBar::before{width:100%;margin:0 0 2px}#dealStrip{margin:0 12px}.ptitle{margin:14px 14px 0;font-size:17px}}
+
+.dstrip{display:flex!important;gap:16px;align-items:stretch;margin:16px 0!important;background:none!important;padding:0!important;box-shadow:none!important;border-radius:0}
+.dstrip .dhead{flex:none;width:210px;border-radius:24px;background:linear-gradient(160deg,#1f2523,#3a4440);color:#fff;padding:22px 20px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;position:relative;overflow:hidden}
+.dstrip.nw .dhead{background:linear-gradient(160deg,#a77f12,#d4a73a);color:#1f1a08}
+.dstrip .dhead::after{content:"";position:absolute;left:-40px;bottom:-40px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.08)}
+.dh-i{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;color:#f3d27a}.dstrip.nw .dh-i{background:rgba(255,255,255,.35);color:#1f1a08}.dh-i svg{width:24px;height:24px}
+.dstrip .dhead h4{margin:6px 0 0!important;font-size:22px!important;font-weight:800;color:inherit!important;display:block}
+.dstrip .dhead p{margin:0;font-size:13px;opacity:.85}
+.dstrip .dhead button{align-self:flex-start;background:#fff;color:#1f2523;border:0;border-radius:20px;padding:8px 16px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;position:relative;z-index:1}
+.dstrip .row{flex:1;min-width:0;display:flex;gap:14px!important;overflow-x:auto;padding:4px 2px 10px!important;scroll-snap-type:x proximity}
+.dstrip .mini{flex:none;width:168px!important;background:#fff!important;border:0!important;border-radius:20px!important;padding:10px!important;box-shadow:0 4px 14px rgba(60,45,10,.10)!important;text-align:right!important;transition:.15s}
+.dstrip .mini:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(60,45,10,.16)!important}
+.dstrip .mini .im{height:116px!important;background:#faf6ea!important;border-radius:14px}.dstrip .mini img{max-height:106px!important}
+.dstrip .mini b{font-size:13.5px!important;height:38px!important;margin:10px 2px 6px;color:var(--tx)}
+.dstrip .mini .pr{display:flex;align-items:baseline;gap:8px;padding:0 2px 2px}
+.dstrip .mini .price{font-size:16px;font-weight:800;color:var(--tx)!important}.dstrip .mini .old-price{font-size:12px;color:#8a8472;text-decoration:line-through}
+.dstrip .mini .pc{top:14px!important;right:14px!important;background:#c9a227!important;color:#1f1a08!important;border-radius:8px!important;font-size:11px!important;padding:3px 8px!important}
+.dstrip .mini .pc.nwb{background:#1f2523!important;color:#f3d27a!important}
+@media(max-width:800px){.dstrip{flex-direction:column;gap:8px}.dstrip .dhead{width:auto;flex-direction:row;align-items:center;padding:12px 14px;border-radius:18px;flex-wrap:wrap}.dstrip .dhead h4{font-size:17px!important;margin:0!important}.dstrip .dhead p{flex:1;font-size:12px}.dh-i{width:34px;height:34px}.dh-i svg{width:20px;height:20px}.dstrip .dhead::after{display:none}.dstrip .mini{width:142px!important}.dstrip .mini .im{height:96px!important}}
 /* ===== مظهر هادئ حديث (التصميم 2) ===== */
 :root{--bg:linear-gradient(170deg,#f8f0d9 0%,#f1e1b3 50%,#e9d08f 100%);--gold:#c9a227;--tl:#1f2523;--tl2:#3a4440;--tx:#0a0d0c;--mu:#3d4543;--ln:#e3cf9b}
 body{color:var(--tx)}
@@ -2755,7 +2769,12 @@ function renderCatCards(){const el=document.getElementById('catCards');if(!el)re
   if(items.some(it=>ok(it)&&it.old)){const f=items.find(it=>ok(it)&&it.old);out.push(['offers','🔥 العروض',f.photo])}
   Object.keys(CATS).forEach(k=>{const f=items.find(it=>it.cat===k&&ok(it));if(f)out.push([k,CATS[k].replace(/^[^\u0621-\u064A]+/,''),f.photo])});
   el.innerHTML=out.map(o=>'<div class="cc" onclick="goCat(\''+o[0]+'\')"><div class="ci"><img loading="lazy" src="'+o[2]+'" alt=""></div><b>'+o[1]+'</b></div>').join('')}
-function stripHTML(list,title,cls){return '<div class="dstrip '+cls+'"><h4>'+title+'</h4><div class="row">'+list.map(it=>'<div class="mini" onclick="openProd('+it.i+')">'+(it.old?'<span class="pc">-'+Math.round((1-it.price/it.old)*100)+'%</span>':'')+'<div class="im">'+(it.photo?'<img loading="lazy" src="'+it.photo+'" alt="">':'<span style="font-size:40px">'+(it.img||'📦')+'</span>')+'</div><b>'+String(it.name).replace(/</g,'&lt;')+'</b><span class="price">'+it.price+' ج.م</span>'+(it.old?'<span class="old-price">'+it.old+'</span>':'')+'</div>').join('')+'</div></div>'}
+function stripHTML(list,title,cls){
+  const nw=cls==='nw',mx=Math.max(0,...list.map(it=>it.old?Math.round((1-it.price/it.old)*100):0));
+  const ico=nw?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 5.6L20 9.5l-4.300 3.900L17 19l-5-3-5 3 1.300-5.600L4 9.500l5.600-.9z"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12 12 20 3 11V3h8z"/><circle cx="7.500" cy="7.500" r="1"/></svg>';
+  const t=title.replace(/^[^\u0600-\u06FF]+/,'');
+  const sub=nw?list.length+' منتج وصل حديثاً':(mx?'خصومات تصل إلى '+mx+'%':'أسعار مخفّضة اليوم');
+  return '<div class="dstrip '+cls+'"><div class="dhead"><span class="dh-i">'+ico+'</span><h4>'+t+'</h4><p>'+sub+'</p>'+(nw?'':'<button type="button" onclick="goCat(\'offers\')">عرض الكل ‹</button>')+'</div><div class="row">'+list.map(it=>'<div class="mini" onclick="openProd('+it.i+')">'+(it.old?'<span class="pc">-'+Math.round((1-it.price/it.old)*100)+'%</span>':(nw?'<span class="pc nwb">جديد</span>':''))+'<div class="im">'+(it.photo?'<img loading="lazy" src="'+it.photo+'" alt="">':'<span style="font-size:40px">'+(it.img||'📦')+'</span>')+'</div><b>'+String(it.name).replace(/</g,'&lt;')+'</b><div class="pr"><span class="price">'+it.price+' ج.م</span>'+(it.old?'<span class="old-price">'+it.old+'</span>':'')+'</div></div>').join('')+'</div></div>'}
 function renderStrips(){
   const el=document.getElementById('dealStrip');if(!el)return;
   const q=(document.getElementById('q').value||'').trim();
