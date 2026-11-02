@@ -15,6 +15,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script>try{if(location.pathname.indexOf('staff')<0&&localStorage.getItem('dark')==='1')document.documentElement.classList.add('dark')}catch(e){}</script>
 <style>
+#dealBar{overflow:hidden;white-space:nowrap}#dealBar .mqi{display:inline-block}#dealBar.mq .mqi{padding-inline-start:100%;animation:mqm 16s linear infinite}#dealBar.mq:hover .mqi{animation-play-state:paused}@keyframes mqm{from{transform:translateX(0)}to{transform:translateX(100%)}}
+.shBtn{width:100%;margin-top:8px;padding:11px;border:1.5px solid #25d366;border-radius:14px;background:#fff;color:#128c4a;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer}
+body.cashonly .topbar .adm-btn:not(.keep),body.cashonly .mnav{display:none!important}
 html.dark{background:#fff;filter:invert(1) hue-rotate(180deg)}
 html.dark img,html.dark video,html.dark canvas{filter:invert(1) hue-rotate(180deg)}
 .cbx .stp{display:flex;align-items:center;margin-top:6px;border:2px solid #16a34a;border-radius:12px;overflow:hidden;background:#f0fdf4}.cbx .stp button{width:40px;margin:0;border-radius:0;padding:5px 0;font-size:18px;line-height:1.2}.cbx .stp b{flex:1;text-align:center;font-size:16px;color:#14532d}
@@ -340,17 +343,18 @@ body.sb .arow{background:#fff;border-color:#d7e6dc;box-shadow:0 1px 4px rgba(20,
 <div id="lockScr" style="position:fixed;inset:0;z-index:54;background:linear-gradient(160deg,#052e16,#166534);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;text-align:center;padding:20px">
 <div style="font-size:54px">🔐</div><h2 style="margin:0">لوحة إدارة سوبر ماركت</h2><p style="margin:0;opacity:.85">للمدير والموظفين فقط</p>
 <button class="pbtn" style="font-size:17px;padding:12px 34px" onclick="lockOpen()">دخول</button>
+<button class="pbtn" style="font-size:15px;padding:10px 28px;background:#d4a73a;color:#14391f" onclick="cashierLogin()">💵 دخول كاشير</button>
 <a href="./" style="color:#bbf7d0;font-size:14px">🏪 الذهاب لصفحة الزبائن</a></div>
 <div class="topbar">
 <span class="tb-label">لوحة المتجر</span>
-<button class="adm-btn" title="شاشة الكاشير" onclick="togglePos()"><i>💵</i><span>كاشير</span></button>
+<button class="adm-btn keep" title="شاشة الكاشير" onclick="togglePos()"><i>💵</i><span>كاشير</span></button>
 <button class="adm-btn" title="المدير: كل شيء عن الموقع" onclick="mgrBtn()" style="position:relative"><i>👑</i><span>المدير</span><span id="lowBadge" class="lowbadge" style="display:none"></span></button>
 <button class="adm-btn" title="الحسابات: المصروفات والمورّدون والآجل" onclick="mgrGo('dash','exp')"><i>💰</i><span>الحسابات</span></button>
 <button class="adm-btn" style="display:none" title="إدارة المنتجات" onclick="toggleAdmin()"><i>⚙️</i><span>المنتجات</span></button>
 <button class="adm-btn" style="display:none" title="الرقم السري والأمان" onclick="toggleSec()"><i>🔐</i><span>الرقم السري</span></button>
 <button class="adm-btn" style="display:none" title="الإعدادات" onclick="toggleStg()"><i>🛠️</i><span>الإعدادات</span></button>
 <button class="adm-btn" title="شاشة الزبائن" onclick="location.href='./'"><i>🏪</i><span>المتجر</span></button>
-<button class="adm-btn tb-out" title="قفل اللوحة" onclick="staffOff()"><i>🔒</i><span>قفل</span></button>
+<button class="adm-btn tb-out keep" title="قفل اللوحة" onclick="staffOff()"><i>🔒</i><span>قفل</span></button>
 </div>
 <header>
 <div class="logo"><svg class="logo-ico" viewBox="0 0 64 64" aria-hidden="true">
@@ -1974,7 +1978,7 @@ function loginOk(){
   if(pinLocked())return;
   if(!c||i.value!==c.pin){pinFail();i.value='';return}
   _pf=0;
-  curCashier={id:c.id,name:c.name};loginClose();enterPos();toast('أهلاً '+c.name+' 👋');
+  curCashier={id:c.id,name:c.name};loginClose();{const L=document.getElementById('lockScr');if(L&&L.style.display!=='none'){L.style.display='none';document.body.classList.add('cashonly')}}enterPos();toast('أهلاً '+c.name+' 👋');
 }
 function updatePosWho(){
   const el=document.getElementById('posWho');if(!el||!curCashier)return;
@@ -2031,7 +2035,7 @@ function togglePos(){
 function enterPos(){document.getElementById('pos').classList.add('open');renderPos();updatePosWho()}
 function renderPosGrid(){
   const q=document.getElementById('posQ').value.trim(),c=document.getElementById('posCat').value;
-  const html=items.map((it,i)=>({it,i})).filter(x=>(c==='all'||x.it.cat===c)&&(x.it.name.includes(q)||String(x.it.code)===q||(x.it.barcode||'').includes(q))).map(x=>
+  const html=items.map((it,i)=>({it,i})).filter(x=>(c==='all'||x.it.cat===c)&&(sMatch(x.it.name,q)||String(x.it.code)===q||(x.it.barcode||'').includes(q))).map(x=>
     `<div class="pos-btn ${x.it.stock<=0?'off':''}" ${x.it.stock>0?`onclick="add(${x.i})"`:''}><span class="e">${ph(x.it)}</span>${x.it.name}<br><b style="color:#e30613">${x.it.price} ج.م</b><br><small>#${x.it.code} · ${x.it.stock>0?'المتبقي '+x.it.stock:'نفد'}</small></div>`).join('');
   document.getElementById('posGrid').innerHTML=html||'<div class="empty">لا توجد منتجات</div>';
 }
@@ -2356,13 +2360,21 @@ function markHot(){
   const top=new Set(Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,6).filter(e=>e[1]>0).map(e=>e[0]));
   items.forEach(it=>{it.hot=(top.has(it.code)||top.has(it.name))?1:0});
 }
+const _SYN={'شيبس':'شيبسي','تشيبس':'شيبسي','شبيسي':'شيبسي','كراتيه':'كاراتيه','حليب':'لبن','ارز':'رز','معكرونه':'مكرونه','مكرونة':'مكرونه','بيبسى':'بيبسي','كولا':'كوكاكولا','صابون':'صابون','شاى':'شاي','تونه':'تونة','عصير':'عصير','نودلز':'اندومي','اندومى':'اندومي','نسكافيه':'نسكافيه','قهوه':'قهوة','فراخ':'دجاج','جبنه':'جبنة'};
+function _nz(t){t=String(t||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ؤ/g,'و').replace(/ئ/g,'ي').replace(/ة/g,'ه').replace(/[^\u0621-\u064Aa-z0-9\s]/g,' ');return t.split(/\s+/).filter(Boolean).map(w=>{w=w.replace(/^ال(?=.{3,})/,'');return _SYN[w]||w})}
+function _ed(a,b){if(Math.abs(a.length-b.length)>1)return 9;let i=0;while(i<a.length&&a[i]===b[i])i++;if(a.length===b.length)return a.slice(i+1)===b.slice(i+1)?1:(a.slice(i+1)===b.slice(i+1)?1:(a[i]===b[i+1]&&a[i+1]===b[i]&&a.slice(i+2)===b.slice(i+2)?1:9));return a.length>b.length?(a.slice(i+1)===b.slice(i)?1:9):(b.slice(i+1)===a.slice(i)?1:9)}
+const _snc=new Map();
+function sMatch(name,q){q=String(q||'').trim();if(!q)return true;if(String(name).includes(q))return true;
+  let nt=_snc.get(name);if(!nt){nt=_nz(name);_snc.set(name,nt)}
+  const qt=_nz(q);if(!qt.length)return true;
+  return qt.every(w=>nt.some(n=>n.includes(w)||(w.length>=3&&w.includes(n)&&n.length>=3)||(w.length>=4&&w[0]===n[0]&&_ed(w,n)<=1)||(w.length>=4&&n.length>4&&w[0]===n[0]&&_ed(w,n.slice(0,w.length))<=1)))}
 function render(){
   markHot();
   const bc=document.getElementById('bskChip');if(bc)bc.style.display=items.some(it=>it.bundle&&!it.hide&&winOk(it))?'':'none';
   const hc=document.getElementById('hotChip');if(hc)hc.style.display=items.some(it=>it.hot)?'':'none';
   updateHero();
   const q=document.getElementById('q').value.trim();
-  const list=items.map((it,i)=>({...it,i})).filter(it=>!(window.HNP&&!it.photo&&!it.bundle)&&(cat==="all"||(cat==="offers"?!!it.old:cat==="hot"?!!it.hot:it.cat===cat))&&it.name.includes(q)&&!it.hide&&winOk(it)&&(!onlyOff||!!it.old)&&(!onlyAv||it.stock>0));
+  const list=items.map((it,i)=>({...it,i})).filter(it=>!(window.HNP&&!it.photo&&!it.bundle)&&(cat==="all"||(cat==="offers"?!!it.old:cat==="hot"?!!it.hot:it.cat===cat))&&sMatch(it.name,q)&&!it.hide&&winOk(it)&&(!onlyOff||!!it.old)&&(!onlyAv||it.stock>0));
   const box=document.getElementById('products');
   if(!list.length){box.innerHTML='<div class="empty">لا توجد منتجات مطابقة</div>';return}
   list.sort((a,b)=>{const o=(a.stock<=0)-(b.stock<=0);if(o)return o;if(sortMode==='cheap')return a.price-b.price;if(sortMode==='exp')return b.price-a.price;if(sortMode==='hot')return (b.hot|0)-(a.hot|0);if(sortMode==='name')return a.name.localeCompare(b.name,'ar');return 0});
@@ -3449,10 +3461,16 @@ function openProd(i){
   document.getElementById('prodIn').innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:17px;line-height:1.5">'+it.name.replace(/</g,'&lt;')+'</b><button type="button" onclick="closeProd()" style="border:0;background:#eee;border-radius:10px;padding:6px 12px;font-family:inherit;cursor:pointer">✖</button></div>'+big+
   (it.bundle?'<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:14px;line-height:1.9"><b>🧺 محتويات السلة:</b><br>'+it.bundle.map(c=>'• '+String(c.n).replace(/</g,'&lt;')+(c.q>1?' × '+c.q:'')).join('<br>')+'</div>':'')+'<div style="margin:12px 0;font-size:20px;font-weight:800;color:#15803d">'+it.price+' ج.م'+(it.old?' <s style="color:#999;font-size:15px;font-weight:600">'+it.old+'</s>':'')+off+'</div>'+
   '<div style="font-size:13.5px;color:#555;margin-bottom:12px">'+(it.stock<=0?'<span style="color:#e30613;font-weight:700">نفد المخزون حالياً</span>':it.stock<=it.min?'<span style="color:#e68a00;font-weight:700">باقي '+it.stock+' فقط</span>':'✅ متوفر')+' · القسم: '+(CATS[it.cat]||it.cat)+'</div>'+
+  '<button type="button" class="shBtn" onclick="shareProd('+i+')">📤 مشاركة المنتج على واتساب</button>'+
   (it.stock>0?'<button type="button" onclick="add('+i+')" style="width:100%;padding:13px;border:0;border-radius:14px;background:#16a34a;color:#fff;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer">أضف للسلة 🛒</button>':'')+
   (sim.length?'<div style="margin-top:16px;font-weight:800">أصناف مشابهة</div><div style="display:flex;gap:8px;overflow-x:auto;padding:8px 0">'+sim.map(o=>'<div onclick="openProd('+o.k+')" style="min-width:96px;text-align:center;font-size:12px;cursor:pointer"><div style="width:84px;height:84px;margin:0 auto">'+ph(o.x).replace('<img','<img style="width:84px;height:84px;object-fit:contain;border-radius:12px"')+'</div><div style="height:32px;overflow:hidden;margin-top:4px">'+o.x.name.replace(/</g,'&lt;')+'</div><b style="color:#15803d">'+o.x.price+' ج.م</b></div>').join('')+'</div>':'');
   if(document.body.classList.contains('nop')){document.querySelectorAll('#prodIn *').forEach(e=>{const t=[...e.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join('');if((/ج\.م/.test(t)||(!e.children.length&&/^\s*خصم/.test(e.textContent)))&&!/نفد/.test(t))e.style.display='none'})}
   document.getElementById('prodBox').style.display='flex'}
+function shareProd(i){const it=items[i];if(!it)return;const hp=document.body.classList.contains('nop');
+  const url=location.origin+location.pathname.replace(/[^\/]*$/,'');
+  const tx='🛒 '+it.name+(hp?'':'\n💰 '+it.price+' ج.م'+(it.old?' (بدل '+it.old+')':''))+'\n\nاطلبه من سوبر ماركت 👇\n'+url;
+  if(navigator.share){navigator.share({title:it.name,text:tx}).catch(()=>{});return}
+  window.open('https://wa.me/?text='+encodeURIComponent(tx),'_blank')}
 function closeProd(){document.getElementById('prodBox').style.display='none'}
 /* مسح الباركود بالكاميرا (للكاشير) */
 let _cam={on:false,last:'',at:0,stream:null,timer:null,h5:null};
@@ -3740,7 +3758,7 @@ function wheelPublish(){
   askPin(async()=>{const o=Object.assign({},lsGet('store_cfg',{}),{wheel:{on,prizes:pr}});lsSet('store_cfg',o);
     const st=await phPut(cfg,'store.json',b64utf8(JSON.stringify(o)),'تحديث عجلة الحظ');
     if(st===200)toast(on?'تم نشر عجلة الحظ ✅ تظهر للزبائن خلال دقائق':'تم إيقاف عجلة الحظ ✅',4000);else toast('تعذر النشر ('+st+')',4500)},'🔐 نشر عجلة الحظ — الرقم السري')}
-function showDeal(tx){const el=document.getElementById('dealBar');if(!el)return;tx=String(tx||'').trim();if(!tx){el.style.display='none';return}el.textContent='📣 '+tx;el.style.display='block'}
+function showDeal(tx){const el=document.getElementById('dealBar');if(!el)return;tx=String(tx||'').trim();if(!tx){el.style.display='none';return}el.innerHTML='<span class="mqi"></span>';el.firstChild.textContent='📣 '+tx;el.style.display='block';el.classList.remove('mq');requestAnimationFrame(()=>{try{if(el.firstChild.scrollWidth>el.clientWidth-10)el.classList.add('mq')}catch(e){}})}
 try{document.addEventListener('DOMContentLoaded',()=>{try{const c=lsGet('store_cfg',{});window.HNP=!!c.hideNoPhoto&&!STAFF;hpApply(c.hidePrices);if(c.float)flShow(c.float.text);if(c.hours)hrApply(c.hours)}catch(e){}})}catch(e){}
 function flShow(tx){let e=document.getElementById('flMsg');tx=String(tx||'').trim();
   let dis='';try{dis=sessionStorage.getItem('fl_dis')||''}catch(x){}
