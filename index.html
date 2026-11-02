@@ -461,6 +461,9 @@ body.lv .card>.cbx{grid-column:3;grid-row:1/span 6;align-self:center}
 body.lv .card:hover{transform:none!important}
 body.lv .card h3{height:auto!important;margin:0!important}
 @media(max-width:800px){body.lv .products{grid-template-columns:1fr!important}body.lv .card{grid-template-columns:84px 1fr 118px;column-gap:10px}}
+.occbar,#occBar{gap:8px;flex-wrap:wrap;margin:10px 22px 0;align-items:center}#occBar .oc{padding:8px 16px;border-radius:30px;background:#fff;border:1px solid var(--ln);font-size:13.5px;font-weight:700;cursor:pointer;color:var(--tx)}#occBar .oc.on{background:#1f2523;color:#f3d27a;border-color:#1f2523}
+@media(max-width:800px){#occBar{margin:8px 12px 0}}
+body.en #sortBar::before{content:"Filter & sort"}body.en{font-family:'Segoe UI',Tahoma,sans-serif}body.en .card,body.en #svc button{text-align:left}body.en .cat{direction:ltr}
 /* ===== مظهر هادئ حديث (التصميم 2) ===== */
 :root{--bg:linear-gradient(170deg,#f8f0d9 0%,#f1e1b3 50%,#e9d08f 100%);--gold:#c9a227;--tl:#1f2523;--tl2:#3a4440;--tx:#0a0d0c;--mu:#3d4543;--ln:#e3cf9b}
 body{color:var(--tx)}
@@ -527,7 +530,7 @@ html.dark .hsearch{background:#223433!important}html.dark .card .img{background:
 <path d="M24.5 35v12M32 35v12M39.5 35v12" stroke="#16a34a" stroke-width="2.6" stroke-linecap="round" opacity=".45"/>
 </svg><div class="logo-txt"><b><span>سوبر ماركت</span></b><small>طازة كل يوم · توصيل لباب بيتك</small></div></div>
 <div class="hsearch"><span class="hs-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.500-3.500"/></svg></span><input id="q" type="search" placeholder="دور على رز، زيت، لبن..." oninput="render()"><button type="button" id="micBtn" onclick="micGo()" title="بحث بالصوت" style="border:0;background:#fee2e2;border-radius:50%;width:34px;height:34px;font-size:17px;cursor:pointer;flex:none;display:none">🎤</button></div>
-<button class="hbtn2" id="darkBtn" onclick="toggleDark()" title="الوضع الليلي">🌙</button><button class="cart-btn" onclick="toggleCart()"><span id="count">0</span><i class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.500"/><circle cx="18" cy="20" r="1.500"/><path d="M2 3h3l2.600 12.400a1 1 0 0 0 1 .8h9.200a1 1 0 0 0 1-.8L21 7H6"/></svg></i></button>
+<button class="hbtn2" id="langBtn" onclick="langToggle()" title="Language" style="font-weight:800;font-family:inherit;font-size:13px">EN</button><button class="hbtn2" id="darkBtn" onclick="toggleDark()" title="الوضع الليلي">🌙</button><button class="cart-btn" onclick="toggleCart()"><span id="count">0</span><i class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.500"/><circle cx="18" cy="20" r="1.500"/><path d="M2 3h3l2.600 12.400a1 1 0 0 0 1 .8h9.200a1 1 0 0 0 1-.8L21 7H6"/></svg></i></button>
 </header>
 
 <section class="hero">
@@ -609,6 +612,7 @@ html.dark .hsearch{background:#223433!important}html.dark .card .img{background:
 </div>
 
 
+<div id="occBar" style="display:none"></div>
 <div id="sortBar" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 12px;font-size:12px">
 <span class="vt" id="vtBox"><button type="button" id="vtg" onclick="setView('g')" title="شبكة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></button><button type="button" id="vtl" onclick="setView('l')" title="قائمة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></button></span>
 <select id="sortSel" onchange="sortMode=this.value;render()" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:10px;font-family:inherit;font-size:12px;background:#fff"><option value="def">ترتيب</option><option value="cheap">الأرخص</option><option value="exp">الأغلى</option><option value="hot">الأكثر طلباً</option><option value="name">الاسم</option></select>
@@ -854,6 +858,7 @@ html.dark .hsearch{background:#223433!important}html.dark .card .img{background:
 <b>🧺 إنشاء سلة جاهزة (مثل سلة رمضان أو العيد أو المدارس)</b>
 <div style="font-size:12.5px;color:#456;margin:6px 0;line-height:1.8">اختر الأصناف وكمية كل صنف، وحدّد سعر السلة (أقل من مجموع الأسعار فيظهر الخصم). عند بيع السلة يُخصم مخزون كل صنف داخلها تلقائياً.</div>
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px"><input id="bskName" placeholder="اسم السلة (مثال: سلة رمضان)" style="flex:1;min-width:170px"><input id="bskEmo" value="🧺" style="width:54px;text-align:center"><input id="bskPrice" type="number" min="1" placeholder="سعر السلة" style="width:110px"></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><label>المناسبة</label><input id="bskOcc" list="bskOccDl" placeholder="مثال: رمضان (اختياري)" maxlength="20" style="flex:1;min-width:150px"><datalist id="bskOccDl"><option value="رمضان"><option value="العيد"><option value="المدرسة"><option value="الضيافة"><option value="الشتاء"><option value="الصيف"><option value="شهرية"></datalist></div>
 <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><label>تظهر من</label><input id="bskFrom" type="date" style="width:140px"><label>إلى</label><input id="bskTo" type="date" style="width:140px"><span style="font-size:12px;color:#777">(اختياري)</span></div>
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px"><input id="bskQ" list="bskDl" placeholder="ابحث عن صنف…" style="flex:1;min-width:170px"><datalist id="bskDl"></datalist><input id="bskN" type="number" min="1" value="1" style="width:64px"><button class="pbtn" onclick="bskAdd()">➕ أضف</button></div>
 <div id="bskList" style="background:#fff;border:1px solid #ccc;border-radius:8px;padding:8px;line-height:2;min-height:40px"></div>
@@ -2749,13 +2754,69 @@ function sMatch(name,q){q=String(q||'').trim();if(!q)return true;if(String(name)
   let nt=_snc.get(name);if(!nt){nt=_nz(name);_snc.set(name,nt)}
   const qt=_nz(q);if(!qt.length)return true;
   return qt.every(w=>nt.some(n=>n.includes(w)||(w.length>=3&&w.includes(n)&&n.length>=3)||(w.length>=4&&w[0]===n[0]&&_ed(w,n)<=1)||(w.length>=4&&n.length>4&&w[0]===n[0]&&_ed(w,n.slice(0,w.length))<=1)))}
+/* ===== اللغة: عربي / English ===== */
+const I18N={
+'سوبر ماركت':'Super Market','طازة كل يوم · توصيل لباب بيتك':'Fresh every day · delivered to your door',
+'عروض الأسبوع':'Weekly deals','كل اللي بيتك محتاجه':'Everything your home needs','لحد بابك في 45 دقيقة':'delivered in 45 minutes',
+'اطلب الآن':'Order now','شوف الجديد':'See what\'s new','تسوق العروض الآن →':'Shop deals now →','تسوق العروض الآن':'Shop deals now','توصيل':'Delivery','جديد':'New','اطلب الآن ←':'Order now ←','شوف الجديد ←':'See what\'s new ←',
+'كل اللي بيتك محتاجه لحد بابك في 45 دقيقة':'Everything your home needs, at your door in 45 minutes',
+'التوصيل مجاني لأي مكان بالقرية':'Free delivery anywhere in the village','منتجات جديدة وصلت بأسعار تناسب الجميع':'New products at prices for everyone',
+'التوصيل مجاني لأي مكان بالقرية - اطلب الآن! ·':'Free delivery anywhere in the village - order now! ·','واتساب':'WhatsApp',
+'ثبّت المتجر على موبايلك وافتحه بضغطة':'Install the store on your phone and open it in one tap','تثبيت':'Install',
+'طلب صوتي':'Voice order','تتبّع طلبي':'Track my order','اكتب قائمتك':'Write your list','اقترح منتج':'Suggest a product','ميزانيتي':'My budget','عجلة الحظ':'Lucky wheel','شارك صديقك':'Share with a friend','بياناتي':'My details','عن المحل':'About us',
+'دور على رز، زيت، لبن...':'Search rice, oil, milk...','دور على اللي محتاجه...':'Search for what you need...','بحث بالصوت':'Voice search',
+'حاسبة الميزانية':'Budget calculator','اكتب المبلغ اللي معك، ونقترح لك سلة من الأساسيات تكفيك.':'Enter your budget and we\'ll suggest a basket of essentials.','احسب':'Calculate','مثال: 500':'e.g. 500',
+'اطلب بصوتك':'Order by voice','سجّل طلبك بالصوت':'Record your order by voice','افتح واتساب وسجّل صوتك':'Open WhatsApp and record your voice','نرد عليك بالأسعار والإجمالي قبل التوصيل':'We reply with prices and the total before delivery',
+'تتبع طلبي':'Track my order','بحث':'Search','رقم الطلب (اختياري)':'Order number (optional)',
+'اقترح منتج تحتاجه':'Suggest a product you need','ما لقيت اللي تحتاجه؟ اكتب اسم المنتج ونحاول نوفره لك':'Can\'t find it? Write the product name and we\'ll try to stock it','أرسل الاقتراح':'Send suggestion','اسمك (اختياري)':'Your name (optional)',
+'اكتب قائمتك هنا…':'Write your list here…','وقت التوصيل: في أقرب وقت':'Delivery time: as soon as possible','صباحاً (9 - 12)':'Morning (9 - 12)','ظهراً (12 - 4)':'Noon (12 - 4)','مساءً (4 - 9)':'Evening (4 - 9)',
+'أرسل القائمة على واتساب':'Send list on WhatsApp','اسمك (مطلوب)':'Your name (required)','اكتب اسمك (مطلوب)':'Your name (required)','العنوان أو رقم البيت (مطلوب)':'Address or house number (required)','رقم جوالك (اختياري)':'Your phone (optional)',
+'الكل':'All','العروض':'Offers','الأكثر طلباً':'Best sellers','ألبان وجبن':'Dairy & cheese','بقالة':'Grocery','مشروبات وعصائر':'Drinks & juices','لانشون ومصنعات':'Deli & processed','شيبسي وكراتيه':'Chips & snacks','سناكس وحلويات':'Snacks & sweets','منظفات':'Cleaning','سلال جاهزة':'Ready baskets','كل المناسبات':'All occasions',
+'رمضان':'Ramadan','العيد':'Eid','المدرسة':'School','الضيافة':'Hospitality','الشتاء':'Winter','الصيف':'Summer','شهرية':'Monthly',
+'ترتيب':'Sort','الأرخص':'Cheapest','الأغلى':'Most expensive','الاسم':'Name','العروض فقط':'Offers only','المتوفر فقط':'In stock only','تصفية وترتيب':'Filter & sort',
+'كل المنتجات':'All products','لا توجد منتجات مطابقة':'No matching products','أضف للسلة':'Add to cart','نفد المخزون':'Out of stock','نفد':'Sold out','آخر قطع':'Last pieces','الأكثر طلباً ':'Best seller',
+'سلة المشتريات':'Shopping cart','الإجمالي':'Total','حدد موقعي على الخريطة':'Pin my location on the map','اذهب إلى سوبر ماركت':'Go to the store','السلة فاضية!':'Your cart is empty!',
+'ج.م':'EGP','خصم':'Off','فقط':'only','باقي':'Left','تشمل':'Includes','أصناف':'items','اضغط للتفاصيل':'tap for details',
+'قدّم طلبك':'Place order','أرسل الطلب':'Send order','إرسال الطلب':'Send order','إغلاق':'Close','إلغاء':'Cancel','تأكيد':'Confirm','حفظ':'Save','تم':'Done',
+'عرضها':'View','المحل مغلق الآن':'The store is closed now','ساعات العمل':'Opening hours',
+'تمت الإضافة':'Added','تمت الإضافة ✅ تقدر تزيد الكمية بـ + و −':'Added ✅ use + and − to change quantity',
+'رقم جوالك (اختياري) علشان نبعتلك حالة الطلب':'Your phone (optional) so we can send order updates','ملاحظات (اختياري) مثل: اتصل قبل ما توصل':'Notes (optional), e.g. call before you arrive','اتصل قبل ما توصل':'call before you arrive','تتبع طلبك':'Track your order','أرسل طلبك':'Send your order','أرسل الطلب على واتساب':'Send order on WhatsApp','اطلب عبر واتساب':'Order via WhatsApp','أرسل الطلب عبر واتساب':'Send order via WhatsApp','تم إرسال طلبك':'Your order was sent','شكراً لك':'Thank you','مرحباً':'Welcome','فرغ السلة':'Clear cart','احذف':'Remove','الكمية':'Quantity','السعر':'Price','المجموع':'Subtotal','أضف':'Add','بدون':'None','لا يوجد':'None','حسابي':'My account','عملائنا الكرام اهلا بيكم في متجر سوبر ماركت السلماني':'Welcome to our store, dear customers'};
+const I18N_RX=[[/ج\.م/g,'EGP'],[/خصم\s*(\d+)%/g,'$1% off'],[/باقي\s*(\d+)\s*فقط!?/g,'Only $1 left!'],[/المتاح من (.+) هو (\d+) فقط/g,'Only $2 of $1 available'],[/تشمل\s*(\d+)\s*أصناف/g,'Includes $1 items'],[/ينتهي بعد/g,'Ends in']];
+(function(){const R=/^[^\u0600-\u06FFA-Za-z0-9]+|[^\u0600-\u06FFA-Za-z0-9]+$/g;Object.keys(I18N).forEach(k=>{const c=k.replace(R,'').trim();if(c&&I18N[c]===undefined)I18N[c]=I18N[k].replace(/[→←…\.]+$/,'').trim()})})();
+let _lang='ar',_i18nBusy=false,_i18nT=0,_i18nMO=null;
+function trS(str){
+  if(!str||!/[؀-ۿ]/.test(str))return str;
+  const m=str.match(/^([^؀-ۿA-Za-z0-9]*)([\s\S]*?)([^؀-ۿA-Za-z0-9]*)$/),core=m?m[2].trim():str.trim();
+  let out=str;
+  if(I18N[core]!==undefined&&m)out=m[1]+I18N[core]+m[3];
+  else{I18N_RX.forEach(([r,t])=>{out=out.replace(r,t)});
+    out=out.replace(/([؀-ۿ][؀-ۿ\s]*[؀-ۿ])/g,w=>I18N[w.trim()]!==undefined?I18N[w.trim()]:w)}
+  return out}
+function trAll(){
+  if(_lang!=='en'||_i18nBusy)return;_i18nBusy=true;try{if(_i18nMO)_i18nMO.disconnect();
+    const skip='.card h3,.mini b,.cart-name,#cartItems .nm,script,style,textarea';
+    const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>/[؀-ۿ]/.test(n.nodeValue)&&!(n.parentElement&&n.parentElement.closest(skip))?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT});
+    const L=[];while(w.nextNode())L.push(w.currentNode);L.forEach(n=>{const t=trS(n.nodeValue);if(t!==n.nodeValue)n.nodeValue=t});
+    document.querySelectorAll('[placeholder],[title]').forEach(e=>{['placeholder','title'].forEach(a=>{const v=e.getAttribute(a);if(v&&/[؀-ۿ]/.test(v)){const t=trS(v);if(t!==v)e.setAttribute(a,t)}})});
+    document.querySelectorAll('select option').forEach(o=>{if(/[؀-ۿ]/.test(o.textContent)){const t=trS(o.textContent);if(t!==o.textContent)o.textContent=t}});
+  }finally{_i18nBusy=false;if(_i18nMO)_i18nMO.observe(document.body,{childList:true,subtree:true,characterData:true})}}
+function langApply(l){_lang=l==='en'?'en':'ar';const d=document.documentElement;
+  if(_lang==='en'){d.lang='en';d.dir='ltr';document.body.classList.add('en');
+    if(!_i18nMO){_i18nMO=new MutationObserver(()=>{clearTimeout(_i18nT);_i18nT=setTimeout(trAll,80)})}
+    trAll();_i18nMO.observe(document.body,{childList:true,subtree:true,characterData:true})}
+  const b=document.getElementById('langBtn');if(b)b.textContent=_lang==='en'?'ع':'EN'}
+function langToggle(){const n=_lang==='en'?'ar':'en';try{localStorage.setItem('lang',n)}catch(e){}if(n==='ar')location.reload();else langApply('en')}
+try{document.addEventListener('DOMContentLoaded',()=>{try{const b=document.getElementById('langBtn');if(b&&STAFF)b.style.display='none';if(!STAFF&&localStorage.getItem('lang')==='en')setTimeout(()=>langApply('en'),50)}catch(e){}})}catch(e){}
+
+var occF='all';function setOcc(o){occF=o;render()}
 function render(){
   markHot();
   const bc=document.getElementById('bskChip');if(bc)bc.style.display=items.some(it=>it.bundle&&!it.hide&&winOk(it))?'':'none';
   const hc=document.getElementById('hotChip');if(hc)hc.style.display=items.some(it=>it.hot)?'':'none';
   updateHero();try{renderStrips();cdTick();heroInit()}catch(e){}
   const q=document.getElementById('q').value.trim();
-  const list=items.map((it,i)=>({...it,i})).filter(it=>!(window.HNP&&!it.photo&&!it.bundle)&&(cat==="all"||(cat==="offers"?!!it.old:cat==="hot"?!!it.hot:it.cat===cat))&&sMatch(it.name,q)&&!it.hide&&winOk(it)&&(!onlyOff||!!it.old)&&(!onlyAv||it.stock>0));
+  const list=items.map((it,i)=>({...it,i})).filter(it=>!(window.HNP&&!it.photo&&!it.bundle)&&(cat==="all"||(cat==="offers"?!!it.old:cat==="hot"?!!it.hot:it.cat===cat))&&sMatch(it.name,q)&&!it.hide&&winOk(it)&&(!onlyOff||!!it.old)&&(!onlyAv||it.stock>0)&&(cat!=="سلال"||occF==="all"||it.occ===occF));
+  {const ob=document.getElementById("occBar");if(ob){const oc=cat==="سلال"?[...new Set(items.filter(x=>x.bundle&&!x.hide&&winOk(x)&&x.occ).map(x=>x.occ))]:[];ob.innerHTML=oc.length?["all"].concat(oc).map(o=>`<span class="oc${occF===o?" on":""}" onclick="setOcc('${o}')">${o==="all"?"كل المناسبات":o}</span>`).join(""):"";ob.style.display=oc.length?"flex":"none"}}
   {const seen={},L2=[];list.forEach(it=>{if(it.grp){if(seen[it.grp])return;seen[it.grp]=1;const mem=list.filter(x=>x.grp===it.grp);const pick=mem.find(x=>x.i===selV[it.grp])||mem.find(x=>x.stock>0)||mem[0];L2.push(Object.assign({},pick,{_mem:mem}))}else L2.push(it)});list.length=0;L2.forEach(x=>list.push(x))}
   const box=document.getElementById('products');
   if(!list.length){box.innerHTML='<div class="empty">لا توجد منتجات مطابقة</div>';return}
@@ -2767,7 +2828,7 @@ function render(){
       <div class="img" onclick="openProd(${it.i})" style="cursor:pointer">${ph(it)}</div>
       <h3 onclick="openProd(${it.i})" style="cursor:pointer">${it._mem?(it.gn||it.name):it.name}</h3>
       ${it._mem&&it._mem.length>1?`<select class="vsel" onchange="selV['${it.grp}']=+this.value;render()">${it._mem.map(m=>`<option value="${m.i}" ${m.i===it.i?'selected':''} ${m.stock<=0?'disabled':''}>${m.vl}${m.stock<=0?' (نفد)':''}</option>`).join('')}</select>`:''}
-      ${it.bundle?`<div style="font-size:11px;color:#0d6b3a;margin-top:-4px">🧺 تشمل ${it.bundle.length} أصناف — اضغط للتفاصيل</div>`:''}
+      ${it.bundle?`<div style="font-size:11px;color:#0d6b3a;margin-top:-4px">🧺 تشمل ${it.bundle.length} أصناف${it.occ?' · '+it.occ:''} — اضغط للتفاصيل</div>`:''}
       <div><span class="price">${it.price} ج.م</span>${it.old?`<span class="old-price">${it.old}</span>`:''}</div>
       ${it.qd&&it.stock>0?`<div class="qdt">🎯 اشترِ ${it.qd.q} بـ ${it.qd.p} ج.م</div>`:''}
       ${it.offOn&&it.offer&&it.offer.to?`<div class="offend">⏳ ينتهي بعد <b class="cd" data-end="${it.offer.to}"></b></div>`:''}
@@ -2873,7 +2934,7 @@ function goCat(c){
   document.getElementById('products').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function filterCat(c,el){
-  cat=c;
+  cat=c;if(c!=='سلال')occF='all';
   document.querySelectorAll('.cat').forEach(e=>e.classList.remove('active'));
   el.classList.add('active');
   render();
@@ -4365,8 +4426,8 @@ function bskSave(){
     const ex=items.find(x=>x.name===name&&x.bundle);
     const o={name,price,cat:'سلال',img:emo,stock:0,min:2,bundle:_bsk.map(c=>({c:c.c,n:c.n,q:c.q}))};
     if(sum>price){o.old=sum}
-    if(from)o.bFrom=from;if(to)o.bTo=to;
-    if(ex){Object.assign(ex,o);if(!(sum>price))delete ex.old;if(!from)delete ex.bFrom;if(!to)delete ex.bTo}else items.unshift(o);
+    if(from)o.bFrom=from;if(to)o.bTo=to;const occ=(document.getElementById('bskOcc').value||'').trim();if(occ)o.occ=occ;
+    if(ex){Object.assign(ex,o);if(!(sum>price))delete ex.old;if(!from)delete ex.bFrom;if(!to)delete ex.bTo;if(!occ)delete ex.occ}else items.unshift(o);
     _bsk=[];norm();cart={};afterEdit();bskRender();
     res.innerHTML='✅ تم حفظ السلة «'+name.replace(/</g,'&lt;')+'»'+(sum>price?' — توفير للزبون '+(sum-price)+' ج.م':'')+'. تظهر للزبائن في تبويب 🧺 سلال جاهزة بعد النشر.'})}
 function mvRender(){const f=document.getElementById('mvFrom').value;
