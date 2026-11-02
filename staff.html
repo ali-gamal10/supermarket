@@ -15,6 +15,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script>try{if(location.pathname.indexOf('staff')<0&&localStorage.getItem('dark')==='1')document.documentElement.classList.add('dark')}catch(e){}</script>
 <style>
+.nbadge{position:absolute;top:2px;left:4px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#e11d48;color:#fff;font-size:12px;font-weight:800;line-height:20px;text-align:center;box-shadow:0 0 0 2px #14532d;font-style:normal}
+.nbadge.pulse{animation:nbp 1.3s ease-in-out infinite}@keyframes nbp{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
 #adBanner{display:none;margin:10px 12px 0}#adBanner.on{display:block}
 .adb{position:relative;max-width:900px;margin:0 auto;aspect-ratio:16/6.5;border-radius:20px;overflow:hidden;border:2.5px solid #d4a73a;box-shadow:0 6px 18px rgba(212,167,58,.3);background:#14391f}
 .adb .sl{position:absolute;inset:0;opacity:0;transition:opacity 1s ease,transform 1s ease}.adb .sl img{width:100%;height:100%;object-fit:cover;display:block}
@@ -407,13 +409,13 @@ body.sb .arow{background:#fff;border-color:#d7e6dc;box-shadow:0 1px 4px rgba(20,
 <span class="tb-label">لوحة المتجر</span>
 <button class="adm-btn keep" title="شاشة الكاشير" onclick="togglePos()"><i>💵</i><span>كاشير</span></button>
 <button class="adm-btn" title="المدير: كل شيء عن الموقع" onclick="mgrBtn()" style="position:relative"><i>👑</i><span>المدير</span><span id="lowBadge" class="lowbadge" style="display:none"></span></button>
-<button class="adm-btn" title="الطلبات" onclick="mgrGo('dash','trk')"><i>🚚</i><span>الطلبات</span></button>
+<button class="adm-btn" title="الطلبات" onclick="mgrGo('dash','trk')" data-nb="ord"><i>🚚</i><span>الطلبات</span></button>
 <button class="adm-btn" title="المنتجات" onclick="mgrGo('admin')"><i>📦</i><span>المنتجات</span></button>
 <button class="adm-btn" title="المخزون" onclick="mgrGo('dash','inv')"><i>🗃️</i><span>المخزون</span></button>
 <button class="adm-btn" title="الحسابات: المصروفات والمورّدون والآجل" onclick="mgrGo('dash','exp')"><i>💰</i><span>الحسابات</span></button>
 <button class="adm-btn" title="المبيعات" onclick="mgrGo('dash','sal')"><i>💹</i><span>المبيعات</span></button>
 <button class="adm-btn" title="التقارير" onclick="mgrGo('dash','prf')"><i>📈</i><span>التقارير</span></button>
-<button class="adm-btn" title="الاقتراحات" onclick="mgrGo('dash','sug')"><i>💡</i><span>الاقتراحات</span></button>
+<button class="adm-btn" title="الاقتراحات" onclick="mgrGo('dash','sug')" data-nb="sug"><i>💡</i><span>الاقتراحات</span></button>
 <button class="adm-btn" title="رسائل الزبائن" onclick="mgrGo('dash','bc')"><i>📣</i><span>الرسائل</span></button>
 <button class="adm-btn" title="إقفال اليوم" onclick="mgrGo('dash','cls')"><i>🧮</i><span>الإقفال</span></button>
 <button class="adm-btn" title="الإعدادات" onclick="mgrGo('stg')"><i>🛠️</i><span>الإعدادات</span></button>
@@ -1570,10 +1572,18 @@ try{orders=JSON.parse(localStorage.getItem('orders_v1'))||[]}catch(e){}
 orders.forEach((o,i)=>{if(!o.no)o.no=i+1});
 function nextNo(){return orders.reduce((m,o)=>Math.max(m,o.no||0),0)+1}
 function saveOrders(){try{localStorage.setItem('orders_v1',JSON.stringify(orders))}catch(e){}pushAll()}
+function sbBadges(){if(!STAFF)return;
+  const on=orders.filter(o=>o.src!=='cashier'&&o.status==='new'&&!o.refunded).length,late=orders.filter(isLate).length,ns=sgList().length;
+  const set=(k,n)=>{const b=document.querySelector('.topbar .adm-btn[data-nb="'+k+'"]');if(!b)return;let e=b.querySelector('.nbadge');if(!n){if(e)e.remove();return}
+    if(!e){e=document.createElement('span');e.className='nbadge';b.style.position='relative';b.appendChild(e)}e.textContent=n>99?'99+':n;e.classList.toggle('pulse',k==='ord'&&n>0)};
+  set('ord',on+late);set('sug',ns);
+  const t=on+late+ns;try{document.title=(t?'('+t+') ':'')+'إدارة سوبر ماركت'}catch(e){}}
+if(STAFF)setInterval(()=>{try{sbBadges()}catch(e){}},4000);
 function updateBadge(){
   const n=items.filter(it=>it.stock<=it.min).length;
   const b=document.getElementById('lowBadge');
   b.textContent=n;b.style.display=n?'block':'none';
+  try{sbBadges()}catch(e){}
 }
 function commitOrder(src,extra){
   const ids=Object.keys(cart);
