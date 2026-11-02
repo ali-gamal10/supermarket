@@ -14,6 +14,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script>try{if(location.pathname.indexOf('staff')<0&&localStorage.getItem('dark')==='1')document.documentElement.classList.add('dark')}catch(e){}</script>
 <style>
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:4px 0 14px}
+@media(min-width:700px){.tiles{grid-template-columns:repeat(4,1fr);gap:12px}}
+.tl{position:relative;border:0;border-radius:18px;padding:16px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font-family:inherit;color:#14391f;box-shadow:0 3px 10px rgba(20,83,45,.12);transition:.15s;border-bottom:4px solid rgba(0,0,0,.12)}
+.tl:active{transform:scale(.96)}.tl:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(20,83,45,.2)}
+.tl .ti{font-size:34px;line-height:1;width:58px;height:58px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.7);border-radius:16px}
+.tl .tt{font-size:14.5px;font-weight:800;text-align:center;line-height:1.3}
+.tl .tb{position:absolute;top:8px;left:8px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#14532d;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}.tl .tb.hot{background:#e11d48}
+.t-or{background:linear-gradient(145deg,#ffedd5,#fed7aa)}.t-gd{background:linear-gradient(145deg,#fef3c7,#fde68a)}.t-gr{background:linear-gradient(145deg,#dcfce7,#bbf7d0)}
+.t-yl{background:linear-gradient(145deg,#fefce8,#fef08a)}.t-pu{background:linear-gradient(145deg,#f3e8ff,#e9d5ff)}.t-pk{background:linear-gradient(145deg,#fce7f3,#fbcfe8)}
+.t-bl{background:linear-gradient(145deg,#e0f2fe,#bae6fd)}.t-gy{background:linear-gradient(145deg,#f1f5f9,#e2e8f0)}
+body.sb #dash .adm-top{display:none}
+@media(max-width:600px){#dashBody .stats{grid-template-columns:repeat(4,1fr);gap:6px}#dashBody .stat{padding:8px 3px;font-size:10px}#dashBody .stat b{font-size:14px}#dashBody .stat small{display:none}}
 .hero{padding:8px 14px 0!important;gap:8px!important}
 .hero-main{padding:12px 18px!important;border-radius:16px!important;gap:5px!important}
 .hero-main h2{font-size:clamp(16px,2.2vw,22px)!important;line-height:1.3!important}.hero-main h2 br{display:none}
@@ -1651,7 +1663,7 @@ function trkPrep(id){
   w.document.close();
 }
 function renderDash(){
-  {const ACC=['exp','sup','cr'],inA=ACC.includes(tab);document.querySelectorAll('#dash .tab').forEach(e=>{e.style.display=(inA===ACC.includes(e.dataset.t))?'':'none'})}
+  {const g=secOf(tab),L=g?SEC[g]:[];document.querySelectorAll('#dash .tab').forEach(e=>{e.style.display=L.includes(e.dataset.t)?'':'none'});const tb=document.querySelector('#dash .tabs');if(tb)tb.style.display=L.length>1?'':'none'}
   document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('active',e.dataset.t===tab));
   const b=document.getElementById('dashBody');
   {const tk=document.querySelector('.tab[data-t="trk"]');if(tk){const n=orders.filter(o=>o.status&&o.status!=='done'&&!o.refunded).length;tk.textContent='🚚 تتبع الطلبات'+(n?' ('+n+')':'')}}
@@ -2791,6 +2803,8 @@ function homeGo(w){
   if(w==='pub'){askPin(()=>{publishGH(false);setTimeout(renderDash,2500)},'🔐 نشر للزبائن — الرقم السري');return}
   setTab(w);
 }
+const SEC={ord:['trk','ord','cls'],inv:['inv','hid'],rep:['prf','sal','rep','cmp','csh','rank'],acc:['exp','sup','cr'],cus:['sug','bc']};
+function secOf(t){for(const k in SEC)if(SEC[k].includes(t))return k;return ''}
 function homeHTML(){
   const D=d0t(),T=okOrders(D,Infinity),Y=okOrders(D-864e5,D-1);
   const sum=l=>l.reduce((s,o)=>s+o.total,0),st=sum(T),sy=sum(Y);
@@ -2820,6 +2834,10 @@ function homeHTML(){
   const topH=Object.entries(top).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,q])=>`<div class="row"><span>${n.replace(/</g,'&lt;')}</span><b>${q}</b></div>`).join('')||'<p class="empty" style="padding:8px">لا مبيعات اليوم بعد</p>';
   const last=orders.filter(o=>!o.refunded).slice(-5).reverse().map(o=>`<div class="row" style="font-size:13px"><span>#${o.no} ${o.src==='cashier'?'🏪':'🌐'} ${(o.customer||o.cashier||'').toString().replace(/</g,'&lt;')}</span><span>${fmt(o.time)}</span><b>${o.total} ج.م</b></div>`).join('')||'<p class="empty" style="padding:8px">لا طلبات</p>';
   const q=(ic,t,go)=>`<button class="pbtn" style="background:#fff;color:#14532d;border:1px solid #b7ebc9;padding:12px 6px;font-size:14px;flex:1 1 30%;min-width:92px" onclick="homeGo('${go}')">${ic}<br>${t}</button>`;
+  const T_=(c,ic,t,go,bd,hot)=>`<button type="button" class="tl ${c}" onclick="homeGo('${go}')"><span class="ti">${ic}</span><span class="tt">${t}</span>${bd?`<span class="tb${hot?' hot':''}">${bd}</span>`:''}</button>`;
+  const TL=[T_('t-or','🚚','الطلبات','trk',newOn.length||'',fresh),T_('t-gd','💵','الكاشير','pos'),T_('t-gr','📦','المنتجات','admin'),T_('t-gr','🗃️','المخزون','inv',(out+low)||'',out),
+    T_('t-yl','💰','الحسابات','exp',debt>0?debtors.length:''),T_('t-pu','📈','التقارير','prf'),T_('t-pk','💡','اقتراحات الزبائن','sug',sgList().length||'',1),T_('t-bl','📣','رسائل الزبائن','bc'),
+    T_('t-yl','🧮','إقفال اليوم','cls'),T_('t-bl','🌐','نشر للزبائن','pub',pend?'!':'',1),T_('t-gy','🛠️','الإعدادات','stg'),T_('t-gy','🔐','الأمان','sec',PIN==='1234'?'!':'',1)].join('');
   const dt=new Date().toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long'});
   return `<div style="font-size:15px;margin-bottom:8px">👋 صباح الخير — <b>${dt}</b></div>
   <div class="stats">
@@ -2828,18 +2846,8 @@ function homeHTML(){
    <div class="stat" style="background:#e8f7ee">💹 ربح اليوم<b>${r2(pf)} ج.م</b></div>
    <div class="stat" style="background:${fresh?'#fee2e2':'#fff'}">🌐 طلبات جديدة<b>${fresh}</b></div>
   </div>
+  <div class="tiles">${TL}</div>
   <h3 style="margin:12px 0 6px">🔔 تحتاج انتباهك</h3>${al.length?al.join(''):'<div class="alert" style="background:#ecfdf3;border-color:#b7ebc9;color:#14532d">✅ كل شيء تمام. لا يوجد ما يحتاج انتباهك الآن.</div>'}
-  <h3 style="margin:14px 0 6px">🧭 كل أقسام الموقع</h3>
-  <div style="font-weight:700;color:#14532d;margin:6px 0 4px">🛒 البيع والطلبات</div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">${q('💵','كاشير','pos')}${q('🚚','تتبع الطلبات','trk')}${q('🧾','الطلبات','ord')}${q('📒','الآجل','cr')}${q('🧮','إقفال اليوم','cls')}${q('📣','رسائل الزبائن','bc')}${q('💡','اقتراحات الزبائن','sug')}</div>
-  <div style="font-weight:700;color:#14532d;margin:10px 0 4px">📦 المنتجات والمخزون</div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">${q('➕','إدارة المنتجات (⋮)','admin')}${q('🙈','إخفاء منتجات','hid')}${q('📦','المخزون','inv')}${q('🌐','نشر للزبائن','pub')}</div>
-  <div style="font-weight:700;color:#14532d;margin:10px 0 4px">📈 التقارير</div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">${q('💰','المبيعات','sal')}${q('📈','تقرير الأرباح','prf')}${q('📋','تقرير المنتجات','rep')}${q('📊','مقارنة الفترات','cmp')}${q('👥','تقرير الكاشيرية','csh')}${q('🏆','لوحة الترتيب','rank')}</div>
-  <div style="font-weight:700;color:#14532d;margin:10px 0 4px">💰 الحسابات</div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">${q('💸','المصروفات','exp')}${q('🏭','حساب المورّدين','sup')}${q('📒','الآجل (ديون الزبائن)','cr')}</div>
-  <div style="font-weight:700;color:#14532d;margin:10px 0 4px">⚙️ الموقع والأمان</div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">${q('🛠️','الإعدادات والعروض والألوان','stg')}${q('🔐','الرقم السري والأمان','sec')}</div>
   <h3 style="margin:14px 0 6px">🏆 الأكثر مبيعاً اليوم</h3>${topH}
   <h3 style="margin:14px 0 6px">🕒 آخر الطلبات</h3>${last}
   ${hid?`<div style="font-size:12.5px;color:#888;margin-top:10px">👁️ عندك ${hid} منتج مخفي عن الزبائن.</div>`:''}`;
@@ -3596,7 +3604,7 @@ function mgrGo(w,t){
 function mgrNavRender(){
   const cur=document.getElementById('admin').classList.contains('open')?'admin':document.getElementById('stg').classList.contains('open')?'stg':document.getElementById('sec').classList.contains('open')?'sec':'dash';
   const h=MG_ITEMS.map(it=>{const w=it[2],t=it[3];let on=false;
-    if(w==='dash'&&cur==='dash')on=(it[1]==='التقارير')?MG_REP.includes(tab):(it[1]==='الرئيسية')?['home','hid','bc'].includes(tab):(it[1]==='الحسابات')?['exp','sup','cr'].includes(tab):tab===t;else if(w===cur&&w!=='dash')on=true;
+    if(w==='dash'&&cur==='dash')on=(it[1]==='التقارير')?MG_REP.includes(tab):(it[1]==='الرئيسية')?tab==='home':(it[1]==='الحسابات')?SEC.acc.includes(tab):(it[1]==='الطلبات')?SEC.ord.includes(tab):(it[1]==='المخزون')?SEC.inv.includes(tab):(it[1]==='الاقتراحات')?SEC.cus.includes(tab):tab===t;else if(w===cur&&w!=='dash')on=true;
     return `<button class="mni${on?' on':''}" onclick="mgrGo('${w}'${t?",'"+t+"'":''})"><i>${it[0]}</i>${it[1]}</button>`}).join('');
   document.querySelectorAll('.mnav').forEach(n=>n.innerHTML=h);
 }
