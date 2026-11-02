@@ -28,7 +28,7 @@ body.nop .dstrip .mini .pc{display:none}
 #newBan{display:none;margin:8px 12px;padding:10px 14px;border-radius:14px;background:linear-gradient(90deg,#dcfce7,#bbf7d0);border:1px solid #4ade80;color:#14532d;font-weight:800;font-size:14px;align-items:center;gap:8px}
 #newBan button{margin-inline-start:auto;border:0;background:#16a34a;color:#fff;border-radius:10px;padding:6px 12px;font-family:inherit;font-weight:800;cursor:pointer}#newBan span.x{cursor:pointer;opacity:.6}
 body.nop .dstrip .mini .price,body.nop .dstrip .mini .old-price{display:none}
-#dealBar{overflow:hidden;white-space:nowrap}#dealBar .mqi{display:inline-block}#dealBar.mq .mqi{padding-inline-start:100%;animation:mqm 12s linear infinite}#dealBar.mq:hover .mqi{animation-play-state:paused}@keyframes mqm{from{transform:translateX(0)}to{transform:translateX(100%)}}
+#dealBar{overflow:hidden;white-space:normal}#dealBar .mqi{display:inline-block}#dealBar.mq .mqi{padding-inline-start:100%;animation:mqm 12s linear infinite}#dealBar.mq:hover .mqi{animation-play-state:paused}@keyframes mqm{from{transform:translateX(0)}to{transform:translateX(100%)}}
 .shBtn{width:100%;margin-top:8px;padding:11px;border:1.5px solid #25d366;border-radius:14px;background:#fff;color:#128c4a;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer}
 body.cashonly .topbar .adm-btn:not(.keep),body.cashonly .mnav{display:none!important}
 html.dark{background:#fff;filter:invert(1) hue-rotate(180deg)}
@@ -3794,7 +3794,7 @@ function wheelPublish(){
   askPin(async()=>{const o=Object.assign({},lsGet('store_cfg',{}),{wheel:{on,prizes:pr}});lsSet('store_cfg',o);
     const st=await phPut(cfg,'store.json',b64utf8(JSON.stringify(o)),'تحديث عجلة الحظ');
     if(st===200)toast(on?'تم نشر عجلة الحظ ✅ تظهر للزبائن خلال دقائق':'تم إيقاف عجلة الحظ ✅',4000);else toast('تعذر النشر ('+st+')',4500)},'🔐 نشر عجلة الحظ — الرقم السري')}
-function showDeal(tx){const el=document.getElementById('dealBar');if(!el)return;tx=String(tx||'').trim();if(!tx){el.style.display='none';return}el.innerHTML='<span class="mqi"></span>';el.firstChild.textContent='📣 '+tx;el.style.display='block';el.classList.remove('mq');el.classList.add('mq')}
+function showDeal(tx){const el=document.getElementById('dealBar');if(!el)return;tx=String(tx||'').trim();if(!tx){el.style.display='none';return}el.innerHTML='<span class="mqi"></span>';el.firstChild.textContent='📣 '+tx;el.style.display='block';el.classList.remove('mq');el.classList.remove('mq')}
 try{window.addEventListener('load',()=>setTimeout(newCheck,1500))}catch(e){}
 try{document.addEventListener('DOMContentLoaded',()=>{try{const c=lsGet('store_cfg',{});window.HNP=!!c.hideNoPhoto&&!STAFF;hpApply(c.hidePrices);if(c.float)flShow(c.float.text);if(c.hours)hrApply(c.hours)}catch(e){}})}catch(e){}
 function flShow(tx){let e=document.getElementById('flMsg');tx=String(tx||'').trim();
