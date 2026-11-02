@@ -14,6 +14,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script>try{if(location.pathname.indexOf('staff')<0&&localStorage.getItem('dark')==='1')document.documentElement.classList.add('dark')}catch(e){}</script>
 <style>
+#adBanner{display:none;margin:10px 12px 0}#adBanner.on{display:block}
+.adb{position:relative;max-width:900px;margin:0 auto;aspect-ratio:16/6.5;border-radius:20px;overflow:hidden;border:2.5px solid #d4a73a;box-shadow:0 6px 18px rgba(212,167,58,.3);background:#14391f}
+.adb .sl{position:absolute;inset:0;opacity:0;transition:opacity 1s ease,transform 1s ease}.adb .sl img{width:100%;height:100%;object-fit:cover;display:block}
+.adb .sl.on{opacity:1;z-index:1}
+.adb.m-zoom .sl.on img{animation:adz 7s ease-out forwards}@keyframes adz{from{transform:scale(1)}to{transform:scale(1.14)}}
+.adb.m-slide .sl{opacity:1;transform:translateX(100%)}.adb.m-slide .sl.on{transform:translateX(0);z-index:1}.adb.m-slide .sl.out{transform:translateX(-100%)}
+.adb .dt{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:2}.adb .dt i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.6);cursor:pointer}.adb .dt i.on{background:#fff;width:20px;border-radius:5px}
 .hero-main{position:relative;transition:background .5s}.hero-main .hs{animation:hfade .5s}@keyframes hfade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
 .hero-main.s2{background:linear-gradient(135deg,#0f5132,#198754 60%,#86d39b)!important}.hero-main.s3{background:linear-gradient(135deg,#7c2d12,#ea580c 60%,#fdba74)!important}
 .hdots{display:flex;gap:7px;justify-content:center;margin:6px 0 2px}.hdots i{width:9px;height:9px;border-radius:50%;background:#d1d5db;cursor:pointer;transition:.3s}.hdots i.on{background:#14532d;width:24px;border-radius:6px}
@@ -435,7 +442,7 @@ body.sb .arow{background:#fff;border-color:#d7e6dc;box-shadow:0 1px 4px rgba(20,
 <div class="hcard navy" onclick="goCat('البان')"><h3>🥛 قسم الألبان</h3><p>طازة كل يوم من المزرعة</p></div>
 </div>
 </section>
-<div id="catCards" class="ccards"></div>
+<div id="adBanner"></div>
 <div id="pwaBar" style="display:none;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;background:#ecfdf3;border-bottom:1px solid #b7ebc9;padding:8px 12px;font-size:14px;color:#14532d"><span>📲 ثبّت المتجر على موبايلك وافتحه بضغطة</span><button onclick="pwaInstall()" style="background:#16a34a;color:#fff;border:0;border-radius:8px;padding:6px 14px;font-weight:700;cursor:pointer">تثبيت</button><button onclick="pwaHide()" aria-label="إغلاق" style="background:none;border:0;font-size:18px;cursor:pointer;color:#14532d">✕</button></div>
 <div class="banner">🚚 التوصيل مجاني لأي مكان بالقرية - اطلب الآن! · <a href="https://wa.me/201125678585" target="_blank" rel="noopener" style="color:#128c3e;text-decoration:none;white-space:nowrap">📱 واتساب 01125678585</a></div>
 <div id="prodBox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeProd()">
@@ -595,6 +602,12 @@ body.sb .arow{background:#fff;border-color:#d7e6dc;box-shadow:0 1px 4px rgba(20,
 <div style="font-size:12.5px;color:#456;margin:6px 0">اكتب جملة مثل «انتظروا الجديد 🎉» أو «افتتاح الجمعة»، وتظهر عائمة أسفل شاشة الزبائن مع زر إغلاق. تظهر خلال دقائق من النشر.</div>
 <input id="flTxt" maxlength="80" placeholder="نص الرسالة العائمة" style="width:100%;margin-bottom:8px">
 <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="pbtn" style="background:#7c3aed" onclick="flPublish(false)">💬 نشر الرسالة</button><button class="pbtn gray" onclick="flPublish(true)">إيقاف الرسالة</button></div></div>
+<div class="bulk" style="display:block;background:#ecfeff;border-color:#67e8f9"><b>🖼️ صور العرض (بنر متحرك)</b>
+<div style="font-size:12.5px;color:#456;margin:6px 0">ضع صور واجهة المحل أو العروض، وتظهر للزبائن أعلى الصفحة بحركة. تقدر تعرضها وتخفيها متى تبغى.</div>
+<label style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><input type="checkbox" id="bnOn" style="width:20px;height:20px"> عرض الصور للزبائن</label>
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap"><span>نوع الحركة</span><select id="bnMode" style="padding:7px;border:1px solid #ccc;border-radius:8px"><option value="zoom">تكبير هادئ</option><option value="fade">تلاشي</option><option value="slide">انزلاق</option></select></div>
+<div id="bnList" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap"><label class="pbtn" style="background:#0891b2;cursor:pointer">➕ إضافة صورة<input type="file" accept="image/*" multiple style="display:none" onchange="bnAdd(this)"></label><button class="pbtn" style="background:#7c3aed" onclick="bnPublish()">🚀 نشر الصور</button></div></div>
 <div class="bulk" style="display:block;background:#fff7ed;border-color:#fdba74"><b>🕘 ساعات العمل</b>
 <div style="font-size:12.5px;color:#765;margin:6px 0">لما تفعّلها، وخارج هذي الأوقات يطلع للزبون «المحل مغلق الآن» ولا يقدر يرسل طلبًا. (بتوقيت مصر)</div>
 <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><input type="checkbox" id="hrOn" style="width:20px;height:20px"> تفعيل ساعات العمل</label>
@@ -2333,7 +2346,7 @@ function toggleStg(){
   if(a.classList.contains('open')){a.classList.remove('open');return}
   askPin(()=>{a.classList.add('open');stgInit()},'🔐 الإعدادات — اكتب رقم المدير');
 }
-function stgInit(){
+function stgInit(){try{bnLoad()}catch(e){}
   try{const base=location.href.replace(/[#?].*$/,'').replace(/[^\/]*$/,'');
   document.getElementById('lnkCust').value=base;document.getElementById('lnkStaff').value=base+'staff.html';
   document.getElementById('stgWa').textContent='0'+String(WHATSAPP).replace(/^20/,'');
@@ -2428,7 +2441,7 @@ function render(){
   markHot();
   const bc=document.getElementById('bskChip');if(bc)bc.style.display=items.some(it=>it.bundle&&!it.hide&&winOk(it))?'':'none';
   const hc=document.getElementById('hotChip');if(hc)hc.style.display=items.some(it=>it.hot)?'':'none';
-  updateHero();try{renderStrips();cdTick();renderCatCards();heroInit()}catch(e){}
+  updateHero();try{renderStrips();cdTick();heroInit()}catch(e){}
   const q=document.getElementById('q').value.trim();
   const list=items.map((it,i)=>({...it,i})).filter(it=>!(window.HNP&&!it.photo&&!it.bundle)&&(cat==="all"||(cat==="offers"?!!it.old:cat==="hot"?!!it.hot:it.cat===cat))&&sMatch(it.name,q)&&!it.hide&&winOk(it)&&(!onlyOff||!!it.old)&&(!onlyAv||it.stock>0));
   const box=document.getElementById('products');
@@ -2457,6 +2470,15 @@ function heroSlide(i){_hs=i;const m=document.querySelector('.hero-main');if(!m)r
 function heroGo(g){if(g==='new'){const a=document.getElementById('nwAnchor');if(a){a.scrollIntoView({behavior:'smooth'});return}g='all'}goCat(g)}
 function heroInit(){const d=document.getElementById('hdots');if(!d||d.children.length)return;d.innerHTML=HSL.map((_,k)=>'<i onclick="heroSlide('+k+');heroTimer()"></i>').join('');heroSlide(0);heroTimer()}
 function heroTimer(){clearInterval(_hT);_hT=setInterval(()=>heroSlide((_hs+1)%HSL.length),5000)}
+let _adT=null,_adI=0,_adSig='';
+function adRender(b){const el=document.getElementById('adBanner');if(!el||STAFF)return;
+  if(!b||!b.on||!b.items||!b.items.length){el.className='';el.innerHTML='';clearInterval(_adT);_adSig='';return}
+  const sig=JSON.stringify(b);if(sig===_adSig)return;_adSig=sig;
+  const L=b.items.map(x=>typeof x==='string'?x:x.img).filter(Boolean),m=['fade','zoom','slide'].includes(b.mode)?b.mode:'zoom';
+  el.className='on';el.innerHTML='<div class="adb m-'+m+'">'+L.map((u,k)=>'<div class="sl'+(k?'':' on')+'"><img src="'+u+'" alt="" '+(k?'loading="lazy"':'')+'></div>').join('')+(L.length>1?'<div class="dt">'+L.map((_,k)=>'<i class="'+(k?'':'on')+'" onclick="adGo('+k+')"></i>').join('')+'</div>':'')+'</div>';
+  _adI=0;clearInterval(_adT);if(L.length>1)_adT=setInterval(()=>adGo((_adI+1)%L.length),5000)}
+function adGo(i){const a=document.querySelector('#adBanner .adb');if(!a)return;const S=[...a.querySelectorAll('.sl')],D=[...a.querySelectorAll('.dt i')];
+  S.forEach((x,k)=>{x.classList.toggle('out',k===_adI&&k!==i);x.classList.remove('on');if(k===i){x.classList.add('on');const im=x.querySelector('img');if(im){im.style.animation='none';void im.offsetWidth;im.style.animation=''}}});D.forEach((d,k)=>d.classList.toggle('on',k===i));_adI=i}
 function renderCatCards(){const el=document.getElementById('catCards');if(!el)return;
   const ok=it=>!it.hide&&winOk(it)&&it.stock>0&&it.photo&&/^img\//.test(it.photo);const out=[];
   if(items.some(it=>ok(it)&&it.old)){const f=items.find(it=>ok(it)&&it.old);out.push(['offers','🔥 العروض',f.photo])}
@@ -3844,13 +3866,29 @@ function wheelPublish(){
     if(st===200)toast(on?'تم نشر عجلة الحظ ✅ تظهر للزبائن خلال دقائق':'تم إيقاف عجلة الحظ ✅',4000);else toast('تعذر النشر ('+st+')',4500)},'🔐 نشر عجلة الحظ — الرقم السري')}
 function showDeal(tx){const el=document.getElementById('dealBar');if(!el)return;tx=String(tx||'').trim();if(!tx){el.style.display='none';try{document.documentElement.style.setProperty('--dbh','0px')}catch(e){}return}el.innerHTML='<span class="mqi"></span>';el.firstChild.textContent='📣 '+tx;el.style.display='block';el.classList.add('mq');try{document.documentElement.style.setProperty('--dbh',el.offsetHeight+'px')}catch(e){}}
 try{window.addEventListener('load',()=>setTimeout(newCheck,1500))}catch(e){}
-try{document.addEventListener('DOMContentLoaded',()=>{try{const c=lsGet('store_cfg',{});window.HNP=!!c.hideNoPhoto&&!STAFF;hpApply(c.hidePrices);if(c.float)flShow(c.float.text);if(c.hours)hrApply(c.hours)}catch(e){}})}catch(e){}
+try{document.addEventListener('DOMContentLoaded',()=>{try{const c=lsGet('store_cfg',{});window.HNP=!!c.hideNoPhoto&&!STAFF;hpApply(c.hidePrices);if(c.float)flShow(c.float.text);adRender(c.banners);if(c.hours)hrApply(c.hours)}catch(e){}})}catch(e){}
 function flShow(tx){let e=document.getElementById('flMsg');tx=String(tx||'').trim();
   let dis='';try{dis=sessionStorage.getItem('fl_dis')||''}catch(x){}
   if(!tx||STAFF||dis===tx){if(e)e.style.display='none';return}
   if(!e){e=document.createElement('div');e.id='flMsg';document.body.appendChild(e)}
   e.innerHTML='<span class="flt"></span><button aria-label="إغلاق" onclick="flClose()">✕</button>';e.querySelector('.flt').textContent=tx;e.dataset.t=tx;e.style.display='flex'}
 function flClose(){const e=document.getElementById('flMsg');if(!e)return;try{sessionStorage.setItem('fl_dis',e.dataset.t||'')}catch(x){}e.style.display='none'}
+let _bn={on:true,mode:'zoom',items:[]};
+function bnLoad(){try{const b=lsGet('store_cfg',{}).banners;if(b)_bn={on:b.on!==false,mode:b.mode||'zoom',items:(b.items||[]).slice()}}catch(e){}
+  const o=document.getElementById('bnOn');if(o){o.checked=!!_bn.on;document.getElementById('bnMode').value=_bn.mode;bnDraw()}}
+function bnDraw(){const l=document.getElementById('bnList');if(!l)return;l.innerHTML=_bn.items.length?_bn.items.map((u,k)=>'<div style="position:relative;width:96px;height:56px;border-radius:10px;overflow:hidden;border:1px solid #ccc"><img src="'+u+'" style="width:100%;height:100%;object-fit:cover"><button onclick="bnDel('+k+')" style="position:absolute;top:2px;left:2px;border:0;background:#e11d48;color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer">✕</button></div>').join(''):'<span style="font-size:13px;color:#888">لا توجد صور بعد</span>'}
+function bnDel(k){_bn.items.splice(k,1);bnDraw()}
+function bnResize(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const W=Math.min(1400,im.width),H=Math.round(im.height*W/im.width),c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').drawImage(im,0,0,W,H);res(c.toDataURL('image/jpeg',.82).split(',')[1])};im.onerror=rej;im.src=r.result};r.onerror=rej;r.readAsDataURL(f)})}
+async function bnAdd(inp){const cfg=ghCfg();if(!cfg){toast('فعّل النشر بمفتاح GitHub أولاً',3500);return}
+  const fs=[...inp.files];inp.value='';if(!fs.length)return;toast('جاري رفع الصور…',3000);
+  for(const f of fs){try{const b64=await bnResize(f),p='img/ban_'+Date.now()+Math.floor(Math.random()*99)+'.jpg',st=await phPut(cfg,p,b64,'صورة بنر');if(st===200){_bn.items.push(p);bnDraw()}else toast('تعذر رفع صورة ('+st+')',4000)}catch(e){toast('تعذر قراءة الصورة',3500)}}
+  toast('تم رفع الصور ✅ اضغط «نشر الصور» لتظهر للزبائن',4500)}
+function bnPublish(){const cfg=ghCfg();if(!cfg){toast('فعّل النشر بمفتاح GitHub أولاً',3500);return}
+  _bn.on=document.getElementById('bnOn').checked;_bn.mode=document.getElementById('bnMode').value;
+  askPin(async()=>{let base=lsGet('store_cfg',{});try{const r=await fetch('https://raw.githubusercontent.com/'+cfg.repo+'/'+cfg.branch+'/store.json?t='+Date.now());if(r.ok)base=Object.assign({},await r.json(),{})}catch(e){}
+    const o=Object.assign({},base,{banners:{on:_bn.on,mode:_bn.mode,items:_bn.items}});
+    const st=await phPut(cfg,'store.json',b64utf8(JSON.stringify(o)),'صور العرض للزبائن');
+    if(st===200){lsSet('store_cfg',Object.assign({},lsGet('store_cfg',{}),{banners:o.banners}));toast(_bn.on&&_bn.items.length?'تم نشر الصور ✅ تظهر للزبائن خلال دقائق':'تم إخفاء الصور عن الزبائن ✅',4500)}else toast('تعذر النشر ('+st+')',4500)},'🔐 نشر صور العرض')}
 function flPublish(clear){
   const cfg=ghCfg();if(!cfg){toast('فعّل النشر بمفتاح GitHub أولاً',3500);return}
   const tx=clear?'':document.getElementById('flTxt').value.trim().slice(0,80);
@@ -4010,7 +4048,7 @@ if(!STAFF&&/^https?:/.test(location.protocol)){
 }
 if(!STAFF&&/^https?:/.test(location.protocol)){
   const _sj=u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
-  _sj('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/store.json?t='+Math.floor(Date.now()/6e4)).then(j=>j||_sj('store.json?t='+Date.now())).then(j=>{if(j&&j.deal)showDeal(j.deal.text);if(j&&j.theme)themeApply(j.theme);else if(j&&!j.theme)themeApply('green');if(j){hrApply(j.hours);flShow(j.float&&j.float.text);hpApply(j.hidePrices,!!j.hideNoPhoto);try{lsSet('store_cfg',Object.assign({},lsGet('store_cfg',{}),{hidePrices:!!j.hidePrices,hideNoPhoto:!!j.hideNoPhoto,float:j.float||null,hours:j.hours||null}))}catch(e){}}if(j)wheelSetCfg(j.wheel)}).catch(()=>{});
+  _sj('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/store.json?t='+Math.floor(Date.now()/6e4)).then(j=>j||_sj('store.json?t='+Date.now())).then(j=>{if(j&&j.deal)showDeal(j.deal.text);if(j&&j.theme)themeApply(j.theme);else if(j&&!j.theme)themeApply('green');if(j){hrApply(j.hours);flShow(j.float&&j.float.text);adRender(j.banners);hpApply(j.hidePrices,!!j.hideNoPhoto);try{lsSet('store_cfg',Object.assign({},lsGet('store_cfg',{}),{hidePrices:!!j.hidePrices,hideNoPhoto:!!j.hideNoPhoto,float:j.float||null,hours:j.hours||null,banners:j.banners||null}))}catch(e){}}if(j)wheelSetCfg(j.wheel)}).catch(()=>{});
 }
 render();updateCart();updateBadge();
 if(location.hash==='#cashier'&&document.querySelector('.topbar').classList.contains('on'))togglePos();
