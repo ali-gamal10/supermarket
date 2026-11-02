@@ -15,6 +15,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script>try{if(location.pathname.indexOf('staff')<0&&localStorage.getItem('dark')==='1')document.documentElement.classList.add('dark')}catch(e){}</script>
 <style>
+#ntBell{position:fixed;top:10px;left:10px;z-index:60;width:44px;height:44px;border-radius:50%;border:2px solid #d4a73a;background:#14532d;color:#fff;font-size:21px;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.3)}
+#ntBell.ring{animation:ntr 2.2s ease-in-out infinite}@keyframes ntr{0%,86%,100%{transform:rotate(0)}88%{transform:rotate(14deg)}91%{transform:rotate(-12deg)}94%{transform:rotate(8deg)}97%{transform:rotate(-5deg)}}
+#ntCnt{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#e11d48;color:#fff;font-size:12px;font-weight:800;align-items:center;justify-content:center;display:none;font-family:inherit}
+#ntPanel{position:fixed;top:60px;left:10px;z-index:61;width:min(calc(100vw - 100px),370px);max-height:75vh;background:#fff;border-radius:16px;box-shadow:0 10px 36px rgba(0,0,0,.32);display:none;overflow:hidden;flex-direction:column}
+#ntPanel .nth{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #eee;font-size:16px}#ntPanel .nth a{font-size:12.5px;color:#0a6cff;cursor:pointer;font-weight:600}
+#ntPanel .ntl{overflow-y:auto;max-height:58vh}.nti{display:flex;gap:10px;align-items:center;padding:10px 14px;cursor:pointer;border-bottom:1px solid #f3f4f6}.nti:hover{background:#f9fafb}.nti.un{background:#eaf3ff}
+.nti .nic{width:42px;height:42px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:21px;flex:none}.nti .ntx{font-size:14px;line-height:1.5;color:#111}.nti small{color:#0a6cff;font-size:12px}.nti .dot{width:10px;height:10px;border-radius:50%;background:#0a6cff;margin-inline-start:auto;flex:none}
+#ntPanel .nte{padding:24px;text-align:center;color:#888}#ntPanel .ntf{padding:10px;text-align:center;border-top:1px solid #eee;font-size:13px}#ntPanel .ntf a{color:#14532d;cursor:pointer;font-weight:700}
 .nbadge{position:absolute;top:2px;left:4px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#e11d48;color:#fff;font-size:12px;font-weight:800;line-height:20px;text-align:center;box-shadow:0 0 0 2px #14532d;font-style:normal}
 .nbadge.pulse{animation:nbp 1.3s ease-in-out infinite}@keyframes nbp{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
 #adBanner{display:none;margin:10px 12px 0}#adBanner.on{display:block}
@@ -1600,6 +1608,7 @@ function commitOrder(src,extra){
   if(extra)Object.assign(o,extra);
   orders.push(o);saveOrders();saveItems();
   cart={};updateCart();render();updateBadge();
+  if(lowNow.length){try{ntAdd('⚠️','مخزون منخفض: '+lowNow.slice(0,4).join('، ')+(lowNow.length>4?'…':''),'inv','low'+lowNow.join('|')+new Date().toDateString())}catch(e){}}
   if(lowNow.length&&src==='cashier')toast('⚠️ تنبيه مخزون: '+lowNow.join('، '),5000);
   return o;
 }
@@ -3218,7 +3227,24 @@ function flashTitle(msg){
   const stop=()=>{if(!document.hidden){clearInterval(_flash);document.title=base;document.removeEventListener('visibilitychange',stop)}};
   document.addEventListener('visibilitychange',stop);
 }
-function notifyNew(name,total){
+/* ===== مركز الإشعارات (مثل فيسبوك) ===== */
+function ntList(){return lsGet('notif_v1',[])}
+function ntAdd(ic,txt,go,key){if(!STAFF)return;const l=ntList();if(key&&l.some(x=>x.k===key))return;l.unshift({id:Date.now()+Math.floor(Math.random()*1e3),t:Date.now(),ic,txt,go,k:key||'',r:0});lsSet('notif_v1',l.slice(0,60));ntBell()}
+function ntAgo(t){const m=Math.floor((Date.now()-t)/6e4);if(m<1)return 'الآن';if(m<60)return 'منذ '+m+' د';const h=Math.floor(m/60);if(h<24)return 'منذ '+h+' س';return 'منذ '+Math.floor(h/24)+' يوم'}
+function ntBell(){if(!STAFF)return;let b=document.getElementById('ntBell');
+  if(!b){b=document.createElement('button');b.id='ntBell';b.type='button';b.setAttribute('aria-label','الإشعارات');b.onclick=ntToggle;b.innerHTML='🔔<span id="ntCnt"></span>';document.body.appendChild(b);
+    const p=document.createElement('div');p.id='ntPanel';document.body.appendChild(p);document.addEventListener('click',e=>{if(!e.target.closest('#ntPanel')&&!e.target.closest('#ntBell'))p.style.display='none'})}
+  const lk=document.getElementById('lockScr'),hide=(lk&&lk.style.display!=='none')||document.body.classList.contains('cashonly');b.style.display=hide?'none':'flex';
+  const n=ntList().filter(x=>!x.r).length,c=document.getElementById('ntCnt');c.textContent=n>99?'99+':n;c.style.display=n?'flex':'none';b.classList.toggle('ring',n>0);
+  const p=document.getElementById('ntPanel');if(p&&p.style.display==='block')ntDraw()}
+function ntDraw(){const p=document.getElementById('ntPanel'),l=ntList();
+  p.innerHTML='<div class="nth"><b>🔔 الإشعارات</b><span><a onclick="ntRead()">تعليم الكل كمقروء</a></span></div><div class="ntl">'+(l.length?l.map(x=>'<div class="nti'+(x.r?'':' un')+'" onclick="ntGo('+x.id+')"><span class="nic">'+x.ic+'</span><div><div class="ntx">'+String(x.txt).replace(/</g,'&lt;')+'</div><small>'+ntAgo(x.t)+'</small></div>'+(x.r?'':'<i class="dot"></i>')+'</div>').join(''):'<div class="nte">لا توجد إشعارات بعد</div>')+'</div><div class="ntf"><a onclick="notifyPerm()">📲 تفعيل إشعارات المتصفح والصوت</a></div>'}
+function ntToggle(e){e.stopPropagation();const p=document.getElementById('ntPanel');if(p.style.display==='block'){p.style.display='none';return}ntDraw();p.style.display='block'}
+function ntRead(){const l=ntList();l.forEach(x=>x.r=1);lsSet('notif_v1',l);ntBell();ntDraw()}
+function ntGo(id){const l=ntList(),x=l.find(y=>y.id===id);if(!x)return;x.r=1;lsSet('notif_v1',l);document.getElementById('ntPanel').style.display='none';ntBell();if(x.go)mgrGo('dash',x.go)}
+if(STAFF){setInterval(ntBell,3000);addEventListener('load',()=>setTimeout(ntBell,800))}
+function notifyNew(name,total,late){
+  ntAdd(late?'⏰':'🛒',(late?'طلب وصل أثناء الإغلاق من ':'طلب جديد من ')+(name||'زبون')+' — '+total+' ج.م','trk');
   beep(3);try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}
   osNotify('🔔 طلب جديد — سوبر ماركت',(name||'زبون')+' — '+total+' ج.م');
   flashTitle('طلب جديد');
@@ -3332,6 +3358,7 @@ function sgAdd(id,d){
   sgSave(l.slice(0,300));
   beep(2);try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
   try{osNotify('💡 اقتراح منتج جديد — سوبر ماركت',(d.name||'زبون')+': '+nm)}catch(e){}try{flashTitle('اقتراح جديد')}catch(e){}
+  ntAdd('💡','اقتراح منتج من '+(d.name||'زبون')+': '+nm,'sug');
   toast('💡 اقتراح جديد من '+(d.name||'زبون')+': '+nm,6000);
   try{if(document.getElementById('dash').classList.contains('open'))renderDash()}catch(e){}
 }
@@ -3357,7 +3384,7 @@ function importIncoming(id,d){
   try{DB.doc('incoming/'+id).delete()}catch(e){}
   render();updateBadge();
   if(document.getElementById('dash').classList.contains('open'))renderDash();
-  notifyNew(d.name,total);
+  notifyNew(d.name,total,String(d.note||'').includes('⏰ وصل أثناء إغلاق'));
 }
 function incomingListen(){
   try{DB.collection('incoming').onSnapshot(s=>{s.docs.forEach(d=>importIncoming(d.id,d.data()))},()=>{})}catch(e){}
