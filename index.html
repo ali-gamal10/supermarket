@@ -442,7 +442,7 @@ body.sb .arow{background:#fff;border-color:#d7e6dc;box-shadow:0 1px 4px rgba(20,
  box-shadow:inset 0 2px 0 rgba(255,255,255,.9),inset 0 -3px 6px rgba(150,110,20,.18),0 7px 0 var(--c3,#d3b25a),0 16px 26px rgba(90,60,10,.30)!important;
  margin-bottom:8px;transition:transform .2s ease,box-shadow .2s ease;transform-style:preserve-3d}
 .card:hover{transform:translateY(-6px) rotateX(3deg);box-shadow:inset 0 2px 0 rgba(255,255,255,.9),inset 0 -3px 6px rgba(150,110,20,.18),0 11px 0 var(--c3,#d3b25a),0 24px 34px rgba(90,60,10,.34)!important}
-.card .img{background:var(--c4,#f2dfa6)!important;box-shadow:inset 0 3px 8px rgba(120,90,20,.22),0 1px 0 rgba(255,255,255,.9)!important;border-radius:16px!important}
+.card .img{background:var(--c4,#f8f4ea)!important;box-shadow:inset 0 3px 8px rgba(120,90,20,.22),0 1px 0 rgba(255,255,255,.9)!important;border-radius:16px!important}
 .card button:not([disabled]){background:linear-gradient(180deg,#3b4540,#1a201e)!important;box-shadow:0 4px 0 #000,0 7px 10px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.25)!important;transition:transform .1s,box-shadow .1s}
 .card button:not([disabled]):active{transform:translateY(3px);box-shadow:0 1px 0 #000,0 2px 4px rgba(0,0,0,.3)!important}
 
@@ -2957,7 +2957,7 @@ function newCheck(){if(STAFF||!LOOK.ofs)return;try{const ok=it=>!it.hide&&it.sto
 
 /* ===== خيارات مظهر صفحة الزبائن ===== */
 const LOOK_DEF={sea:'none',svc:1,cats:1,sort:1,vt:1,hero:1,td:1,ofs:0,cb:'cream',bg:'gold'};
-const LOOK_CB={cream:['#fff4d3','#f6dfa0','#d3b25a','#f2dfa6'],white:['#ffffff','#f3f3f3','#d4d4d4','#e9e9e9'],mint:['#eef8f0','#d5ebda','#a9cdb1','#cfe6d4'],sky:['#eef5fd','#d3e5f7','#a5c3df','#c9ddf1'],rose:['#fdeeee','#f6d4d4','#dfa8a8','#f2cfcf'],lilac:['#f3eefb','#e1d6f3','#bba9dc','#dbd0ef'],dark:['#3f4a45','#1f2523','#0c0f0e','#2b3330']};
+const LOOK_CB={cream:['#fff4d3','#f6dfa0','#d3b25a','#f8f4ea'],white:['#ffffff','#f3f3f3','#d4d4d4','#e9e9e9'],mint:['#eef8f0','#d5ebda','#a9cdb1','#cfe6d4'],sky:['#eef5fd','#d3e5f7','#a5c3df','#c9ddf1'],rose:['#fdeeee','#f6d4d4','#dfa8a8','#f2cfcf'],lilac:['#f3eefb','#e1d6f3','#bba9dc','#dbd0ef'],dark:['#3f4a45','#1f2523','#0c0f0e','#2b3330']};
 const LOOK_BG={gold:'',beige:'#f3e8d3',gray:'#f3f4f6',mint:'#edf6ef',white:'#ffffff',sky:'#eaf3fb',rose:'#fcefef'};
 let LOOK=Object.assign({},LOOK_DEF);
 function lookApply(l){
