@@ -411,6 +411,18 @@ body.sb .arow{background:#fff;border-color:#d7e6dc;box-shadow:0 1px 4px rgba(20,
 .dstrip .mini .im{height:92px!important;background:#f1e6d0;border-radius:12px}.dstrip .mini img{max-height:86px!important}
 .dstrip .mini .price{color:var(--tl)!important}.dstrip .mini .pc{background:var(--tl)!important;border-radius:8px!important}
 .dstrip h4{font-size:17px!important}#newBan{background:#fff}
+/* ترتيب الصفحة: شريط أدوات + لوحات عروض */
+#sortBar{display:flex!important;align-items:center!important;gap:10px!important;margin:14px 22px 6px!important;padding:10px 14px;background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(20,30,40,.05);font-size:13px!important}
+#sortBar::before{content:"تصفية وترتيب";font-weight:800;color:var(--tx);margin-inline-end:auto;font-size:14px}
+#sortBar select,#sortBar label{height:38px;border-radius:12px!important;font-size:13px!important;font-weight:600;padding:0 12px!important;display:flex;align-items:center}
+#dealStrip{margin:0 22px}
+.dstrip{margin:14px 0!important;background:#fff;border-radius:22px;padding:16px 18px 8px;box-shadow:0 2px 10px rgba(20,30,40,.05)}
+.dstrip h4{margin:0 0 10px!important;padding-inline-start:12px;position:relative}
+.dstrip h4::before{content:"";position:absolute;right:0;top:15%;bottom:15%;width:4px;border-radius:4px;background:var(--tl)}
+.dstrip .mini{background:var(--bg)!important;box-shadow:none!important}
+.dstrip .mini .im{background:#fff!important}
+.ptitle{margin:18px 22px 0;font-size:19px;font-weight:800;color:var(--tx)}
+@media(max-width:800px){#sortBar{margin:10px 12px 4px!important;padding:8px 10px;flex-wrap:wrap!important}#sortBar::before{width:100%;margin:0 0 2px}#dealStrip{margin:0 12px}.ptitle{margin:14px 14px 0;font-size:17px}}
 /* ===== مظهر هادئ حديث (التصميم 2) ===== */
 :root{--bg:#f3e8d3;--tl:#1f2523;--tl2:#3a4440;--tx:#0a0d0c;--mu:#3d4543;--ln:#e2d3b8}
 body{color:var(--tx)}
@@ -573,6 +585,7 @@ html.dark .hsearch{background:#223433!important}html.dark .card .img{background:
 <div id="newBan"><span>🔔</span><span id="newBanT"></span><button type="button" onclick="newGo()">عرضها</button><span class="x" onclick="this.parentNode.style.display='none'">✕</span></div>
 <div id="pollBox"></div>
 <div id="dealStrip"></div>
+<h3 class="ptitle">🛍️ كل المنتجات</h3>
 <div class="products" id="products"></div>
 
 <div id="cart">
