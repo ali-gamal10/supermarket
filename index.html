@@ -2777,6 +2777,7 @@ function stripHTML(list,title,cls){
   return '<div class="dstrip '+cls+'"><div class="dhead"><span class="dh-i">'+ico+'</span><h4>'+t+'</h4><p>'+sub+'</p>'+(nw?'':'<button type="button" onclick="goCat(\'offers\')">عرض الكل ‹</button>')+'</div><div class="row">'+list.map(it=>'<div class="mini" onclick="openProd('+it.i+')">'+(it.old?'<span class="pc">-'+Math.round((1-it.price/it.old)*100)+'%</span>':(nw?'<span class="pc nwb">جديد</span>':''))+'<div class="im">'+(it.photo?'<img loading="lazy" src="'+it.photo+'" alt="">':'<span style="font-size:40px">'+(it.img||'📦')+'</span>')+'</div><b>'+String(it.name).replace(/</g,'&lt;')+'</b><div class="pr"><span class="price">'+it.price+' ج.م</span>'+(it.old?'<span class="old-price">'+it.old+'</span>':'')+'</div></div>').join('')+'</div></div>'}
 function renderStrips(){
   const el=document.getElementById('dealStrip');if(!el)return;
+  el.innerHTML='';return; /* أُزيلت لوحتا عروض اليوم ووصل حديثاً بطلب المالك */
   const q=(document.getElementById('q').value||'').trim();
   if(cat!=='all'||q){el.innerHTML='';return}
   const ok=it=>!it.hide&&winOk(it)&&it.stock>0&&!(window.HNP&&!it.photo&&!it.bundle);
@@ -2788,7 +2789,7 @@ function renderStrips(){
 function cdTick(){document.querySelectorAll('.cd').forEach(e=>{const t=new Date(e.dataset.end+'T23:59:59').getTime()-Date.now();if(t<=0){e.textContent='انتهى';return}const d=Math.floor(t/864e5),h=Math.floor(t%864e5/36e5),m=Math.floor(t%36e5/6e4),s=Math.floor(t%6e4/1e3),p=n=>String(n).padStart(2,'0');e.textContent=(d?d+' يوم ':'')+p(h)+':'+p(m)+':'+p(s)})}
 setInterval(cdTick,1000);
 function newGo(){const a=document.getElementById('nwAnchor');if(a)a.scrollIntoView({behavior:'smooth',block:'start'});document.getElementById('newBan').style.display='none'}
-function newCheck(){if(STAFF)return;try{const ok=it=>!it.hide&&it.stock>0&&winOk(it)&&!(window.HNP&&!it.photo&&!it.bundle);const cur=items.filter(ok).map(it=>String(it.code!=null?it.code:it.name));
+function newCheck(){return;if(STAFF)return;try{const ok=it=>!it.hide&&it.stock>0&&winOk(it)&&!(window.HNP&&!it.photo&&!it.bundle);const cur=items.filter(ok).map(it=>String(it.code!=null?it.code:it.name));
   let seen=null;try{seen=JSON.parse(localStorage.getItem('seen_codes')||'null')}catch(e){}
   if(seen){const ss=new Set(seen),nn=items.filter(it=>ok(it)&&isNew(it)&&!ss.has(String(it.code!=null?it.code:it.name)));
     if(nn.length){document.getElementById('newBanT').textContent='وصل '+nn.length+' منتج جديد 🎉';document.getElementById('newBan').style.display='flex'}}
