@@ -507,6 +507,17 @@ header{background:#fff!important;box-shadow:0 1px 0 var(--ln)!important}
 .price{color:var(--tl)!important}
 .card button{background:var(--tl)!important;border-radius:12px!important;box-shadow:none!important}
 .card button:hover{background:var(--tl2)!important}
+/* ===== ثيم عنابي أحمر (ruby) ===== */
+body.th-ruby .hsearch{background:#fbe6e9!important}
+body.th-ruby #svc button i{border-color:#f3c9cf;color:#c8261c}
+body.th-ruby #svc button:hover i{background:#c8261c;color:#ffe08a}
+body.th-ruby .card button{background:linear-gradient(90deg,#4a1530,#c8261c)!important}
+body.th-ruby .card button:hover{background:linear-gradient(90deg,#c8261c,#4a1530)!important}
+body.th-ruby .cat.active{color:#c8261c!important;border-top-color:#c8261c!important}
+body.th-ruby .price{color:#c8261c!important}
+body.th-ruby .cart-btn{background:linear-gradient(90deg,#4a1530,#c8261c)!important}
+body.th-ruby #lg stop:nth-child(1){stop-color:#5a1226}body.th-ruby #lg stop:nth-child(2){stop-color:#c8261c}body.th-ruby #lg stop:nth-child(3){stop-color:#f5c542}
+body.th-ruby .logo-ico path[stroke="#16a34a"]{stroke:#c8261c}
 html.dark{--bg:#14201f;--tl:#e6efee;--tl2:#ffffff;--tx:#e6efee;--mu:#98a9a7;--ln:#2a3a39}
 html.dark header,html.dark .card,html.dark #svc button i,html.dark .banner{background:#1c2c2b!important}
 html.dark .hsearch{background:#223433!important}html.dark .card .img{background:#243736!important}
@@ -2714,7 +2725,7 @@ function stgInit(){try{bnLoad();abLoad();ctLoad();lkLoad();payFill();xFill()}cat
   try{ghState();renderSync();bkState();notifState();cbRefresh()}catch(e){}
   try{pmList()}catch(e){}
   try{fetch('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/store.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j){lsSet('store_cfg',j);{const h=document.getElementById('hpOn');if(h)h.checked=!!j.hidePrices;const h2=document.getElementById('hnpOn');if(h2)h2.checked=!!j.hideNoPhoto;const f=document.getElementById('flTxt');if(f&&j.float)f.value=j.float.text||'';if(j.hours){const q=id=>document.getElementById(id);if(q('hrOn')){q('hrOn').checked=!!j.hours.on;q('hrOpen').value=j.hours.open||'08:00';q('hrClose').value=j.hours.close||'23:00';q('hrMsg').value=j.hours.msg||''}}}if(j.deal)document.getElementById('dealTxt').value=j.deal.text||'';if(j.theme&&THEMES[j.theme]){thSel=j.theme;themeApply(j.theme)}themeGrid()}}).catch(()=>{})}catch(e){}
-  try{thSel=localStorage.getItem('theme')||'calm';themeGrid()}catch(e){}
+  try{thSel=localStorage.getItem('theme')||'ruby';themeGrid()}catch(e){}
   try{setTimeout(wheelStgLoad,600)}catch(e){}
 }
 function stgCopy(id){const el=document.getElementById(id);el.select();try{navigator.clipboard.writeText(el.value)}catch(e){document.execCommand('copy')}toast('تم النسخ ✅')}
@@ -2976,8 +2987,8 @@ function newCheck(){if(STAFF||!LOOK.ofs)return;try{const ok=it=>!it.hide&&it.sto
   localStorage.setItem('seen_codes',JSON.stringify(cur))}catch(e){}}
 
 /* ===== خيارات مظهر صفحة الزبائن ===== */
-const LOOK_DEF={sea:'none',svc:1,cats:1,sort:1,vt:1,hero:1,td:1,ofs:0,cb:'cream',bg:'gold'};
-const LOOK_CB={cream:['#fff4d3','#f6dfa0','#d3b25a','#f8f4ea'],white:['#ffffff','#f3f3f3','#d4d4d4','#e9e9e9'],mint:['#eef8f0','#d5ebda','#a9cdb1','#cfe6d4'],sky:['#eef5fd','#d3e5f7','#a5c3df','#c9ddf1'],rose:['#fdeeee','#f6d4d4','#dfa8a8','#f2cfcf'],lilac:['#f3eefb','#e1d6f3','#bba9dc','#dbd0ef'],dark:['#3f4a45','#1f2523','#0c0f0e','#2b3330']};
+const LOOK_DEF={sea:'none',svc:1,cats:1,sort:1,vt:1,hero:1,td:1,ofs:0,cb:'ruby',bg:'gold'};
+const LOOK_CB={ruby:['#ffffff','#fdeff1','#e3a9b1','#fbe8eb'],cream:['#fff4d3','#f6dfa0','#d3b25a','#f8f4ea'],white:['#ffffff','#f3f3f3','#d4d4d4','#e9e9e9'],mint:['#eef8f0','#d5ebda','#a9cdb1','#cfe6d4'],sky:['#eef5fd','#d3e5f7','#a5c3df','#c9ddf1'],rose:['#fdeeee','#f6d4d4','#dfa8a8','#f2cfcf'],lilac:['#f3eefb','#e1d6f3','#bba9dc','#dbd0ef'],dark:['#3f4a45','#1f2523','#0c0f0e','#2b3330']};
 const LOOK_BG={gold:'',beige:'#f3e8d3',gray:'#f3f4f6',mint:'#edf6ef',white:'#ffffff',sky:'#eaf3fb',rose:'#fcefef'};
 let LOOK=Object.assign({},LOOK_DEF);
 function lookApply(l){
@@ -2997,7 +3008,7 @@ function setView(v,nosave){const lv=v==='l'&&(!LOOK||LOOK.vt);document.body.clas
   if(!nosave)try{localStorage.setItem('view',lv?'l':'g')}catch(e){}}
 try{document.addEventListener('DOMContentLoaded',()=>{try{setView(localStorage.getItem('view')||'g',true)}catch(e){}})}catch(e){}
 const LK_F=[['svc','أيقونات الخدمات (طلب صوتي، تتبع، قائمة…)'],['cats','تبويبات الأقسام'],['sort','شريط التصفية والترتيب'],['vt','زر تبديل العرض (شبكة/قائمة) للزبون'],['hero','الإعلان الكبير في الأعلى'],['td','تأثير 3D على البطاقات'],['ofs','لوحتا «عروض اليوم» و«وصل حديثاً»']];
-const LK_CBN={cream:'كريمي ذهبي',white:'أبيض',mint:'أخضر فاتح',sky:'أزرق فاتح',rose:'وردي فاتح',lilac:'بنفسجي فاتح',dark:'رمادي غامق'};
+const LK_CBN={ruby:'أبيض وردي (عنابي)',cream:'كريمي ذهبي',white:'أبيض',mint:'أخضر فاتح',sky:'أزرق فاتح',rose:'وردي فاتح',lilac:'بنفسجي فاتح',dark:'رمادي غامق'};
 const LK_BGN={gold:'ذهبي متدرج',beige:'بيج',gray:'رمادي فاتح',mint:'أخضر نعناعي',white:'أبيض',sky:'أزرق فاتح',rose:'وردي فاتح'};
 function lkDraw(){const box=document.getElementById('lkBox');if(!box)return;const L=LOOK;
   box.innerHTML=LK_F.map(([k,t])=>'<label style="display:flex;gap:8px;align-items:center;background:#fff;border:1px solid #ddd;border-radius:10px;padding:8px 10px;cursor:pointer"><input type="checkbox" '+(L[k]?'checked':'')+' onchange="lkSet(\''+k+'\',this.checked?1:0)"> '+t+'</label>').join('')
@@ -4313,6 +4324,7 @@ function listSend(a){
 
 /* ===== خلفيات وألوان الموقع ===== */
 const THEMES={
+ ruby:{n:'أحمر عنابي (الجديد)',a:'#c8261c',b:'#8e1a2b',bg:'linear-gradient(180deg,#fdf3f4 0%,#f9e4e7 100%)',hero:'linear-gradient(120deg,#5a1226 0%,#c8261c 100%)',x:{gold:'#f5c542',ln:'#f0cfd4',tx:'#2b0f14',mu:'#7a4a52'}},
  calm:{n:'هادئ أسود (الجديد)',a:'#1f2523',b:'#3a4440',bg:'linear-gradient(170deg,#f8f0d9 0%,#f1e1b3 50%,#e9d08f 100%)',hero:'linear-gradient(120deg,#1f2523,#3a4440)'},
  green:{n:'أخضر (الأصلي)',a:'#16a34a',b:'#22c55e',bg:'#f3f6f4',hero:'linear-gradient(135deg,#16a34a 0%,#22c55e 55%,#a3e635 100%)'},
  red:{n:'أحمر',a:'#e11d48',b:'#fb7185',bg:'#fff4f5',hero:'linear-gradient(135deg,#be123c 0%,#e11d48 55%,#fb7185 100%)'},
@@ -4325,12 +4337,13 @@ const THEMES={
  pink:{n:'وردي حلو',a:'#db2777',b:'#f472b6',bg:'#fdf2f8 radial-gradient(circle at 14px 14px,rgba(219,39,119,.12) 3px,transparent 4px) 0 0/34px 34px',hero:'linear-gradient(135deg,#9d174d 0%,#db2777 55%,#f9a8d4 100%)'}
 };
 function themeApply(id){
-  const t=THEMES[id]||THEMES.calm;let el=document.getElementById('themeCss');
+  const t=THEMES[id]||THEMES.ruby;id=THEMES[id]?id:'ruby';let el=document.getElementById('themeCss');
   if(!el){el=document.createElement('style');el.id='themeCss';document.head.appendChild(el)}
-  el.textContent=`:root{--tl:${t.a};--tl2:${t.b};--bg:${t.bg};--hero:${t.hero}}body{background:${t.bg}!important}.hero-main{background:${t.hero}!important}`;
+  const x=t.x||{gold:'#c9a227',ln:'#e3cf9b',tx:'#0a0d0c',mu:'#3d4543'};document.body.classList.toggle('th-ruby',id==='ruby');
+  el.textContent=`:root{--tl:${t.a};--tl2:${t.b};--bg:${t.bg};--hero:${t.hero};--gold:${x.gold};--ln:${x.ln};--tx:${x.tx};--mu:${x.mu}}body{background:${t.bg}!important}.hero-main{background:${t.hero}!important}`;
   try{localStorage.setItem('theme',id)}catch(e){}
 }
-let thSel='calm';
+let thSel='ruby';
 function themeGrid(){
   const g=document.getElementById('thGrid');if(!g)return;
   g.innerHTML=Object.keys(THEMES).map(k=>{const t=THEMES[k];return `<div onclick="themePick('${k}')" style="cursor:pointer;border:3px solid ${thSel===k?t.a:'#e5e7eb'};border-radius:12px;overflow:hidden;background:#fff;text-align:center"><div style="height:42px;background:${t.hero}"></div><div style="height:22px;background:${t.bg}"></div><div style="font-size:12px;font-weight:700;padding:4px 2px;color:${t.a}">${t.n}${thSel===k?' ✔':''}</div></div>`}).join('');
