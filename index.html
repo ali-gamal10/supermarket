@@ -733,7 +733,8 @@ html.dark .hsearch{background:#223433!important}html.dark .card .img{background:
 <div class="bulk" style="display:block;background:#fefce8;border-color:#fde047"><b>📱 كود QR + ملصق سيليا</b>
 <div style="font-size:12.5px;color:#765;margin:6px 0">اطبع الملصق وعلّقه في المحل أو على الأكياس.</div>
 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><img src="img/qr_clothes.png" alt="QR" style="width:100px;height:100px;border:1px solid #ddd;border-radius:10px"><div style="display:grid;gap:6px"><b>👗 أزياء وإكسسوارات</b><button class="pbtn" style="background:#be185d" onclick="qrPrint('c')">🖨️ طباعة ملصق</button><a class="pbtn" style="background:#0a6cff;text-decoration:none" href="img/qr_clothes.png" download="qr-fashion.png">⬇️ تحميل الصورة</a></div></div></div>
-</div></div>
+
+<h3 style="margin:18px 0 8px;color:#5b0f2e">🛠️ كل إعدادات المتجر</h3><div id="clSet"></div></div></div>
 <div id="sec">
 <div class="mnav"></div>
 <div class="adm-top"><h2>🔐 الرقم السري والأمان</h2><button class="pbtn red" onclick="toggleSec()">✖ إغلاق</button></div>
@@ -779,7 +780,7 @@ html.dark .hsearch{background:#223433!important}html.dark .card .img{background:
 <div id="stg">
 <div class="mnav"></div>
 <div class="adm-top"><h2>🛠️ الإعدادات</h2><button class="pbtn red" onclick="toggleStg()">✖ إغلاق</button></div>
-<div class="sec-in">
+<div class="sec-in" id="stgIn">
 <details class="stgrp" open><summary>🔗 الروابط والنشر <small>روابط المتجر + ربط النشر بـ GitHub</small></summary><div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><b>🔗 روابط المتجر</b>
 <div style="font-size:12.5px;color:#456;margin:6px 0">رابط الزبائن يُرسل للناس. رابط المدير لك فقط ولا تشاركه.</div>
 <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><span style="min-width:90px">🛒 الزبائن:</span><input id="lnkCust" readonly style="flex:1;min-width:200px;direction:ltr;font-size:12px"><button class="pbtn" onclick="stgCopy('lnkCust')">نسخ</button></div>
@@ -1959,7 +1960,8 @@ function ctDrawCl(){const el=document.getElementById('catMgrCl');if(!el)return;c
   const st=document.getElementById('clStat');if(st){const ks=L.map(o=>o.c.k);st.textContent='عدد منتجات الأزياء: '+items.filter(it=>ks.includes(it.cat)).length}}
 function ctAddCl(){const n=document.getElementById('ctN2').value.trim(),ic=document.getElementById('ctI2').value.trim();if(!n){toast('اكتب اسم القسم',2500);return}if(_ct.some(c=>c.n===n)){toast('القسم موجود',2500);return}
   _ct.push({k:'c_'+Date.now().toString(36),n,ic,sec:'cl'});document.getElementById('ctN2').value='';document.getElementById('ctI2').value='';ctDraw();catsApply(_ct);toast('أُضيف القسم — اضغط «نشر الأقسام» ليظهر للزبائن',4000)}
-function clInit(){try{ctLoad();shopFill();ctDrawCl()}catch(e){}}
+function stgPlace(to){const a=document.getElementById('stgIn'),b=document.getElementById('clSet');if(!a||!b)return;const src=to==='cl'?a:b,dst=to==='cl'?b:a;while(src.firstChild)dst.appendChild(src.firstChild)}
+function clInit(){try{stgPlace('cl');stgInit();ctDrawCl()}catch(e){}}
 function ctAdd(){const n=document.getElementById('ctN').value.trim(),ic=document.getElementById('ctI').value.trim();if(!n){toast('اكتب اسم القسم',2500);return}if(_ct.some(c=>c.n===n)){toast('القسم موجود',2500);return}
   _ct.push({k:'c_'+Date.now().toString(36),n,ic,sec:(document.getElementById('ctS')||{}).value==='cl'?'cl':''});document.getElementById('ctN').value='';document.getElementById('ctI').value='';ctDraw();catsApply(_ct);toast('أُضيف القسم — اضغط «نشر الأقسام» ليظهر للزبائن',4000)}
 function ctEdit(i){const c=_ct[i],n=prompt('اسم القسم',c.n);if(n==null)return;const ic=prompt('الأيقونة (إيموجي)',c.ic||'');if(ic==null)return;c.n=n.trim()||c.n;c.ic=ic.trim();ctDraw();catsApply(_ct)}
@@ -2784,7 +2786,7 @@ async function pmShare(){
 function toggleStg(){
   const a=document.getElementById('stg');
   if(a.classList.contains('open')){a.classList.remove('open');return}
-  askPin(()=>{a.classList.add('open');stgInit()},'🔐 الإعدادات — اكتب رقم المدير');
+  askPin(()=>{stgPlace('stg');a.classList.add('open');stgInit()},'🔐 الإعدادات — اكتب رقم المدير');
 }
 function stgInit(){try{bnLoad();abLoad();ctLoad();lkLoad();payFill();xFill();shopFill()}catch(e){}
   try{const base=location.href.replace(/[#?].*$/,'').replace(/[^\/]*$/,'');
@@ -4276,7 +4278,7 @@ function mgrGo(w,t){
   const open=()=>{mgrClose();
     if(w==='dash'){tab=t||'home';document.getElementById('dash').classList.add('open');renderDash()}
     else if(w==='admin'){document.getElementById('admin').classList.add('open');renderAdmin()}
-    else if(w==='stg'){document.getElementById('stg').classList.add('open');stgInit()}
+    else if(w==='stg'){stgPlace('stg');document.getElementById('stg').classList.add('open');stgInit()}
     else if(w==='cl'){document.getElementById('clp').classList.add('open');clInit()}
     else if(w==='sec'){document.getElementById('sec').classList.add('open');renderCashiers();pinWarn()}
     mgrNavRender()};
