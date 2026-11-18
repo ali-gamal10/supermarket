@@ -520,7 +520,12 @@ header{background:#fff!important;box-shadow:0 1px 0 var(--ln)!important}
  body.hasbn #waFab{bottom:92px}
  body.hasbn #toast{bottom:92px}
  body.hasbn #flMsg{bottom:98px}
+ body.hasbn .categories{display:none!important}
 }
+.bnt{font-weight:800;font-size:14px;color:#7a4a52;margin:4px 2px 8px}
+.bnch{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.bnc{border:1.5px solid #f0cfd4;background:#fff;border-radius:22px;padding:8px 14px;font-family:inherit;font-weight:700;font-size:13.5px;color:#2b0f14;display:flex;align-items:center;gap:6px;cursor:pointer}
+.bnc.on{background:#c8261c;border-color:#c8261c;color:#fff}.bnc svg{width:16px;height:16px}
 .bng{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .bnm{border:0;background:#fbf3f4;border-radius:18px;padding:12px 4px;font-family:inherit;font-weight:700;font-size:12.5px;color:#2b0f14;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
 .bnp{width:60px!important;height:60px!important;font-size:32px!important;box-shadow:0 4px 10px rgba(120,40,50,.15);line-height:1}
@@ -4810,7 +4815,9 @@ if(!STAFF){
       let lbl=b.querySelector('span').textContent.trim();if(k==='profRender')lbl='بياناتي';
       return cell(i,e[0],e[1],lbl,"pxX();document.querySelectorAll('#svc button')["+i+"].click()")}).join('');
     const ex=cell(0,'🌐','#e0e7ff','اللغة','pxX();langToggle()')+cell(0,'🌙','#e2e8f0','الوضع الليلي','pxX();toggleDark()');
-    pxM(pxHead('المزيد')+'<div class="bng">'+cells+ex+'</div>')};
+    const cs=[...document.querySelectorAll('.categories .cat')],chips=cs.map((c,i)=>'<button type="button" class="bnc'+(c.classList.contains('active')?' on':'')+'" onclick="bnCat('+i+')">'+c.innerHTML+'</button>').join('');
+    pxM(pxHead('المزيد')+(chips?'<div class="bnt">الأقسام</div><div class="bnch">'+chips+'</div><div class="bnt">الخدمات</div>':'')+'<div class="bng">'+cells+ex+'</div>')};
+  window.bnCat=function(i){const c=document.querySelectorAll('.categories .cat')[i];pxX();if(c){c.click();const p=document.getElementById('products');if(p)setTimeout(()=>p.scrollIntoView({behavior:'smooth',block:'start'}),60);bnAct('cats')}};
   document.addEventListener('DOMContentLoaded',()=>{
     const n=document.createElement('nav');n.id='bnav';
     n.innerHTML=[['home','الرئيسية'],['cats','الأقسام'],['cart','السلة'],['ord','طلباتي'],['more','المزيد']].map(a=>'<button type="button" data-k="'+a[0]+'" onclick="bnGo(\''+a[0]+'\')"><i>'+sv(a[0])+(a[0]==='cart'?'<em id="bnCnt"></em>':'')+'</i><span>'+a[1]+'</span></button>').join('');
