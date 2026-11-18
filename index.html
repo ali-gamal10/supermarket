@@ -507,6 +507,21 @@ header{background:#fff!important;box-shadow:0 1px 0 var(--ln)!important}
 .price{color:var(--tl)!important}
 .card button{background:var(--tl)!important;border-radius:12px!important;box-shadow:none!important}
 .card button:hover{background:var(--tl2)!important}
+/* ===== شريط تنقل سفلي عائم (جوال) ===== */
+#bnav{display:none}
+@media(max-width:800px){
+ #bnav{display:flex;position:fixed;left:10px;right:10px;bottom:10px;z-index:15;background:#fff;border-radius:30px;padding:7px 6px;box-shadow:0 6px 26px rgba(40,10,20,.18);justify-content:space-around;gap:2px}
+ #bnav button{flex:1;border:0;background:none;font-family:inherit;color:var(--tx,#2b0f14);font-size:11.5px;font-weight:700;padding:7px 2px 5px;border-radius:22px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:.2s}
+ #bnav button i{position:relative;display:flex}#bnav svg{width:24px;height:24px}
+ #bnav button.on{background:var(--c4,#fbe6e9);color:var(--tl,#c8261c)}
+ #bnav em{position:absolute;top:-6px;right:-9px;min-width:17px;height:17px;border-radius:9px;background:#c8261c;color:#fff;font-style:normal;font-size:10.5px;display:none;align-items:center;justify-content:center;padding:0 4px;font-weight:800}
+ body.hasbn{padding-bottom:96px}
+ body.hasbn #waFab{bottom:92px}
+ body.hasbn #toast{bottom:92px}
+}
+.bng{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.bnm{border:0;background:#fbf3f4;border-radius:18px;padding:12px 4px;font-family:inherit;font-weight:700;font-size:12.5px;color:#2b0f14;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.bnm i{display:flex;width:44px;height:44px;border-radius:50%;background:#fff;align-items:center;justify-content:center;color:#c8261c;font-style:normal;font-size:20px}.bnm svg{width:22px;height:22px}
 /* ===== ثيم عنابي أحمر (ruby) ===== */
 body.th-ruby .hsearch{background:#fbe6e9!important}
 body.th-ruby #svc button i{border-color:#f3c9cf;color:#c8261c}
@@ -4760,6 +4775,34 @@ function exDisc(i){const it=items[i],p=Math.min(90,Math.max(5,+document.getEleme
   it.offer={d:p,from:tdy(),to};afterEdit();exOpen();toast('بدأ خصم '+p+'% على '+it.name+' ✅',3000)}
 function exAlert(){if(!STAFF)return;try{const n=items.filter(it=>{const d=exDays(it);return d!=null&&d<=7}).length;if(n)ntAdd('⏳',n+' صنف تنتهي صلاحيته خلال 7 أيام — افتح «⏳ الصلاحية» من الإعدادات','','ex'+tdy())}catch(e){}}
 try{document.addEventListener('DOMContentLoaded',()=>setTimeout(exAlert,3500))}catch(e){}
+/* ===== شريط التنقل السفلي (للجوال) ===== */
+if(!STAFF){
+  const IC={
+   home:'<path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>',
+   cats:'<rect x="4" y="4" width="7" height="7" rx="1.500"/><rect x="13" y="4" width="7" height="7" rx="1.500"/><rect x="4" y="13" width="7" height="7" rx="1.500"/><rect x="13" y="13" width="7" height="7" rx="1.500"/>',
+   cart:'<path d="M3 4h2l2.200 11h10.500L20 7H6.500"/><circle cx="9" cy="19.500" r="1.400"/><circle cx="17" cy="19.500" r="1.400"/>',
+   ord:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+   more:'<circle cx="5" cy="12" r="1.600"/><circle cx="12" cy="12" r="1.600"/><circle cx="19" cy="12" r="1.600"/>'};
+  const sv=k=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+IC[k]+'</svg>';
+  window.bnRefresh=function(){const e=document.getElementById('bnCnt');if(!e)return;let n=0;try{Object.keys(cart).forEach(i=>n+=cart[i])}catch(x){}e.textContent=n>99?'99+':n;e.style.display=n?'flex':'none'};
+  window.bnAct=function(k){document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.k===k))};
+  window.bnGo=function(k){
+    if(k==='home'){window.scrollTo({top:0,behavior:'smooth'});bnAct('home')}
+    else if(k==='cats'){const p=document.getElementById('products');if(p)p.scrollIntoView({behavior:'smooth',block:'start'});bnAct('cats')}
+    else if(k==='cart'){toggleCart()}
+    else if(k==='ord'){trkOpen()}
+    else if(k==='more')bnMore()};
+  window.bnMore=function(){const bs=[...document.querySelectorAll('#svc button')];
+    const cells=bs.map((b,i)=>b.style.display==='none'?'':'<button type="button" onclick="pxX();document.querySelectorAll(\'#svc button\')['+i+'].click()" class="bnm"><i>'+b.querySelector('i').innerHTML.replace(/<em[^>]*>.*?<\/em>/g,'')+'</i><span>'+pxe(b.textContent.trim())+'</span></button>').join('');
+    const ex='<button type="button" onclick="pxX();langToggle()" class="bnm"><i>'+'<b style="font-size:15px">EN</b>'+'</i><span>اللغة</span></button><button type="button" onclick="pxX();toggleDark()" class="bnm"><i>🌙</i><span>الوضع الليلي</span></button>';
+    pxM(pxHead('المزيد')+'<div class="bng">'+cells+ex+'</div>')};
+  document.addEventListener('DOMContentLoaded',()=>{
+    const n=document.createElement('nav');n.id='bnav';
+    n.innerHTML=[['home','الرئيسية'],['cats','الأقسام'],['cart','السلة'],['ord','طلباتي'],['more','المزيد']].map(a=>'<button type="button" data-k="'+a[0]+'" onclick="bnGo(\''+a[0]+'\')"><i>'+sv(a[0])+(a[0]==='cart'?'<em id="bnCnt"></em>':'')+'</i><span>'+a[1]+'</span></button>').join('');
+    document.body.appendChild(n);document.body.classList.add('hasbn');bnAct('home');bnRefresh();
+    addEventListener('scroll',()=>{const p=document.getElementById('products');if(!p)return;const y=p.getBoundingClientRect().top;bnAct(y<window.innerHeight*0.6?'cats':'home')},{passive:true})});
+  const _uc3=updateCart;updateCart=function(){_uc3.apply(this,arguments);try{bnRefresh()}catch(e){}};
+}
 </script>
 </body>
 </html>
