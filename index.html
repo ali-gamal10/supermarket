@@ -2975,7 +2975,7 @@ function render(){
 const HSL=[{c:'',b:'🎉 عروض الأسبوع',h:'كل اللي بيتك محتاجه لحد بابك في 45 دقيقة',t:'تسوق العروض الآن →',g:'offers'},
  {c:'s2',b:'🚚 توصيل',h:'التوصيل مجاني لأي مكان بالقرية',t:'اطلب الآن ←',g:'all'},
  {c:'s3',b:'🆕 جديد',h:'منتجات جديدة وصلت بأسعار تناسب الجميع',t:'شوف الجديد ←',g:'new'}];
-if(PAGEMODE==='cloth'){HSL.length=0;HSL.push({c:'',b:'👗 جديد الموضة',h:'تشكيلة أزياء وإكسسوارات بأسعار تناسب الجميع',t:'تصفح الملابس ←',g:'all'},{c:'s2',b:'🚚 توصيل',h:'التوصيل مجاني لأي مكان بالقرية',t:'اطلب الآن ←',g:'all'})}
+if(PAGEMODE==='cloth'){HSL.length=0;HSL.push({c:'',b:'👗 جديد الموضة',h:'تشكيلة أزياء وإكسسوارات بأسعار تناسب الجميع',t:'تصفح الأزياء ←',g:'all'},{c:'s2',b:'🚚 توصيل',h:'التوصيل مجاني لأي مكان بالقرية',t:'اطلب الآن ←',g:'all'})}
 let _hs=0,_hT=null;
 function heroSlide(i){_hs=i;const m=document.querySelector('.hero-main');if(!m)return;const S=HSL[i];m.className='hero-main '+S.c;
   m.innerHTML='<div class="hs"><span class="hbadge">'+S.b+'</span><h2>'+S.h+'</h2><button class="hbtn" onclick="heroGo(\''+S.g+'\')">'+S.t+'</button></div>';
