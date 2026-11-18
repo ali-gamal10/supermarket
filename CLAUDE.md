@@ -11,6 +11,7 @@
 ## الملفات
 - `index.html`: واجهة الزبون فقط (بدون أي دخول موظفين؛ `#staff` و`#cashier` يحوّلان إلى staff.html).
 - `staff.html`: لوحة المدير + الكاشير + الداشبورد + الأمان، شريط جانبي عمودي، شاشة قفل برقم المدير. نفس localStorage لأنهما على نفس النطاق.
+- `clothes.html` (+`clothes.webmanifest`): صفحة الملابس المستقلة (حريمي وأطفال)، تُولَّد من نفس المصدر بـ `PAGEMODE='cloth'`، و`index.html` بـ `PAGEMODE='market'` (يخفي الملابس). الأقسام المعلّمة `sec:'cl'` في `store.json → cats` هي أقسام الملابس.
 - `catalog.json`: منتجات الزبائن. **تحدّثه لوحة المدير تلقائياً عبر GitHub API (مفتاح المدير)، فلا تستبدله ولا تحذفه.** عند تعديل `index.html` يجب إعادة حقن آخر `catalog.json` داخل `<script type="application/json" id="catalog-data">` كي لا تظهر منتجات قديمة.
 - `manifest.webmanifest`, `sw.js`, `icon-*.png`, `apple-touch-icon.png`: تثبيت كتطبيق (PWA). الـ service worker شبكة-أولاً.
 - `firestore.rules` (غير مرفوع هنا، موجود في مشروع Claude): قواعد Firebase.
