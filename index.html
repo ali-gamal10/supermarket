@@ -522,6 +522,7 @@ header{background:#fff!important;box-shadow:0 1px 0 var(--ln)!important}
 }
 .bng{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .bnm{border:0;background:#fbf3f4;border-radius:18px;padding:12px 4px;font-family:inherit;font-weight:700;font-size:12.5px;color:#2b0f14;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.bnp{width:60px!important;height:60px!important;font-size:32px!important;box-shadow:0 4px 10px rgba(120,40,50,.15);line-height:1}
 .bnm i{display:flex;width:44px;height:44px;border-radius:50%;background:#fff;align-items:center;justify-content:center;color:#c8261c;font-style:normal;font-size:20px}.bnm svg{width:22px;height:22px}
 /* ===== ثيم عنابي أحمر (ruby) ===== */
 body.th-ruby .hsearch{background:#fbe6e9!important}
@@ -4623,7 +4624,7 @@ render();updateCart();updateBadge();
 if(location.hash==='#cashier'&&document.querySelector('.topbar').classList.contains('on'))togglePos();
 /* ===== دفع إلكتروني / رسالة مورّد / اشتراك عروض / تقييم / أوفلاين ===== */
 const pxe=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function pxM(h){let m=document.getElementById('pxM');if(!m){m=document.createElement('div');m.id='pxM';m.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:95;align-items:center;justify-content:center;padding:14px';m.onclick=e=>{if(e.target===m)pxX()};m.innerHTML='<div id="pxMi" style="background:#fff;color:#0a0d0c;border-radius:20px;padding:16px;width:100%;max-width:440px;max-height:88vh;overflow:auto;direction:rtl;font-family:inherit"></div>';document.body.appendChild(m)}document.getElementById('pxMi').innerHTML=h;m.style.display='flex'}
+function pxM(h){let m=document.getElementById('pxM');if(!m){m=document.createElement('div');m.id='pxM';m.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:800;align-items:center;justify-content:center;padding:14px';m.onclick=e=>{if(e.target===m)pxX()};m.innerHTML='<div id="pxMi" style="background:#fff;color:#0a0d0c;border-radius:20px;padding:16px;width:100%;max-width:440px;max-height:88vh;overflow:auto;direction:rtl;font-family:inherit"></div>';document.body.appendChild(m)}document.getElementById('pxMi').innerHTML=h;m.style.display='flex'}
 function pxX(){const m=document.getElementById('pxM');if(m)m.style.display='none'}
 function pxHead(t){return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:18px">'+t+'</b><button type="button" onclick="pxX()" style="border:0;background:#eee;border-radius:10px;padding:6px 12px;font-family:inherit;cursor:pointer">✕</button></div>'}
 const PXI='width:100%;padding:10px 12px;margin-bottom:8px;border:1px solid #d1d5db;border-radius:12px;font-size:15px;font-family:inherit;box-sizing:border-box;background:#fff;color:#0a0d0c';
@@ -4794,8 +4795,12 @@ if(!STAFF){
     else if(k==='ord'){trkOpen()}
     else if(k==='more')bnMore()};
   window.bnMore=function(){const bs=[...document.querySelectorAll('#svc button')];
-    const cells=bs.map((b,i)=>b.style.display==='none'?'':'<button type="button" onclick="pxX();document.querySelectorAll(\'#svc button\')['+i+'].click()" class="bnm"><i>'+b.querySelector('i').innerHTML.replace(/<em[^>]*>.*?<\/em>/g,'')+'</i><span>'+pxe(b.querySelector('span').textContent.trim())+'</span></button>').join('');
-    const ex='<button type="button" onclick="pxX();langToggle()" class="bnm"><i>'+'<b style="font-size:15px">EN</b>'+'</i><span>اللغة</span></button><button type="button" onclick="pxX();toggleDark()" class="bnm"><i>🌙</i><span>الوضع الليلي</span></button>';
+    const EM={voxOpen:['🎙️','#ffe4e6'],trkOpen:['📦','#fef3c7'],listOpen:['📝','#e0f2fe'],sgOpen:['💡','#fef9c3'],budOpen:['💰','#dcfce7'],wheelOpen:['🎡','#fae8ff'],shareStore:['📲','#dbeafe'],stkOpen:['⭐','#fef3c7'],profRender:['👤','#ede9fe'],subOpen:['🔔','#ffedd5'],aboutOpen:['📍','#fee2e2'],svOpen:['📱','#cffafe'],wsOpen:['🏪','#fde68a']};
+    const cell=(i,e,bg,lbl,act)=>'<button type="button" onclick="'+act+'" class="bnm"><i class="bnp" style="background:'+bg+'">'+e+'</i><span>'+pxe(lbl)+'</span></button>';
+    const cells=bs.map((b,i)=>{if(b.style.display==='none')return '';const oc=b.getAttribute('onclick')||'',k=Object.keys(EM).find(x=>oc.indexOf(x)>=0)||'',e=EM[k]||['🛒','#f1f5f9'];
+      let lbl=b.querySelector('span').textContent.trim();if(k==='profRender')lbl='بياناتي';
+      return cell(i,e[0],e[1],lbl,"pxX();document.querySelectorAll('#svc button')["+i+"].click()")}).join('');
+    const ex=cell(0,'🌐','#e0e7ff','اللغة','pxX();langToggle()')+cell(0,'🌙','#e2e8f0','الوضع الليلي','pxX();toggleDark()');
     pxM(pxHead('المزيد')+'<div class="bng">'+cells+ex+'</div>')};
   document.addEventListener('DOMContentLoaded',()=>{
     const n=document.createElement('nav');n.id='bnav';
