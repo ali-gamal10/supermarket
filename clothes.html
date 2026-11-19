@@ -730,6 +730,7 @@ html.dark .hsearch{background:#223433!important}html.dark .card .img{background:
 <div style="font-size:12.5px;color:#456;margin:6px 0">أضف المنتج واختر قسمه (حريمي / أطفال / إكسسوارات) ثم انشر.</div>
 <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="pbtn" onclick="mgrGo('admin')">📦 إدارة المنتجات</button><button class="pbtn" style="background:#0a6cff" onclick="publishGH(false)">🌐 نشر المنتجات للزبائن</button></div>
 <div id="clStat" style="font-size:13px;color:#456;margin-top:8px"></div></div>
+<div class="bulk" style="display:block;background:#ecfeff;border-color:#67e8f9"><b>📊 طلبات ومبيعات سيليا (منفصلة عن الماركت)</b><div id="clOrd" style="font-size:13.5px;color:#234;margin:8px 0"></div><button class="pbtn" style="background:#be185d" onclick="trkS='cl';mgrGo('dash','trk')">🚚 عرض طلبات سيليا</button></div>
 <div class="bulk" style="display:block;background:#f4f7f5;border-color:#cfe0d6"><div style="margin-top:10px;padding-top:8px;border-top:1px dashed #d4a5c4"><b>👗 طريقة العرض عند الزبون</b><div style="font-size:12.5px;color:#456;margin:4px 0">رابط صفحة الماركت: <b dir="ltr">/supermarket/</b> · رابط صفحة الأزياء والإكسسوارات المستقلة: <b dir="ltr">https://ali-gamal10.github.io/supermarket/clothes.html</b> <button class="pbtn gray" style="padding:3px 8px;font-size:12px" onclick="copyTxt('https://ali-gamal10.github.io/supermarket/clothes.html','تم نسخ رابط الأزياء ✅')">📋 نسخ</button></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><select id="shopMode" style="padding:8px;border:1px solid #ccc;border-radius:8px;flex:1"><option value="both">إظهار مفتاح التنقل بين الصفحتين (ماركت | ملابس)</option><option value="market">بدون مفتاح (كل صفحة بروحها)</option></select><button class="pbtn" style="background:#0a6cff" onclick="shopPublish()">🌐 نشر</button></div></div></div>
 <div class="bulk" style="display:block;background:#fefce8;border-color:#fde047"><b>📱 كود QR + ملصق سيليا</b>
 <div style="font-size:12.5px;color:#765;margin:6px 0">اطبع الملصق وعلّقه في المحل أو على الأكياس.</div>
@@ -1958,6 +1959,7 @@ function ctLoad(){_ct=(lsGet('store_cfg',{}).cats||[]).map(x=>Object.assign({},x
 function ctDraw(){try{ctDrawCl()}catch(e){}const el=document.getElementById('catMgr');if(!el)return;el.innerHTML=_ct.length?_ct.map((c,i)=>`<div class="row" style="gap:6px;align-items:center;flex-wrap:wrap"><span style="font-size:20px">${_e(c.ic||'🗂️')}</span><b style="flex:1">${_e(c.n)}</b><small style="color:#888">${items.filter(it=>it.cat===c.k).length} منتج</small><button class="pbtn gray" style="padding:5px 10px;font-size:12px" onclick="ctSec(${i})">${c.sec==='cl'?'👗 أزياء':'🛒 ماركت'}</button><button class="pbtn gray" style="padding:5px 10px;font-size:12px" onclick="ctEdit(${i})">✏️</button><button class="pbtn gray" style="padding:5px 10px;font-size:12px" onclick="ctHide(${i})">${c.hide?'👁️ إظهار':'🙈 إخفاء'}</button><button class="pbtn red" style="padding:5px 10px;font-size:12px" onclick="ctDel(${i})">🗑️</button></div>`).join('')+'<div style="font-size:12px;color:#888;margin-top:6px">بعد أي تغيير اضغط «نشر الأقسام» ليظهر للزبائن.</div><button class="pbtn" style="margin-top:6px;background:#be185d" onclick="ctPublish()">🚀 نشر الأقسام</button>':'<span style="font-size:13px;color:#888">لا توجد أقسام إضافية بعد</span>'}
 function ctDrawCl(){const el=document.getElementById('catMgrCl');if(!el)return;const L=_ct.map((c,i)=>({c,i})).filter(o=>o.c.sec==='cl');
   el.innerHTML=L.length?L.map(o=>`<div class="row" style="gap:6px;align-items:center;flex-wrap:wrap"><span style="font-size:20px">${_e(o.c.ic||'🗂️')}</span><b style="flex:1">${_e(o.c.n)}</b><small style="color:#888">${items.filter(it=>it.cat===o.c.k).length} منتج</small><button class="pbtn gray" style="padding:5px 10px;font-size:12px" onclick="ctEdit(${o.i})">✏️</button><button class="pbtn gray" style="padding:5px 10px;font-size:12px" onclick="ctHide(${o.i})">${o.c.hide?'👁️ إظهار':'🙈 إخفاء'}</button><button class="pbtn red" style="padding:5px 10px;font-size:12px" onclick="ctDel(${o.i})">🗑️</button></div>`).join(''):'<span style="font-size:13px;color:#888">لا توجد أقسام أزياء بعد — اضغط «تجهيز الأقسام الثلاثة»</span>';
+  const co=document.getElementById('clOrd');if(co){const O=orders.filter(o=>o.shop==='cl'),ok=O.filter(o=>!o.refunded),nw=O.filter(o=>o.status==='new'&&!o.refunded);co.innerHTML='عدد الطلبات: <b>'+O.length+'</b> · جديدة: <b>'+nw.length+'</b><br>إجمالي مبيعات سيليا: <b>'+ok.reduce((a,o)=>a+(+o.total||0),0)+' ج.م</b>'}
   const st=document.getElementById('clStat');if(st){const ks=L.map(o=>o.c.k);st.textContent='عدد منتجات الأزياء: '+items.filter(it=>ks.includes(it.cat)).length}}
 function ctAddCl(){const n=document.getElementById('ctN2').value.trim(),ic=document.getElementById('ctI2').value.trim();if(!n){toast('اكتب اسم القسم',2500);return}if(_ct.some(c=>c.n===n)){toast('القسم موجود',2500);return}
   _ct.push({k:'c_'+Date.now().toString(36),n,ic,sec:'cl'});document.getElementById('ctN2').value='';document.getElementById('ctI2').value='';ctDraw();catsApply(_ct);toast('أُضيف القسم — اضغط «نشر الأقسام» ليظهر للزبائن',4000)}
@@ -2008,6 +2010,7 @@ function commitOrder(src,extra){
     return {name:it.name,qty:q,price:(lt===it.price*q?it.price:Math.round(lt/q*100)/100),code:it.code,cost:it.cost};
   });
   const o={id:Date.now(),no:nextNo(),time:new Date().toISOString(),src,lines,total};
+  if(typeof PAGEMODE!=='undefined'&&PAGEMODE==='cloth')o.shop='cl';
   if(src==='cashier'&&curCashier){o.cashier=curCashier.name;o.cid=curCashier.id}
   if(extra)Object.assign(o,extra);
   orders.push(o);saveOrders();saveItems();
@@ -2033,7 +2036,7 @@ function checkout(){
   try{localStorage.setItem('rate_pend',JSON.stringify({no:o.no,t:Date.now()}))}catch(e){}
   fbSend(o);myOrdersAdd(o.id,o.no);
   const lines=o.lines.map(l=>'• '+l.name+' × '+l.qty+' = '+(l.price*l.qty)+' ج.م');
-  const msg='مرحباً بكم في متجر سوبر ماركت 🛒\nطلب رقم '+o.no+':\nالاسم: '+o.customer+'\nالعنوان: '+o.addr+(o.note?'\nملاحظات: '+o.note:'')+(o.phone?'\nالجوال: '+o.phone:'')+'\n'+lines.join('\n')+'\n\nالإجمالي: '+o.total+' ج.م\n🔖 '+o.id;
+  const msg=(PAGEMODE==='cloth'?'مرحباً بكم في سيليا للأزياء والإكسسوارات 👗':'مرحباً بكم في متجر سوبر ماركت 🛒')+'\nطلب رقم '+o.no+':\nالاسم: '+o.customer+'\nالعنوان: '+o.addr+(o.note?'\nملاحظات: '+o.note:'')+(o.phone?'\nالجوال: '+o.phone:'')+'\n'+lines.join('\n')+'\n\nالإجمالي: '+o.total+' ج.م\n🔖 '+o.id;
   if(late)toast('📩 المحل مغلق الآن — طلبك محفوظ وسنتواصل معك لتأكيده عند الفتح'+(window.HROPEN?' ('+window.HROPEN+')':''),7000);
   return 'https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(msg);
 }
@@ -2054,23 +2057,23 @@ function doCancel(id){
 }
 
 /* ===== تتبع حالة الطلب ===== */
-let trkF='act';
+let trkF='act',trkS='';
 const TRK={new:['🆕 جديد','#6b7280'],prep:['🧑‍🍳 قيد التجهيز','#d98200'],out:['🚚 في الطريق','#0a6cff'],done:['✅ تم التسليم','#0a8a43']};
 function parseOrderMsg(t){
   const g=r=>{const m=t.match(r);return m?m[1].trim():''};
   const name=g(/الاسم:\s*(.+)/),addr=g(/العنوان:\s*(.+)/),note=g(/ملاحظات:\s*(.+)/),phone=g(/الجوال:\s*(.+)/);
-  const ext=g(/🔖\s*(\d+)/);
+  const ext=g(/🔖\s*(\d+)/);const shop=/سيليا/.test(String(t).split('\n')[0])?'cl':'';
   const lines=[],re=/•\s*(.+?)\s*[×x]\s*(\d+)\s*=\s*(\d+)/g;let m;
   while((m=re.exec(t))){const q=+m[2]||1;lines.push({name:m[1].trim(),qty:q,price:Math.round(+m[3]/q)})}
   const total=+g(/الإجمالي:\s*(\d+)/);
-  return lines.length&&name?{name,addr,note,phone,ext,lines,total:total||lines.reduce((a,l)=>a+l.price*l.qty,0)}:null;
+  return lines.length&&name?{shop,name,addr,note,phone,ext,lines,total:total||lines.reduce((a,l)=>a+l.price*l.qty,0)}:null;
 }
 function trkAdd(){
   const ta=document.getElementById('trkTxt'),o=parseOrderMsg(ta.value);
   if(!o){toast('ما قدرت أقرأ الرسالة — الصق رسالة الطلب كاملة من واتساب',4000);return}
   if(o.ext&&orders.some(x=>String(x.ext)===o.ext)){toast('هذا الطلب مضاف من قبل',3000);return}
   const lines=o.lines.map(l=>{const it=items.find(x=>x.name===l.name);if(it)stockTake(it,l.qty);const r={name:l.name,qty:l.qty,price:l.price};if(it){r.code=it.code;if(it.cost!=null)r.cost=it.cost}return r});
-  orders.push({id:Date.now(),no:nextNo(),time:new Date().toISOString(),src:'online',lines,total:o.total,customer:o.name,addr:o.addr,note:o.note,phone:o.phone,ext:o.ext,status:'new'});
+  orders.push({id:Date.now(),no:nextNo(),time:new Date().toISOString(),src:'online',lines,total:o.total,customer:o.name,addr:o.addr,note:o.note,phone:o.phone,ext:o.ext,shop:o.shop||'',status:'new'});
   saveOrders();saveItems();ta.value='';render();updateBadge();renderDash();toast('تمت إضافة الطلب ✅ وخصمنا المخزون',3500);
 }
 function waPhone(p){let d=(p||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.startsWith('0'))d='20'+d.slice(1);return d}
@@ -2103,7 +2106,7 @@ function lateAsk(id){const o=orders.find(x=>x.id===id);if(!o)return;const ph=waP
   const m='صباح الخير يا '+(o.customer||'')+' 🌟 من سوبر ماركت.\nوصلنا طلبك رقم '+o.no+' أثناء إغلاق المحل:\n'+o.lines.map(l=>'• '+l.name+' × '+l.qty).join('\n')+'\n\nهل ما زلت محتاج الطلب؟ رد علينا بـ «نعم» ونجهّزه ونوصله فوراً 🚚';
   window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(m),'_blank')}
 function trkHTML(){
-  const all=orders.filter(o=>o.status);
+  const all=orders.filter(o=>o.status&&(!trkS||(trkS==='cl')===(o.shop==='cl')));
   const act=all.filter(o=>o.status!=='done'&&!o.refunded);
   const fl=trkF==='act'?act:all;
   const f=(k,l)=>`<div class="tab ${trkF===k?'active':''}" onclick="setTrkF('${k}')">${l}</div>`;
@@ -2117,13 +2120,14 @@ function trkHTML(){
     const st=o.refunded?['❌ ملغي','#e30613']:(TRK[o.status]||TRK.new);
     const b=(k,l)=>`<button class="pbtn" style="${o.status===k?'':'background:#fff;color:#333;border:1px solid #bbb'};padding:7px 10px;font-size:13px" onclick="trkSet(${o.id},'${k}')">${l}</button>`;
     return `<div class="arow" style="display:block">
-      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>#${o.no} — 👤 ${o.customer||''}</b><b style="color:${st[1]}">${st[0]}</b><span style="color:#888;font-size:12px">${fmt(o.time)}</span></div>
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>#${o.no} — 👤 ${o.customer||''}${o.shop==='cl'?' <span style="background:#fce7f3;color:#9d174d;border-radius:20px;padding:2px 9px;font-size:12px">👗 سيليا</span>':''}</b><b style="color:${st[1]}">${st[0]}</b><span style="color:#888;font-size:12px">${fmt(o.time)}</span></div>
       ${lateB}<div style="font-size:13px;color:#555;margin:6px 0">${o.lines.map(l=>l.name+' × '+l.qty).join(' | ')}</div>
       ${o.refunded||!dvList().length?'':`<div style="margin:4px 0"><select onchange="dvSet(${o.id},this.value)" style="padding:6px;border:1px solid #ccc;border-radius:8px;font-family:inherit">${dvOpts(o.dv)}</select></div>`}<div style="font-size:13px;margin:4px 0">📍 ${o.addr||'—'}${o.note?' — 📝 '+o.note:''}<br>📞 ${o.phone||'<span style="color:#e30613">لا يوجد رقم</span>'} <a href="javascript:void 0" onclick="trkPhone(${o.id})" style="font-size:12px">تعديل</a> — 💰 <b>${o.total} ج.م</b></div>
       ${retLog(o)}${o.refunded?'':`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${b('prep','🧑‍🍳 قيد التجهيز')}${b('out','🚚 في الطريق')}${b('done','✅ تم التسليم')}<button class="pbtn red" style="padding:7px 10px;font-size:13px" onclick="cancelOrder(${o.id})">❌ إلغاء وإرجاع المخزون</button><button class="pbtn gray" style="padding:7px 10px;font-size:13px" onclick="trkPrep(${o.id})">🖨️ ورقة التجهيز</button><button class="pbtn" style="background:#d98200;padding:7px 10px;font-size:13px" onclick="retOpen(${o.id})">↩️ استرجاع جزئي</button></div>
       <div style="font-size:11.5px;color:#888;margin-top:4px">الضغط على حالة يفتح واتساب برسالة جاهزة للزبون.</div>`}</div>`;
   };
-  return add+`<div class="tabs">${f('act','الجارية ('+act.length+')')}${f('all','الكل ('+all.length+')')}</div>`+(fl.length?fl.slice().reverse().map(card).join(''):'<p class="empty">لا توجد طلبات '+(trkF==='act'?'جارية':'')+'</p>');
+  const sel=`<div style="margin:8px 0"><select onchange="trkS=this.value;renderDash()" style="padding:8px;border:1px solid #ccc;border-radius:8px;font-family:inherit"><option value=""${trkS===''?' selected':''}>كل الطلبات</option><option value="mk"${trkS==='mk'?' selected':''}>🛒 السوبر ماركت فقط</option><option value="cl"${trkS==='cl'?' selected':''}>👗 سيليا فقط</option></select></div>`;
+  return add+sel+`<div class="tabs">${f('act','الجارية ('+act.length+')')}${f('all','الكل ('+all.length+')')}</div>`+(fl.length?fl.slice().reverse().map(card).join(''):'<p class="empty">لا توجد طلبات '+(trkF==='act'?'جارية':'')+'</p>');
 }
 function trkPrep(id){
   const o=orders.find(x=>x.id===id);if(!o)return;
@@ -3177,6 +3181,7 @@ async function syncRemote(cfg){
   try{
     const r=await fetch('https://api.github.com/repos/'+cfg.repo+'/contents/catalog.json?ref='+(cfg.branch||'main')+'&t='+Date.now(),{headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github.raw'}});
     if(!r.ok)return false;const rem=await r.json();if(!Array.isArray(rem)||!rem.length)return false;
+    try{const r2=await fetch('https://api.github.com/repos/'+cfg.repo+'/contents/catalog_cl.json?ref='+(cfg.branch||'main')+'&t='+Date.now(),{headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github.raw'}});if(r2.ok){const j2=await r2.json();if(Array.isArray(j2))j2.forEach(x=>rem.push(x))}}catch(e){}
     let base=null;try{base=JSON.parse(localStorage.getItem('cat_base')||'null')}catch(e){}
     const key=it=>String(it.code!=null?it.code:it.name),L={};items.forEach(it=>{L[key(it)]=it});
     let ch=false;let b2=null;try{b2=JSON.parse(localStorage.getItem('cat_base2')||'null')}catch(e){}
@@ -3198,6 +3203,17 @@ async function syncRemote(cfg){
   }catch(e){return false}
 }
 let _ghBusy=false,_ghAgain=false;
+async function ghPut(cfg,name,arr,msg,skipIfMissing){
+  const api='https://api.github.com/repos/'+cfg.repo+'/contents/'+name,h={'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json'},content=b64utf8(JSON.stringify(arr));
+  let ok=false,code=0;
+  for(let t=0;t<2&&!ok;t++){
+    let sha;const g=await fetch(api+'?ref='+cfg.branch+'&t='+Date.now(),{headers:h});
+    if(g.ok){sha=(await g.json()).sha}else if(g.status!==404){code=g.status;break}else if(skipIfMissing){return {ok:true,code:0}}
+    const r=await fetch(api,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},h),body:JSON.stringify({message:msg,content,branch:cfg.branch,sha})});
+    ok=r.ok;code=r.status;
+  }
+  return {ok,code};
+}
 async function publishGH(auto){
   const cfg=ghCfg();if(!cfg){toast('فعّل النشر التلقائي أولاً',3000);return}
   if(_ghBusy){_ghAgain=true;return}
@@ -3207,17 +3223,12 @@ async function publishGH(auto){
     try{await syncRemote(cfg)}catch(e){}
     try{await phHeal(cfg)}catch(e){}
     await phMove(cfg);
-    const cat=items.map(it=>{const o=Object.assign({},it);delete o.ord;delete o.cost;return o});
-    const content=b64utf8(JSON.stringify(cat));const _h=catHash();
-    const api='https://api.github.com/repos/'+cfg.repo+'/contents/catalog.json';
-    const h={'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json'};
-    let ok=false,code=0;
-    for(let t=0;t<2&&!ok;t++){
-      let sha;const g=await fetch(api+'?ref='+cfg.branch+'&t='+Date.now(),{headers:h});
-      if(g.ok){sha=(await g.json()).sha}else if(g.status!==404){code=g.status;break}
-      const r=await fetch(api,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},h),body:JSON.stringify({message:'تحديث المنتجات',content,branch:cfg.branch,sha})});
-      ok=r.ok;code=r.status;
-    }
+    const cat=items.map(it=>{const o=Object.assign({},it);delete o.ord;delete o.cost;return o});const _h=catHash();
+    const ck=clKeys(),mk=cat.filter(it=>!ck.includes(it.cat)),cl=cat.filter(it=>ck.includes(it.cat));
+    /* قاعدة منفصلة: منتجات السوبر ماركت في catalog.json ومنتجات سيليا في catalog_cl.json */
+    let R1=await ghPut(cfg,'catalog.json',mk,'تحديث المنتجات');
+    let ok=R1.ok,code=R1.code;
+    if(ok){const R2=await ghPut(cfg,'catalog_cl.json',cl,'تحديث منتجات سيليا',!cl.length);ok=R2.ok;code=R2.code}
     if(ok){try{localStorage.setItem('pub_hash',_h)}catch(e){}}
     if(ok)toast(auto?'✅ اتنشرت التعديلات للزبائن (تظهر خلال 5 دقائق تقريباً)':'تم النشر ✅ الزبائن بيشوفوا التعديل خلال 5 دقائق تقريباً',5000);
     else toast(code===401||code===403?'مفتاح GitHub غير صحيح أو ما عنده صلاحية':code===404?'المستودع غير موجود أو المفتاح ما يشمله':code===422?'تعذر الحفظ، جرّب مرة ثانية':'تعذر النشر ('+code+')',6000);
@@ -3767,7 +3778,7 @@ function fbCfg(){let l=null;try{l=JSON.parse(localStorage.getItem('fb_cfg'))}cat
 function fbSend(o){
   const c=FB_REMOTE;if(!c)return;
   const S=v=>({stringValue:String(v==null?'':v).slice(0,300)}),N=v=>({integerValue:String(Math.round(+v||0))});
-  const body={fields:{ext:S(o.id),name:S(o.customer),addr:S(o.addr),note:S(o.note),phone:S(o.phone),total:N(o.total),time:S(o.time),
+  const body={fields:{ext:S(o.id),name:S(o.customer),addr:S(o.addr),note:S((o.shop==='cl'?'👗سيليا ':'')+(o.note||'')),phone:S(o.phone),total:N(o.total),time:S(o.time),
     lines:{arrayValue:{values:o.lines.slice(0,60).map(l=>({mapValue:{fields:{name:S(l.name),qty:N(l.qty),price:N(l.price)}}}))}}}};
   try{fetch('https://firestore.googleapis.com/v1/projects/'+c.projectId+'/databases/(default)/documents/incoming?documentId='+encodeURIComponent(o.id)+'&key='+encodeURIComponent(c.apiKey),
     {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),keepalive:true}).catch(()=>{})}catch(e){}
@@ -3950,11 +3961,11 @@ function importIncoming(id,d){
   if(String(d.note||'').startsWith('⭐')){ratAdd(id,d);return}
   if(String(d.note||'').startsWith('🧾')){reqAdd(id,d,'sv');return}
   if(String(d.note||'').startsWith('🏪')){reqAdd(id,d,'ws');return}
-  const ext=String(d.ext||id);
+  const ext=String(d.ext||id);let _shop='',_note=d.note||'';if(String(_note).startsWith('👗سيليا')){_shop='cl';_note=String(_note).replace(/^👗سيليا\s*/,'')}
   if(orders.some(x=>String(x.ext)===ext)){try{DB&&DB.doc('incoming/'+id).delete()}catch(e){}return}
   const lines=d.lines.map(l=>{const it=items.find(x=>x.name===l.name);if(it)stockTake(it,+l.qty||0);const r={name:l.name,qty:+l.qty||1,price:+l.price||0};if(it){r.code=it.code;if(it.cost!=null)r.cost=it.cost}return r});
   const total=+d.total||lines.reduce((a,l)=>a+l.price*l.qty,0);
-  orders.push({id:+ext||Date.now(),no:nextNo(),time:d.time||new Date().toISOString(),src:'online',lines,total,customer:d.name||'',addr:d.addr||'',note:d.note||'',phone:d.phone||'',ext,status:'new'});
+  orders.push({id:+ext||Date.now(),no:nextNo(),time:d.time||new Date().toISOString(),src:'online',lines,total,customer:d.name||'',addr:d.addr||'',note:_note,phone:d.phone||'',ext,shop:_shop,status:'new'});
   saveOrders();saveItems();
   try{DB.doc('incoming/'+id).delete()}catch(e){}
   render();updateBadge();
@@ -4675,7 +4686,8 @@ if(STAFF)setTimeout(pubCheck,15000);
 if(!STAFF&&/^https?:/.test(location.protocol)){
   /* الكتالوج يُقرأ من GitHub مباشرة (بدون نشر على Netlify)، وإن تعذّر نقرأ نسخة الموقع */
   const _gj=u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(c=>Array.isArray(c)&&c.length?c:null).catch(()=>null);
-  _gj('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/catalog.json?t='+Math.floor(Date.now()/6e4)).then(c=>c||_gj('catalog.json?t='+Date.now())).then(c=>{
+  const _cf=PAGEMODE==='cloth'?'catalog_cl.json':'catalog.json';
+  _gj('https://raw.githubusercontent.com/ali-gamal10/supermarket/main/'+_cf+'?t='+Math.floor(Date.now()/6e4)).then(c=>c||_gj(_cf+'?t='+Date.now())).then(c=>{
     if(!Array.isArray(c)||!c.length)return;
     const old=items,keep={};Object.keys(cart).forEach(i=>{if(old[i])keep[old[i].code||old[i].name]=cart[i]});
     items=c;norm();cart={};items.forEach((it,i)=>{const q=keep[it.code]||keep[it.name];if(q)cart[i]=Math.min(q,Math.max(it.stock||0,0))});
